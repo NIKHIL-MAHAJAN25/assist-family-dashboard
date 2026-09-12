@@ -3,6 +3,18 @@ import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { login as loginRequest } from '../api/auth';
 import { useAuth } from '../context/AuthContext.jsx';
+import { Button, Field, Icon, Brandmark, ErrorBanner } from '../ui';
+
+// Reference screen for the Assist Sage system. Two motifs carried straight
+// from SellerApp's activity_login.xml: the display headline stacked across
+// its own lines ("Hey, / Welcome / Back"), and pill text fields on a muted
+// sage fill with no visible stroke until focus.
+
+const PROMISES = [
+  { icon: 'timeline', text: 'A plain-language record of the day, not raw camera footage.' },
+  { icon: 'shield', text: 'Safe zones you draw yourself, with an alert only when they matter.' },
+  { icon: 'spark', text: 'A daily recall quiz built from what actually happened.' },
+];
 
 export default function Login() {
   const { login, isAuthenticated } = useAuth();
@@ -30,59 +42,119 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-sm bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-        <h1 className="text-xl font-semibold text-slate-800 mb-1">Family Dashboard</h1>
-        <p className="text-sm text-slate-500 mb-6">Sign in with your caregiver account.</p>
+    <div className="relative flex min-h-screen items-center justify-center bg-paper px-4 py-8 sm:px-6">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(60rem 30rem at 15% 0%, rgba(105,139,106,0.16), transparent 60%), radial-gradient(45rem 28rem at 95% 100%, rgba(220,226,216,0.85), transparent 65%)',
+        }}
+      />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
-              Email
-            </label>
-            <input
-              id="email"
+      <div className="relative grid w-full max-w-[1020px] overflow-hidden rounded-panel border border-line bg-surface shadow-lift lg:grid-cols-[1.02fr_1fr]">
+        {/* Editorial panel. The one deeply saturated surface in the product —
+            it exists so the sign-in page has a colour anchor, and it never
+            reappears once you're inside. */}
+        <aside className="relative hidden flex-col justify-between overflow-hidden bg-sage-900 p-11 text-paper lg:flex">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(28rem 22rem at 85% 8%, rgba(175,196,174,0.30), transparent 62%)',
+            }}
+          />
+          <div className="relative">
+            <Brandmark size={52} />
+            <p className="mt-6 text-[12px] font-bold uppercase tracking-[0.18em] text-sage-300">
+              Assist
+            </p>
+            <p className="mt-3 font-display text-[30px] font-semibold leading-[1.18] tracking-tight">
+              Quietly watching over
+              <br />
+              someone you love.
+            </p>
+          </div>
+
+          <ul className="relative mt-10 space-y-5">
+            {PROMISES.map((item) => (
+              <li key={item.text} className="flex items-start gap-3.5">
+                <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-pill bg-white/10 text-sage-200">
+                  <Icon name={item.icon} size={18} />
+                </span>
+                <p className="text-[14.5px] leading-relaxed text-sage-100/90">{item.text}</p>
+              </li>
+            ))}
+          </ul>
+
+          <p className="relative mt-10 text-[12.5px] leading-relaxed text-sage-300/80">
+            Built around one person: someone with mild-to-moderate memory impairment, living
+            semi-independently.
+          </p>
+        </aside>
+
+        {/* Form */}
+        <div className="flex flex-col justify-center p-8 sm:p-11">
+          <div className="mb-8 lg:hidden">
+            <Brandmark size={44} />
+          </div>
+
+          <h1 className="font-display text-[42px] font-semibold leading-[1.04] tracking-tight text-ink sm:text-[46px]">
+            Welcome
+            <br />
+            back.
+          </h1>
+          <p className="mt-3 text-[15px] leading-relaxed text-ink-faint">
+            Sign in with your caregiver account.
+          </p>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
+            <Field
+              label="Email"
               type="email"
               autoComplete="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
               placeholder="caregiver@example.com"
             />
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
-              Password
-            </label>
-            <input
-              id="password"
+            <Field
+              label="Password"
               type="password"
               autoComplete="current-password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
-              placeholder="********"
+              placeholder="••••••••"
             />
-          </div>
 
-          {mutation.isError && (
-            <p className="text-sm text-red-600">
-              {mutation.error?.response?.data?.message ||
-                mutation.error?.message ||
-                'Login failed. Check your credentials and try again.'}
-            </p>
-          )}
+            {mutation.isError && (
+              <ErrorBanner
+                error={mutation.error}
+                label="We couldn't sign you in"
+              />
+            )}
 
-          <button
-            type="submit"
-            disabled={mutation.isPending}
-            className="w-full rounded-md bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-700 disabled:opacity-60"
-          >
-            {mutation.isPending ? 'Signing in...' : 'Sign in'}
-          </button>
-        </form>
+            <Button
+              type="submit"
+              size="lg"
+              loading={mutation.isPending}
+              className="w-full"
+              iconAfter={mutation.isPending ? undefined : 'chevronRight'}
+            >
+              {mutation.isPending ? 'Signing in…' : 'Sign in'}
+            </Button>
+          </form>
+
+          <p className="mt-7 flex items-start gap-2.5 rounded-card bg-surface-sunken px-4 py-3 text-[13px] leading-relaxed text-ink-faint">
+            <span className="mt-px shrink-0 text-sage-700">
+              <Icon name="info" size={16} />
+            </span>
+            This dashboard is for family caregivers. If you're the person the system looks after,
+            use the companion app on your phone instead.
+          </p>
+        </div>
       </div>
     </div>
   );

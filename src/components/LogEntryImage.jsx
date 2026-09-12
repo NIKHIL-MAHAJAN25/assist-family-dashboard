@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { buildCloudinaryUrl } from '../api/client';
+import { Icon } from '../ui';
 
 export default function LogEntryImage({ imagePublicId, alt }) {
   const [failed, setFailed] = useState(false);
@@ -7,8 +8,9 @@ export default function LogEntryImage({ imagePublicId, alt }) {
 
   if (!url || failed) {
     return (
-      <div className="flex h-40 w-full items-center justify-center rounded-md border border-dashed border-slate-300 bg-slate-100 text-xs text-slate-400">
-        {url ? 'Image unavailable' : 'No image'}
+      <div className="flex h-44 w-full flex-col items-center justify-center gap-2 rounded-card border border-line bg-sage-50 px-3 text-center">
+        <Icon name="image" size={22} className="text-sage-400" />
+        <p className="text-[12.5px] text-ink-faint">{url ? 'Image unavailable' : 'No image'}</p>
       </div>
     );
   }
@@ -18,7 +20,7 @@ export default function LogEntryImage({ imagePublicId, alt }) {
       src={url}
       alt={alt}
       onError={() => setFailed(true)}
-      className="h-40 w-full rounded-md object-cover border border-slate-200"
+      className="h-44 w-full rounded-card border border-line object-cover"
     />
   );
 }

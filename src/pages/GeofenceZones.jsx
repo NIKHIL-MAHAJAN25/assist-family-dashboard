@@ -8,7 +8,19 @@ import {
 } from '../api/geofenceZones';
 import { useAuth } from '../context/AuthContext.jsx';
 import GeofenceMap from '../components/GeofenceMap.jsx';
-import { LoadingBanner, ErrorBanner, EmptyState } from '../components/StatusBanner.jsx';
+import {
+  PageHeader,
+  Card,
+  SectionTitle,
+  Field,
+  Button,
+  IconButton,
+  Chip,
+  Icon,
+  LoadingBanner,
+  ErrorBanner,
+  EmptyState,
+} from '../ui';
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 };
 const DEFAULT_RADIUS = 150;
@@ -23,6 +35,7 @@ export default function GeofenceZones() {
   const queryClient = useQueryClient();
 
   const [draft, setDraft] = useState(null); // null = editor closed
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['geofence-zones', patientId],
@@ -52,7 +65,10 @@ export default function GeofenceZones() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => deleteGeofenceZone(id),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      setConfirmDeleteId(null);
+    },
   });
 
   function startCreate() {
@@ -90,131 +106,153 @@ export default function GeofenceZones() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-semibold text-slate-800">Geofence Zones</h1>
-        {!draft && (
-          <button
-            type="button"
-            onClick={startCreate}
-            className="rounded-md bg-sky-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-sky-700"
-          >
-            New zone
-          </button>
-        )}
-      </div>
+      <PageHeader
+        eyebrow="Safety"
+        title="Safe zones"
+        description="Draw the places it's safe to be — home, a favourite park, a relative's house. Leaving one of these areas is what sends an alert."
+        actions={
+          !draft && (
+            <Button icon="plus" onClick={startCreate}>
+              New zone
+            </Button>
+          )
+        }
+      />
 
-      {isLoading && <LoadingBanner label="Loading zones..." />}
-      {isError && <ErrorBanner error={error} label="Could not load geofence zones" />}
+      {isLoading && <LoadingBanner label="Loading zones…" />}
+      {isError && <ErrorBanner error={error} label="Could not load safe zones" />}
 
       {draft && (
-        <form
-          onSubmit={handleSave}
-          className="mb-6 rounded-lg border border-slate-200 bg-white p-4 space-y-3"
-        >
-          <h2 className="text-sm font-semibold text-slate-700">
-            {draft.id ? 'Edit zone' : 'New zone'}
-          </h2>
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">Zone name</label>
-            <input
+        <Card emphasis className="mb-7">
+          <form onSubmit={handleSave} className="space-y-5">
+            <SectionTitle hint="Click the map to place the zone. Drag the clay handle to resize it.">
+              {draft.id ? 'Edit zone' : 'New zone'}
+            </SectionTitle>
+
+            <Field
+              label="Zone name"
               required
               value={draft.name}
               onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-              className="w-full max-w-sm rounded-md border border-slate-300 px-2 py-1.5 text-sm"
               placeholder="e.g. Home"
+              className="max-w-sm"
             />
-          </div>
 
-          <p className="text-xs text-slate-500">
-            Click the map to place the zone center (blue). Drag the orange handle to resize the
-            radius.
-          </p>
+            <GeofenceMap
+              center={draft.center}
+              radiusMeters={draft.radiusMeters}
+              onCenterChange={(center) => setDraft((d) => ({ ...d, center }))}
+              onRadiusChange={(radiusMeters) => setDraft((d) => ({ ...d, radiusMeters }))}
+            />
 
-          <GeofenceMap
-            center={draft.center}
-            radiusMeters={draft.radiusMeters}
-            onCenterChange={(center) => setDraft((d) => ({ ...d, center }))}
-            onRadiusChange={(radiusMeters) => setDraft((d) => ({ ...d, radiusMeters }))}
-          />
-
-          <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
-            <span>Lat: {draft.center.lat.toFixed(5)}</span>
-            <span>Lng: {draft.center.lng.toFixed(5)}</span>
-            <label className="flex items-center gap-2">
-              Radius (m):
-              <input
+            <div className="grid grid-cols-3 gap-3">
+              <div className="rounded-card bg-surface-sunken px-4 py-3">
+                <p className="text-[11.5px] font-bold uppercase tracking-[0.08em] text-ink-faint">
+                  Latitude
+                </p>
+                <p className="mt-1 font-mono text-[15px] text-ink">{draft.center.lat.toFixed(5)}</p>
+              </div>
+              <div className="rounded-card bg-surface-sunken px-4 py-3">
+                <p className="text-[11.5px] font-bold uppercase tracking-[0.08em] text-ink-faint">
+                  Longitude
+                </p>
+                <p className="mt-1 font-mono text-[15px] text-ink">{draft.center.lng.toFixed(5)}</p>
+              </div>
+              <Field
                 type="number"
+                label="Radius (m)"
                 min={5}
                 value={draft.radiusMeters}
                 onChange={(e) =>
                   setDraft((d) => ({ ...d, radiusMeters: Number(e.target.value) || 0 }))
                 }
-                className="w-24 rounded-md border border-slate-300 px-2 py-1 text-sm"
               />
-            </label>
-          </div>
+            </div>
 
-          {saveError && <ErrorBanner error={saveError} label="Could not save zone" />}
+            {saveError && <ErrorBanner error={saveError} label="Could not save zone" />}
 
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-md bg-sky-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-sky-700 disabled:opacity-60"
-            >
-              {saving ? 'Saving...' : 'Save zone'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setDraft(null)}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+            <div className="flex gap-2.5">
+              <Button type="submit" loading={saving}>
+                {saving ? 'Saving…' : 'Save zone'}
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setDraft(null)}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </Card>
       )}
 
       {!isLoading && !isError && zones.length === 0 && !draft && (
-        <EmptyState label="No geofence zones yet." />
+        <EmptyState
+          icon="shield"
+          label="No safe zones yet"
+          hint="Add the places it's safe to be, and you'll hear about it if that changes."
+          action={
+            <Button icon="plus" onClick={startCreate}>
+              Draw the first one
+            </Button>
+          }
+        />
       )}
 
-      <div className="space-y-2">
-        {zones.map((zone) => (
-          <div
-            key={zone.id}
-            className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3"
-          >
-            <div>
-              <p className="text-sm font-medium text-slate-800">{zone.name}</p>
-              <p className="text-xs text-slate-500">
-                {(zone.center_lat ?? zone.centerLat)?.toFixed?.(5)},{' '}
-                {(zone.center_lng ?? zone.centerLng)?.toFixed?.(5)} · radius{' '}
-                {zone.radius_meters ?? zone.radiusMeters} m
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => startEdit(zone)}
-                className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-              >
-                Edit
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (window.confirm(`Delete zone "${zone.name}"?`)) {
-                    deleteMutation.mutate(zone.id);
-                  }
-                }}
-                className="rounded-md border border-red-200 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
+      <div className="space-y-3">
+        {zones.map((zone) => {
+          const lat = zone.center_lat ?? zone.centerLat;
+          const lng = zone.center_lng ?? zone.centerLng;
+          const radius = zone.radius_meters ?? zone.radiusMeters;
+          const confirming = confirmDeleteId === zone.id;
+
+          return (
+            <Card key={zone.id} accent="sage" interactive>
+              <div className="flex items-center gap-4">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-pill bg-sage-100 text-sage-700">
+                  <Icon name="shield" size={19} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-display text-[18px] font-semibold text-ink">{zone.name}</p>
+                  <p className="mt-0.5 truncate font-mono text-[13px] text-ink-faint">
+                    {lat?.toFixed?.(5)}, {lng?.toFixed?.(5)}
+                  </p>
+                </div>
+                <Chip tone="sage">{radius} m</Chip>
+
+                {confirming ? (
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="text-[13.5px] font-bold text-ink-soft">
+                      Delete {zone.name}?
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setConfirmDeleteId(null)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      loading={deleteMutation.isPending}
+                      onClick={() => deleteMutation.mutate(zone.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <IconButton icon="pencil" label="Edit zone" onClick={() => startEdit(zone)} />
+                    <IconButton
+                      icon="trash"
+                      label="Delete zone"
+                      variant="danger"
+                      onClick={() => setConfirmDeleteId(zone.id)}
+                    />
+                  </div>
+                )}
+              </div>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

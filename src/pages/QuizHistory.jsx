@@ -2,7 +2,8 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchQuizHistory } from '../api/quiz';
 import { useAuth } from '../context/AuthContext.jsx';
-import { LoadingBanner, ErrorBanner, EmptyState } from '../components/StatusBanner.jsx';
+import { PageHeader, Card, Chip, LoadingBanner, ErrorBanner, EmptyState } from '../ui';
+import { formatTime, formatDayLabel } from '../utils/datetime.js';
 
 function groupByDate(questions) {
   const groups = new Map();
@@ -16,23 +17,31 @@ function groupByDate(questions) {
   );
 }
 
+function dayScore(items) {
+  const total = items.length;
+  const totalAttempts = items.reduce((sum, q) => sum + (q.attempts || []).length, 0);
+  const correctCount = items.filter((q) => (q.attempts || []).some((a) => a.correct)).length;
+  const tone = totalAttempts === 0 ? 'neutral' : correctCount === total ? 'ok' : 'attend';
+  return { text: `${correctCount} of ${total} correct`, tone };
+}
+
+function questionAccent(q) {
+  const attempts = q.attempts || [];
+  if (attempts.length === 0) return 'quiet';
+  return attempts.some((a) => a.correct) ? 'ok' : 'attend';
+}
+
 function AttemptRow({ attempt }) {
   return (
-    <div className="flex items-center justify-between text-sm py-1">
-      <span className="text-slate-600">{attempt.answered}</span>
-      <div className="flex items-center gap-2">
-        <span
-          className={
-            attempt.correct
-              ? 'rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700'
-              : 'rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700'
-          }
-        >
-          {attempt.correct ? 'Correct' : 'Incorrect'}
-        </span>
-        <time className="text-xs text-slate-400">
-          {attempt.timestamp ? new Date(attempt.timestamp).toLocaleTimeString() : ''}
-        </time>
+    <div className="flex items-center justify-between gap-3 py-1.5">
+      <span className="min-w-0 truncate text-[15px] text-ink">{attempt.answered}</span>
+      <div className="flex shrink-0 items-center gap-3">
+        {attempt.correct ? (
+          <Chip tone="ok" dot>Correct</Chip>
+        ) : (
+          <Chip tone="alert" dot>Not quite</Chip>
+        )}
+        <time className="text-[13px] text-ink-faint">{formatTime(attempt.timestamp)}</time>
       </div>
     </div>
   );
@@ -53,37 +62,53 @@ export default function QuizHistory() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-slate-800 mb-4">Quiz History</h1>
+      <PageHeader
+        eyebrow="Engagement"
+        title="Daily quiz"
+        description="Each question is built from what actually happened that day, not generic trivia — so a right or wrong answer says something real about how the day is going."
+      />
 
-      {isLoading && <LoadingBanner label="Loading quiz history..." />}
+      {isLoading && <LoadingBanner label="Loading quiz history…" />}
       {isError && <ErrorBanner error={error} label="Could not load quiz history" />}
       {!isLoading && !isError && questions.length === 0 && (
-        <EmptyState label="No quiz questions recorded yet." />
+        <EmptyState
+          icon="spark"
+          label="No questions yet"
+          hint="Once the day's activity is recorded, a daily recall question will show up here."
+        />
       )}
 
-      <div className="space-y-6">
-        {grouped.map(([dateLabel, items]) => (
-          <div key={dateLabel}>
-            <h2 className="text-sm font-semibold text-slate-500 mb-2">{dateLabel}</h2>
-            <div className="space-y-2">
-              {items.map((q) => (
-                <div key={q.id} className="rounded-lg border border-slate-200 bg-white p-3">
-                  <p className="text-sm font-medium text-slate-800">{q.question}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Correct answer: <span className="text-slate-700">{q.correctAnswer}</span>
-                  </p>
-                  <div className="mt-2 border-t border-slate-100 pt-2">
+      <div className="space-y-8">
+        {grouped.map(([dateKey, items]) => {
+          const score = dayScore(items);
+          return (
+            <div key={dateKey}>
+              <div className="mb-3 flex items-center gap-4">
+                <h2 className="shrink-0 font-display text-[17px] font-semibold text-ink">
+                  {formatDayLabel(items[0]?.date)}
+                </h2>
+                <div className="h-px flex-1 bg-line" aria-hidden="true" />
+                <Chip tone={score.tone}>{score.text}</Chip>
+              </div>
+              <div className="space-y-3">
+                {items.map((q) => (
+                  <Card key={q.id} accent={questionAccent(q)}>
+                    <p className="font-display text-[18px] font-semibold text-ink">{q.question}</p>
+                    <p className="mt-1 text-[14px] text-ink-faint">
+                      Correct answer: <span className="font-bold text-ink">{q.correctAnswer}</span>
+                    </p>
+                    <div className="av-divider my-3" />
                     {(q.attempts || []).length === 0 ? (
-                      <p className="text-xs text-slate-400">No attempts yet.</p>
+                      <p className="text-[14px] text-ink-faint">No attempts yet.</p>
                     ) : (
                       q.attempts.map((attempt) => <AttemptRow key={attempt.id} attempt={attempt} />)
                     )}
-                  </div>
-                </div>
-              ))}
+                  </Card>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

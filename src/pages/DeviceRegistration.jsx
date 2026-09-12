@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { registerDevice } from '../api/devices';
 import { useAuth } from '../context/AuthContext.jsx';
-import { ErrorBanner } from '../components/StatusBanner.jsx';
+import { PageHeader, Card, SectionTitle, Field, SelectField, Button, Icon, ErrorBanner } from '../ui';
 
 const DEVICE_TYPES = [
   { value: 'esp32cam', label: 'ESP32-CAM' },
@@ -37,83 +37,81 @@ export default function DeviceRegistration() {
   }
 
   return (
-    <div className="max-w-md">
-      <h1 className="text-xl font-semibold text-slate-800 mb-4">Register Device</h1>
+    <div className="max-w-2xl">
+      <PageHeader
+        eyebrow="Setup"
+        title="Register a device"
+        description="Pairs a camera or watch with this patient and hands you back a key — copy it into the device once, and it's set for good."
+      />
 
-      <form
-        onSubmit={handleSubmit}
-        className="rounded-lg border border-slate-200 bg-white p-4 space-y-3"
-      >
-        <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1">Patient ID</label>
-          <input
+      <Card emphasis bodyClassName="p-6">
+        <SectionTitle>Device details</SectionTitle>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <Field
+            label="Patient ID"
+            mono
             required
             value={patientId}
             onChange={(e) => setPatientId(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm font-mono"
           />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1">Device type</label>
-          <select
+          <SelectField
+            label="Device type"
             value={deviceType}
             onChange={(e) => setDeviceType(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
           >
             {DEVICE_TYPES.map((t) => (
               <option key={t.value} value={t.value}>
                 {t.label}
               </option>
             ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1">Identifier</label>
-          <input
+          </SelectField>
+          <Field
+            label="Identifier"
             required
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
-            placeholder="e.g. serial number or MAC address"
-            className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            placeholder="serial number or MAC address"
           />
-        </div>
 
-        {mutation.isError && <ErrorBanner error={mutation.error} label="Could not register device" />}
+          {mutation.isError && (
+            <ErrorBanner error={mutation.error} label="Could not register device" />
+          )}
 
-        <button
-          type="submit"
-          disabled={mutation.isPending}
-          className="rounded-md bg-sky-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-sky-700 disabled:opacity-60"
-        >
-          {mutation.isPending ? 'Registering...' : 'Register device'}
-        </button>
-      </form>
+          <Button type="submit" size="lg" loading={mutation.isPending} icon="plus">
+            {mutation.isPending ? 'Registering…' : 'Register device'}
+          </Button>
+        </form>
+      </Card>
 
       {mutation.isSuccess && (
-        <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-4 space-y-2">
-          <p className="text-sm font-semibold text-amber-900">
-            Save this API key now — it will not be shown again.
-          </p>
-          <p className="text-xs text-amber-800">
+        <Card accent="attend" className="mt-6">
+          <div className="flex items-center gap-3">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-pill bg-attend-bg text-attend-fg">
+              <Icon name="warning" size={20} />
+            </span>
+            <p className="font-display text-[19px] font-semibold text-ink">Copy this key now</p>
+          </div>
+          <p className="mt-3 text-[14px] leading-relaxed text-ink-faint">
             Only a hash of this key is stored on the server. If it's lost, you'll need to register
             a new device.
           </p>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 break-all rounded-md bg-white border border-amber-200 px-2 py-1.5 text-xs">
-              {mutation.data.api_key}
-            </code>
-            <button
+          <code className="mt-3 block break-all rounded-card border border-line bg-surface-sunken px-4 py-3 font-mono text-[13px] text-ink">
+            {mutation.data.api_key}
+          </code>
+          <div className="mt-4">
+            <Button
               type="button"
+              variant="secondary"
+              icon={copied ? 'check' : 'copy'}
               onClick={handleCopy}
-              className="shrink-0 rounded-md border border-amber-300 bg-white px-2.5 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-100"
             >
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
+              {copied ? 'Copied!' : 'Copy key'}
+            </Button>
           </div>
-          <p className="text-xs text-slate-500">
-            Device ID: <span className="font-mono">{mutation.data.device_id}</span>
+          <p className="mt-4 font-mono text-[12.5px] text-ink-faint">
+            Device ID: {mutation.data.device_id}
           </p>
-        </div>
+        </Card>
       )}
     </div>
   );

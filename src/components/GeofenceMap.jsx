@@ -7,16 +7,16 @@ import L from 'leaflet';
 // entirely instead of wiring up the marker-icon asset paths.
 const centerIcon = L.divIcon({
   className: '',
-  html: '<div style="width:16px;height:16px;border-radius:50%;background:#0284c7;border:2px solid white;box-shadow:0 0 0 1px #0284c7;"></div>',
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
+  html: '<div style="width:18px;height:18px;border-radius:50%;background:#698B6A;border:3px solid white;box-shadow:0 2px 6px rgba(42,49,42,.35);"></div>',
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
 });
 
 const edgeIcon = L.divIcon({
   className: '',
-  html: '<div style="width:12px;height:12px;border-radius:50%;background:#f97316;border:2px solid white;box-shadow:0 0 0 1px #f97316;cursor:ew-resize;"></div>',
-  iconSize: [12, 12],
-  iconAnchor: [6, 6],
+  html: '<div style="width:14px;height:14px;border-radius:50%;background:#8A4B12;border:3px solid white;box-shadow:0 2px 6px rgba(42,49,42,.35);cursor:ew-resize;"></div>',
+  iconSize: [14, 14],
+  iconAnchor: [7, 7],
 });
 
 // Offsets a lat/lng due east by `meters`, used to place the draggable radius
@@ -46,7 +46,7 @@ export default function GeofenceMap({ center, radiusMeters, onCenterChange, onRa
     <MapContainer
       center={[center.lat, center.lng]}
       zoom={15}
-      style={{ height: '360px', width: '100%', borderRadius: '0.5rem' }}
+      style={{ height: '400px', width: '100%', borderRadius: '20px' }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -57,7 +57,7 @@ export default function GeofenceMap({ center, radiusMeters, onCenterChange, onRa
       <Circle
         center={[center.lat, center.lng]}
         radius={radiusMeters}
-        pathOptions={{ color: '#0284c7', fillColor: '#0284c7', fillOpacity: 0.15 }}
+        pathOptions={{ color: '#698B6A', weight: 2, fillColor: '#698B6A', fillOpacity: 0.16 }}
       />
 
       <Marker

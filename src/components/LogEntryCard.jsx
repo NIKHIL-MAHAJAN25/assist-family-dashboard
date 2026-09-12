@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateLogEntrySaved } from '../api/logEntries';
 import LogEntryImage from './LogEntryImage.jsx';
 import LogEntrySummary from './LogEntrySummary.jsx';
+import { Card, Chip, Icon, CheckPill } from '../ui';
+import { formatTime, formatDateTime } from '../utils/datetime.js';
 
 const TYPE_LABELS = {
   frame: 'Camera Frame',
@@ -11,11 +13,27 @@ const TYPE_LABELS = {
   quiz: 'Quiz',
 };
 
+const TYPE_ICONS = {
+  frame: 'camera',
+  geofence: 'pin',
+  heartrate: 'heart',
+  quiz: 'spark',
+};
+
 const DECISION_LABELS = {
   log_only: 'Logged only',
   alert_family: 'Family alerted',
   check_in: 'Check-in triggered',
 };
+
+function pickAccent(entry) {
+  if (entry.requiresAttention) return 'alert';
+  if (entry.agentDecision === 'check_in') return 'attend';
+  if (entry.entryType === 'frame') return 'sage';
+  if (entry.entryType === 'geofence') return 'info';
+  if (entry.entryType === 'quiz') return 'ok';
+  return 'quiet';
+}
 
 export default function LogEntryCard({ entry }) {
   const queryClient = useQueryClient();
@@ -27,44 +45,50 @@ export default function LogEntryCard({ entry }) {
     },
   });
 
-  const timestamp = entry.timestamp ? new Date(entry.timestamp) : null;
+  const timeLabel = formatTime(entry.timestamp);
+  const fullLabel = formatDateTime(entry.timestamp);
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
+    <Card accent={pickAccent(entry)}>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-pill bg-sage-100 text-sage-700">
+            <Icon name={TYPE_ICONS[entry.entryType] || 'info'} size={17} />
+          </span>
+          <span className="font-display text-[17px] font-semibold text-ink">
             {TYPE_LABELS[entry.entryType] || entry.entryType}
           </span>
           {entry.requiresAttention && (
-            <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-700">
-              Needs attention
-            </span>
+            <Chip tone="alert" dot>
+              Needs a look
+            </Chip>
           )}
           {entry.agentDecision && (
-            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
-              {DECISION_LABELS[entry.agentDecision] || entry.agentDecision}
-            </span>
+            <Chip tone="attend">{DECISION_LABELS[entry.agentDecision] || entry.agentDecision}</Chip>
           )}
         </div>
-        <div className="flex items-center gap-3">
-          <time className="text-xs text-slate-400" dateTime={entry.timestamp}>
-            {timestamp ? timestamp.toLocaleString() : 'Unknown time'}
+        <div className="flex shrink-0 items-center gap-3">
+          <time dateTime={entry.timestamp} title={fullLabel} className="text-[13px] text-ink-faint">
+            {timeLabel}
           </time>
-          <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={Boolean(entry.isSaved)}
-              disabled={mutation.isPending}
-              onChange={(e) => mutation.mutate(e.target.checked)}
-              className="rounded border-slate-300 text-sky-600 focus:ring-sky-400"
-            />
+          <CheckPill
+            checked={Boolean(entry.isSaved)}
+            disabled={mutation.isPending}
+            onChange={(e) => mutation.mutate(e.target.checked)}
+            icon={<Icon name="bookmark" size={14} />}
+          >
             Save
-          </label>
+          </CheckPill>
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-3">
+      <div
+        className={
+          entry.entryType === 'frame'
+            ? 'mt-4 grid grid-cols-1 gap-4 sm:grid-cols-[180px_1fr]'
+            : 'mt-4'
+        }
+      >
         {entry.entryType === 'frame' && (
           <LogEntryImage imagePublicId={entry.imagePublicId} alt="Camera frame snapshot" />
         )}
@@ -72,8 +96,8 @@ export default function LogEntryCard({ entry }) {
       </div>
 
       {mutation.isError && (
-        <p className="mt-2 text-xs text-red-600">Could not update save state. Try again.</p>
+        <p className="mt-3 text-[13px] font-bold text-alert-fg">Could not update save state. Try again.</p>
       )}
-    </div>
+    </Card>
   );
 }
