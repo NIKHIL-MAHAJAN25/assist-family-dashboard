@@ -27,7 +27,7 @@ export default function Card({
   return (
     <div
       className={[
-        'relative overflow-hidden rounded-card bg-surface shadow-card',
+        'flex overflow-hidden rounded-card bg-surface shadow-card',
         'border',
         emphasis ? 'border-line-sage' : 'border-line',
         interactive
@@ -37,13 +37,23 @@ export default function Card({
       ].join(' ')}
       {...rest}
     >
+      {/* The rail is a flex child, not an absolutely-positioned overlay. An
+          overlay forces the body to carry its own left offset, and expressing
+          that as `pl-1` alongside `p-5` silently collapsed the body's left
+          padding to 4px — Tailwind resolves `pl-*` over `p-*` by stylesheet
+          order rather than adding to it, so the content ended up flush against
+          the rail. As a flex child the rail occupies real space and the body
+          keeps whatever padding `bodyClassName` asks for, at any value.
+          This also matches how companion-app's AssistCard builds the same
+          motif (a Row with a 4dp Box), so the two apps stay structurally
+          identical on the one thing they most need to share. */}
       {accent && (
         <span
           aria-hidden="true"
-          className={['absolute inset-y-0 left-0 w-1', ACCENTS[accent] || ACCENTS.quiet].join(' ')}
+          className={['w-1 shrink-0', ACCENTS[accent] || ACCENTS.quiet].join(' ')}
         />
       )}
-      <div className={[accent ? 'pl-1' : '', bodyClassName].join(' ')}>{children}</div>
+      <div className={['min-w-0 flex-1', bodyClassName].join(' ')}>{children}</div>
     </div>
   );
 }
