@@ -27,13 +27,13 @@ export default function Login() {
     mutationFn: () => loginRequest(email, password),
     onSuccess: (data) => {
       login(data.token, data.user);
-      const redirectTo = location.state?.from?.pathname || '/timeline';
+      const redirectTo = location.state?.from?.pathname || '/today';
       navigate(redirectTo, { replace: true });
     },
   });
 
   if (isAuthenticated) {
-    return <Navigate to="/timeline" replace />;
+    return <Navigate to="/today" replace />;
   }
 
   function handleSubmit(e) {

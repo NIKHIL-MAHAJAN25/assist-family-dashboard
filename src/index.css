@@ -117,6 +117,13 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise-in,
+  .animate-breathe {
+    animation: none !important;
+  }
+}
+
 /* ---- Leaflet -------------------------------------------------------------
    Leaflet's default chrome (white boxes, blue links, square corners) reads as
    a foreign widget dropped into the page. These overrides pull it into the

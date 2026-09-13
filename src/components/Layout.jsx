@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { Icon, BrandLockup, Brandmark } from '../ui';
 
@@ -7,15 +7,38 @@ import { Icon, BrandLockup, Brandmark } from '../ui';
 // theme: on wide screens a floating rounded panel pinned to the left, on
 // narrow screens the 30dp-rounded-top bottom bar in `surface-fill` that is
 // SellerApp's bottom_style.xml almost literally.
+//
+// Seven flat top-level destinations overflowed the bottom bar at phone width,
+// so the three "configure once" destinations (safe zones, faces, devices) are
+// grouped under a single "Setup" hub. The bottom bar and desktop sidebar both
+// show five top-level items; the sidebar additionally lists the Setup group's
+// children inline so a caregiver can reach a zone in one click without first
+// landing on the hub.
 
 const NAV_ITEMS = [
+  { to: '/today', label: 'Today', short: 'Today', icon: 'heart' },
   { to: '/timeline', label: 'Timeline', short: 'Timeline', icon: 'timeline' },
   { to: '/alerts', label: 'Alerts', short: 'Alerts', icon: 'bell' },
-  { to: '/geofences', label: 'Safe zones', short: 'Zones', icon: 'shield' },
-  { to: '/faces', label: 'Faces', short: 'Faces', icon: 'faces' },
   { to: '/quiz-history', label: 'Daily quiz', short: 'Quiz', icon: 'spark' },
-  { to: '/devices/register', label: 'Devices', short: 'Devices', icon: 'device' },
+  {
+    to: '/setup',
+    label: 'Setup',
+    short: 'Setup',
+    icon: 'settings',
+    // Any of these routes count as "inside Setup" for the collapsed bottom bar.
+    matchPaths: ['/setup', '/geofences', '/faces', '/devices/register'],
+  },
 ];
+
+const SETUP_CHILDREN = [
+  { to: '/geofences', label: 'Safe zones' },
+  { to: '/faces', label: 'Familiar faces' },
+  { to: '/devices/register', label: 'Devices' },
+];
+
+function isPathActive(pathname, paths) {
+  return paths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
 
 function initialsOf(name) {
   if (!name) return 'C';
@@ -27,74 +50,73 @@ function initialsOf(name) {
     .join('');
 }
 
-function SidebarLink({ item }) {
+function SidebarLink({ item, active }) {
   return (
-    <NavLink
+    <Link
       to={item.to}
-      className={({ isActive }) =>
-        [
-          'group relative flex items-center gap-3 overflow-hidden rounded-pill py-2.5 pl-4 pr-3',
-          'text-[15px] font-bold transition-colors duration-150',
-          isActive
-            ? 'bg-sage-100 text-sage-800'
-            : 'text-ink-soft hover:bg-surface-sunken hover:text-ink',
-        ].join(' ')
-      }
+      className={[
+        'group relative flex items-center gap-3 overflow-hidden rounded-pill py-2.5 pl-4 pr-3',
+        'text-[15px] font-bold transition-colors duration-150',
+        active ? 'bg-sage-100 text-sage-800' : 'text-ink-soft hover:bg-surface-sunken hover:text-ink',
+      ].join(' ')}
     >
-      {({ isActive }) => (
-        <>
-          {/* The same 4px left rail the entry cards use, so "selected" and
-              "typed" read as one idea across the whole product. */}
-          <span
-            aria-hidden="true"
-            className={[
-              'absolute inset-y-1.5 left-0 w-1 rounded-pill transition-opacity duration-150',
-              isActive ? 'bg-sage opacity-100' : 'bg-sage opacity-0',
-            ].join(' ')}
-          />
-          <Icon
-            name={item.icon}
-            size={19}
-            className={isActive ? 'text-sage-700' : 'text-ink-faint group-hover:text-sage-700'}
-          />
-          {item.label}
-        </>
-      )}
-    </NavLink>
+      {/* The same 4px left rail the entry cards use, so "selected" and
+          "typed" read as one idea across the whole product. */}
+      <span
+        aria-hidden="true"
+        className={[
+          'absolute inset-y-1.5 left-0 w-1 rounded-pill transition-opacity duration-150',
+          active ? 'bg-sage opacity-100' : 'bg-sage opacity-0',
+        ].join(' ')}
+      />
+      <Icon name={item.icon} size={19} className={active ? 'text-sage-700' : 'text-ink-faint group-hover:text-sage-700'} />
+      {item.label}
+    </Link>
   );
 }
 
-function BottomLink({ item }) {
+/** Quieter nested link for a Setup child, deliberately without an icon tile
+ * so the sub-list reads as one visual step down from the top-level items. */
+function SidebarSubLink({ item, active }) {
   return (
-    <NavLink
+    <Link
       to={item.to}
-      className={({ isActive }) =>
-        [
-          'flex flex-1 flex-col items-center gap-1 rounded-pill px-1 py-2 text-[11px] font-bold',
-          'transition-colors duration-150',
-          isActive ? 'text-sage-800' : 'text-ink-faint',
-        ].join(' ')
-      }
+      className={[
+        'block rounded-pill px-4 py-2 text-[13.5px] font-bold transition-colors duration-150',
+        active ? 'bg-sage-50 text-sage-800' : 'text-ink-faint hover:text-ink-soft',
+      ].join(' ')}
     >
-      {({ isActive }) => (
-        <>
-          <span
-            className={[
-              'grid h-8 w-12 place-items-center rounded-pill transition-colors duration-150',
-              isActive ? 'bg-surface shadow-card' : '',
-            ].join(' ')}
-          >
-            <Icon name={item.icon} size={19} />
-          </span>
-          {item.short}
-        </>
-      )}
-    </NavLink>
+      {item.label}
+    </Link>
+  );
+}
+
+function BottomLink({ item, active }) {
+  return (
+    <Link
+      to={item.to}
+      className={[
+        'flex flex-1 flex-col items-center gap-1 rounded-pill px-1 py-2 text-[11px] font-bold',
+        'transition-colors duration-150',
+        active ? 'text-sage-800' : 'text-ink-faint',
+      ].join(' ')}
+    >
+      <span
+        className={[
+          'grid h-8 w-12 place-items-center rounded-pill transition-colors duration-150',
+          active ? 'bg-surface shadow-card' : '',
+        ].join(' ')}
+      >
+        <Icon name={item.icon} size={19} />
+      </span>
+      {item.short}
+    </Link>
   );
 }
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
+  const { pathname } = useLocation();
 
   return (
     <div className="relative min-h-screen bg-paper">
@@ -131,9 +153,26 @@ export default function Layout({ children }) {
           </div>
 
           <nav className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => (
-              <SidebarLink key={item.to} item={item} />
-            ))}
+            {NAV_ITEMS.map((item) => {
+              if (item.to !== '/setup') {
+                return <SidebarLink key={item.to} item={item} active={isPathActive(pathname, [item.to])} />;
+              }
+              const parentActive = isPathActive(pathname, ['/setup']);
+              return (
+                <div key={item.to}>
+                  <SidebarLink item={item} active={parentActive} />
+                  <div className="ml-6 mt-1 space-y-0.5 border-l border-line pl-3">
+                    {SETUP_CHILDREN.map((child) => (
+                      <SidebarSubLink
+                        key={child.to}
+                        item={child}
+                        active={isPathActive(pathname, [child.to])}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </nav>
 
           <div className="mt-auto">
@@ -166,10 +205,15 @@ export default function Layout({ children }) {
       </div>
 
       {/* Mobile bottom bar — SellerApp's bottom_style.xml: 30dp top corners,
-          bgdark fill. */}
+          bgdark fill. Exactly five destinations; the three setup screens are
+          reached through the Setup hub instead of their own bottom-bar slot. */}
       <nav className="fixed inset-x-0 bottom-0 z-20 flex items-stretch gap-0.5 rounded-t-panel bg-surface-fill px-2 pb-2 pt-2 shadow-bar lg:hidden">
         {NAV_ITEMS.map((item) => (
-          <BottomLink key={item.to} item={item} />
+          <BottomLink
+            key={item.to}
+            item={item}
+            active={isPathActive(pathname, item.matchPaths || [item.to])}
+          />
         ))}
       </nav>
     </div>

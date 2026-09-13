@@ -137,6 +137,12 @@ const PATHS = {
     </>
   ),
   menu: <path d="M4.5 7h15M4.5 12h15M4.5 17h15" />,
+  settings: (
+    <>
+      <circle cx="12" cy="12" r="3.2" />
+      <path d="M12 3.5v2.4M12 18.1v2.4M20.5 12h-2.4M5.9 12H3.5M17.7 6.3l-1.7 1.7M8 16l-1.7 1.7M17.7 17.7 16 16M8 8 6.3 6.3" />
+    </>
+  ),
 };
 
 export default function Icon({ name, size = 20, className = '', strokeWidth = 1.7, ...rest }) {

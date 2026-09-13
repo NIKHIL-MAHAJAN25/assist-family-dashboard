@@ -1,17 +1,12 @@
 import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateLogEntrySaved } from '../api/logEntries';
+import { useAuth } from '../context/AuthContext.jsx';
 import LogEntryImage from './LogEntryImage.jsx';
 import LogEntrySummary from './LogEntrySummary.jsx';
 import { Card, Chip, Icon, CheckPill } from '../ui';
 import { formatTime, formatDateTime } from '../utils/datetime.js';
-
-const TYPE_LABELS = {
-  frame: 'Camera Frame',
-  geofence: 'Geofence',
-  heartrate: 'Heart Rate',
-  quiz: 'Quiz',
-};
+import { extractInsideSafeZone } from '../utils/geo.js';
 
 const TYPE_ICONS = {
   frame: 'camera',
@@ -20,11 +15,43 @@ const TYPE_ICONS = {
   quiz: 'spark',
 };
 
-const DECISION_LABELS = {
-  log_only: 'Logged only',
-  alert_family: 'Family alerted',
-  check_in: 'Check-in triggered',
-};
+function sentenceCase(value) {
+  if (!value || typeof value !== 'string') return '';
+  const cleaned = value.replace(/[_-]+/g, ' ').trim().toLowerCase();
+  if (!cleaned) return '';
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
+/** What this entry means to a person, not what the system calls it — derived
+ * from the payload where that changes the meaning (a geofence entry reads
+ * completely differently depending on whether they're inside a zone or not). */
+function entryTypeLabel(entry) {
+  switch (entry?.entryType) {
+    case 'geofence':
+      return extractInsideSafeZone(entry?.payload) === false ? 'Left a safe zone' : 'Location';
+    case 'frame':
+      return 'Camera';
+    case 'heartrate':
+      return 'Heart rate';
+    case 'quiz':
+      return 'Daily quiz';
+    default:
+      return sentenceCase(entry?.entryType) || 'Update';
+  }
+}
+
+function decisionLabel(decision, patientName) {
+  switch (decision) {
+    case 'log_only':
+      return 'Noted';
+    case 'alert_family':
+      return 'Family alerted';
+    case 'check_in':
+      return patientName ? `Checked in on ${patientName}` : 'Checked in';
+    default:
+      return sentenceCase(decision) || decision;
+  }
+}
 
 function pickAccent(entry) {
   if (entry.requiresAttention) return 'alert';
@@ -35,8 +62,10 @@ function pickAccent(entry) {
   return 'quiet';
 }
 
-export default function LogEntryCard({ entry }) {
+export default function LogEntryCard({ entry, actions }) {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const patientName = user?.patient_name || null;
 
   const mutation = useMutation({
     mutationFn: (nextSaved) => updateLogEntrySaved(entry.id, nextSaved),
@@ -56,7 +85,7 @@ export default function LogEntryCard({ entry }) {
             <Icon name={TYPE_ICONS[entry.entryType] || 'info'} size={17} />
           </span>
           <span className="font-display text-[17px] font-semibold text-ink">
-            {TYPE_LABELS[entry.entryType] || entry.entryType}
+            {entryTypeLabel(entry)}
           </span>
           {entry.requiresAttention && (
             <Chip tone="alert" dot>
@@ -64,7 +93,7 @@ export default function LogEntryCard({ entry }) {
             </Chip>
           )}
           {entry.agentDecision && (
-            <Chip tone="attend">{DECISION_LABELS[entry.agentDecision] || entry.agentDecision}</Chip>
+            <Chip tone="attend">{decisionLabel(entry.agentDecision, patientName)}</Chip>
           )}
         </div>
         <div className="flex shrink-0 items-center gap-3">
@@ -98,6 +127,8 @@ export default function LogEntryCard({ entry }) {
       {mutation.isError && (
         <p className="mt-3 text-[13px] font-bold text-alert-fg">Could not update save state. Try again.</p>
       )}
+
+      {actions && <div className="mt-4 flex flex-wrap items-center gap-2.5 border-t border-line pt-4">{actions}</div>}
     </Card>
   );
 }
