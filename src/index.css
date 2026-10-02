@@ -4,19 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ==========================================================================
-   Assist Sage — base
-   Tokens live in tailwind.config.js. This file owns three things only:
-   global base rules, a small set of component classes for raw HTML controls
-   that React primitives don't wrap, and theme overrides for Leaflet (which
-   ships its own opinionated chrome).
-   ========================================================================== */
-
 @layer base {
   :root {
     color-scheme: light;
-    /* Fraunces axis defaults: slightly softened terminals, no wonk. */
-    --fraunces-soft: 30;
   }
 
   html,
@@ -26,130 +16,66 @@
   }
 
   body {
-    @apply bg-paper text-ink font-sans antialiased;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
+    @apply bg-ground text-ink font-sans text-base antialiased;
+    /* Numbers line up in every table and timeline column. */
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Fraunces is used only at display sizes, where its optical-size axis
-     opens the ink traps and the SOFT axis rounds the terminals. */
-  .font-display {
-    font-variation-settings: 'SOFT' var(--fraunces-soft), 'WONK' 0;
-    letter-spacing: -0.015em;
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-surface;
   }
 
   ::selection {
-    @apply bg-sage-200 text-ink;
-  }
-
-  /* One focus treatment everywhere: a sage halo, never a browser blue ring. */
-  :focus-visible {
-    @apply outline-none ring-2 ring-sage ring-offset-2 ring-offset-paper;
-  }
-
-  /* Warm, unobtrusive scrollbars that sit on the paper ground. */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: #C6D2C4 transparent;
-  }
-  *::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-  *::-webkit-scrollbar-thumb {
-    background-color: #C6D2C4;
-    border-radius: 999px;
-    border: 3px solid transparent;
-    background-clip: content-box;
+    @apply bg-accent-soft;
   }
 }
 
 @layer components {
-  /* ---- Form controls -----------------------------------------------------
-     The pill text field is the single most recognisable shape in the
-     SellerApp theme (40dp corner radius, bgdark fill, no stroke). Every text
-     input, select and date picker in this app uses it. */
-  .av-input {
-    @apply w-full rounded-field border border-transparent bg-surface-fill px-5 py-3
-           text-[15px] text-ink placeholder:text-ink-faint/70
-           transition-[box-shadow,background-color,border-color] duration-150;
-  }
-  .av-input:hover {
-    @apply bg-sage-100;
-  }
-  .av-input:focus {
-    @apply border-sage bg-sage-50 shadow-focus outline-none ring-0;
-  }
-  .av-input:disabled {
-    @apply cursor-not-allowed opacity-55;
+  .input {
+    @apply block w-full rounded border border-line-strong bg-surface px-3 py-2 text-base text-ink
+           placeholder:text-ink-4 transition-colors
+           hover:border-ink-4 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20;
   }
 
-  /* Selects need the native arrow replaced or it fights the pill shape. */
-  .av-select {
-    @apply av-input cursor-pointer appearance-none pr-11;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none' stroke='%23495048' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 1.15rem center;
+  .label {
+    @apply mb-1.5 block text-sm font-semibold text-ink-2;
   }
 
-  /* Date inputs: hide the native icon, keep the pill clean. */
-  .av-input[type='date']::-webkit-calendar-picker-indicator {
-    opacity: 0.45;
-    cursor: pointer;
+  .panel {
+    @apply rounded-md border border-line bg-surface;
   }
 
-  .av-label {
-    @apply mb-1.5 block text-[13px] font-bold uppercase tracking-[0.07em] text-ink-faint;
-  }
-
-  .av-hint {
-    @apply mt-1.5 text-[13px] leading-relaxed text-ink-faint;
-  }
-
-  /* ---- Surfaces --------------------------------------------------------- */
-  .av-card {
-    @apply rounded-card border border-line bg-surface shadow-card;
-  }
-
-  /* Hairline divider that matches the warm palette rather than grey. */
-  .av-divider {
-    @apply h-px w-full bg-line;
+  .section-title {
+    @apply text-xs font-bold uppercase tracking-[0.06em] text-ink-3;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .animate-rise-in,
-  .animate-breathe {
-    animation: none !important;
-  }
-}
-
-/* ---- Leaflet -------------------------------------------------------------
-   Leaflet's default chrome (white boxes, blue links, square corners) reads as
-   a foreign widget dropped into the page. These overrides pull it into the
-   theme. The tiles themselves are desaturated slightly so the sage geofence
-   circle stays the loudest thing on the map. */
+/* Leaflet chrome, toned to match */
 .leaflet-container {
-  @apply rounded-card font-sans;
-  background: #E9EFE7;
+  font-family: inherit;
+  background: #e8eaed;
 }
-.leaflet-container .leaflet-tile-pane {
-  filter: saturate(0.72) contrast(0.96) brightness(1.03);
+.leaflet-tile-pane {
+  filter: grayscale(1) contrast(0.78) brightness(1.12);
+  opacity: 0.9;
 }
-.leaflet-bar,
-.leaflet-control-attribution {
-  @apply overflow-hidden rounded-pill border border-line shadow-card;
-}
-.leaflet-bar a,
-.leaflet-bar a:hover {
-  @apply border-0 bg-surface text-ink-soft;
-}
-.leaflet-bar a:hover {
-  @apply bg-sage-100 text-sage-800;
+.leaflet-bar a {
+  color: #111418 !important;
 }
 .leaflet-control-attribution {
-  @apply bg-surface/90 px-3 py-1 text-[11px] text-ink-faint;
+  font-size: 10px !important;
+  background: rgba(255, 255, 255, 0.75) !important;
 }
-.leaflet-control-attribution a {
-  @apply text-sage-700;
+.leaflet-tooltip.zone-label {
+  background: #111418;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: none;
+}
+.leaflet-tooltip.zone-label::before {
+  display: none;
 }

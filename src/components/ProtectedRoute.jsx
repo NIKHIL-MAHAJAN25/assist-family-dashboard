@@ -2,27 +2,21 @@ import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import Layout from './Layout.jsx';
-import { Brandmark, Button, Icon } from '../ui';
+import { Button, Logo } from '../ui';
 
 function PatientRoleBlocked() {
   const { logout } = useAuth();
   return (
-    <div className="flex min-h-screen items-center justify-center bg-paper px-5">
-      <div className="w-full max-w-md rounded-panel border border-line bg-surface p-10 text-center shadow-card">
-        <span className="mx-auto mb-6 grid h-16 w-16 place-items-center rounded-pill bg-sage-100 text-sage-700">
-          <Icon name="heart" size={28} />
-        </span>
-        <h1 className="font-display text-[28px] font-semibold leading-tight text-ink">
-          This one's for your family
-        </h1>
-        <p className="mt-3 text-[15px] leading-relaxed text-ink-faint">
-          The dashboard is built for caregivers. Everything you need is on the companion app on
-          your phone — it's the one with this leaf on it.
-        </p>
-        <div className="mt-6 flex justify-center">
-          <Brandmark size={44} />
+    <div className="flex min-h-full items-center justify-center px-5">
+      <div className="panel w-full max-w-md p-10 text-center">
+        <div className="mb-6 flex justify-center">
+          <Logo size={44} />
         </div>
-        <Button variant="soft" className="mt-8 w-full" icon="logout" onClick={logout}>
+        <h1 className="text-2xl font-bold">This page is for your family</h1>
+        <p className="mt-3 text-md text-ink-3">
+          Everything you need is in the Assist app on your phone.
+        </p>
+        <Button className="mt-8 w-full" icon="logout" onClick={logout}>
           Sign out
         </Button>
       </div>
@@ -32,15 +26,8 @@ function PatientRoleBlocked() {
 
 export default function ProtectedRoute() {
   const { isAuthenticated, isFamilyCaregiver } = useAuth();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!isFamilyCaregiver) {
-    return <PatientRoleBlocked />;
-  }
-
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isFamilyCaregiver) return <PatientRoleBlocked />;
   return (
     <Layout>
       <Outlet />

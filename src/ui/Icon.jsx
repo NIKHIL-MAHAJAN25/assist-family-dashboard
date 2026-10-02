@@ -6,6 +6,51 @@ import React from 'react';
 // slice of a library would.
 
 const PATHS = {
+  chevronLeft: <path d="m15 6-6 6 6 6" />,
+  home: (
+    <>
+      <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-9.5Z" />
+    </>
+  ),
+  map: (
+    <>
+      <path d="m9 4-5 2v14l5-2 6 2 5-2V4l-5 2-6-2Z" />
+      <path d="M9 4v14M15 6v14" />
+    </>
+  ),
+  people: (
+    <>
+      <circle cx="9" cy="8" r="3.2" />
+      <path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8" />
+      <circle cx="17" cy="9" r="2.5" />
+      <path d="M16.5 14.3c2.2.2 3.6 1.8 4 4.2" />
+    </>
+  ),
+  brain: (
+    <>
+      <path d="M9 4.5a3 3 0 0 0-3 3 3 3 0 0 0-1.5 5.6A3 3 0 0 0 8 18a2.5 2.5 0 0 0 4 1V5.5a2.5 2.5 0 0 0-3-1Z" />
+      <path d="M15 4.5a3 3 0 0 1 3 3 3 3 0 0 1 1.5 5.6A3 3 0 0 1 16 18a2.5 2.5 0 0 1-4 1" />
+    </>
+  ),
+  watch: (
+    <>
+      <rect x="6.5" y="6.5" width="11" height="11" rx="3" />
+      <path d="M9 6.5 9.5 3h5l.5 3.5M9 17.5l.5 3.5h5l.5-3.5M12 10v2.2l1.4 1" />
+    </>
+  ),
+  walk: (
+    <>
+      <circle cx="13" cy="4.5" r="1.8" />
+      <path d="m10 21 2.2-6 2.3 2v4M8 12l2.5-4h3l2 3.5 2.5 1M12.5 8 11 14" />
+    </>
+  ),
+  heartPulse: (
+    <>
+      <path d="M20.5 9.5c0 5-8.5 10-8.5 10S3.5 14.5 3.5 9.5A4.5 4.5 0 0 1 12 7.2a4.5 4.5 0 0 1 8.5 2.3Z" />
+      <path d="M3.8 12h4.2l1.5-2.5 2.5 5 1.5-2.5h6.7" />
+    </>
+  ),
+  dot: <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none" />,
   timeline: (
     <>
       <circle cx="6" cy="6" r="2" />

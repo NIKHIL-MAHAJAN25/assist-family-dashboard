@@ -1,161 +1,164 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
-import { login as loginRequest } from '../api/auth';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { login as loginRequest } from '../api/auth.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Button, Field, Icon, Brandmark, ErrorBanner } from '../ui';
+import { CATEGORIES } from '../lib/story.js';
+import { Button, ErrorNote, Field, Icon, Logo } from '../ui';
 
-// Reference screen for the Assist Sage system. Two motifs carried straight
-// from SellerApp's activity_login.xml: the display headline stacked across
-// its own lines ("Hey, / Welcome / Back"), and pill text fields on a muted
-// sage fill with no visible stroke until focus.
-
-const PROMISES = [
-  { icon: 'timeline', text: 'A plain-language record of the day, not raw camera footage.' },
-  { icon: 'shield', text: 'Safe zones you draw yourself, with an alert only when they matter.' },
-  { icon: 'spark', text: 'A daily recall quiz built from what actually happened.' },
+// A decorative, static day so the sign-in screen shows what the product actually does.
+const DEMO_DAY = [
+  [7, 8.2, 'meal'],
+  [8.2, 10.5, 'leisure'],
+  [10.5, 11.6, 'out'],
+  [11.6, 12.1, 'unseen'],
+  [12.1, 13, 'out'],
+  [13, 14.6, 'meal'],
+  [14.6, 17.5, 'leisure'],
+  [17.5, 18.4, 'rest'],
 ];
 
+function DemoRibbon() {
+  return (
+    <div className="rounded-md border border-white/10 bg-white/[0.04] p-4">
+      <div className="mb-3 flex items-center justify-between text-sm">
+        <span className="font-semibold text-white">Margaret's Tuesday</span>
+        <span className="flex items-center gap-1.5 text-white/60">
+          <span className="h-2 w-2 rounded-full bg-emerald-400" /> At home
+        </span>
+      </div>
+      <div className="relative h-7 rounded bg-white/[0.06]">
+        {DEMO_DAY.map(([a, b, c], i) => (
+          <span
+            key={i}
+            className="absolute inset-y-0"
+            style={{
+              left: `${(a / 24) * 100}%`,
+              width: `${((b - a) / 24) * 100}%`,
+              background: CATEGORIES[c].color,
+              opacity: c === 'unseen' ? 1 : 0.85,
+            }}
+          />
+        ))}
+        <span className="absolute inset-y-[-4px] w-0.5 bg-white" style={{ left: `${(18.4 / 24) * 100}%` }} />
+      </div>
+      <div className="mt-2 flex justify-between text-[11px] text-white/40">
+        <span>12a</span>
+        <span>6a</span>
+        <span>12p</span>
+        <span>6p</span>
+        <span>12a</span>
+      </div>
+    </div>
+  );
+}
+
 export default function Login() {
-  const { login, isAuthenticated } = useAuth();
+  const { isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [busy, setBusy] = useState(false);
 
-  const mutation = useMutation({
-    mutationFn: () => loginRequest(email, password),
-    onSuccess: (data) => {
-      login(data.token, data.user);
-      const redirectTo = location.state?.from?.pathname || '/today';
-      navigate(redirectTo, { replace: true });
-    },
-  });
+  if (isAuthenticated) return <Navigate to="/today" replace />;
 
-  if (isAuthenticated) {
-    return <Navigate to="/today" replace />;
-  }
-
-  function handleSubmit(e) {
+  async function submit(e) {
     e.preventDefault();
-    mutation.mutate();
+    setError(null);
+    setBusy(true);
+    try {
+      const data = await loginRequest(email.trim(), password);
+      login(data.token, data.user);
+      navigate('/today', { replace: true });
+    } catch (err) {
+      setError(
+        err?.response?.status === 401
+          ? "That email and password don't match."
+          : 'Could not reach the server. Is the backend running?'
+      );
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-paper px-4 py-8 sm:px-6">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(60rem 30rem at 15% 0%, rgba(105,139,106,0.16), transparent 60%), radial-gradient(45rem 28rem at 95% 100%, rgba(220,226,216,0.85), transparent 65%)',
-        }}
-      />
-
-      <div className="relative grid w-full max-w-[1020px] overflow-hidden rounded-panel border border-line bg-surface shadow-lift lg:grid-cols-[1.02fr_1fr]">
-        {/* Editorial panel. The one deeply saturated surface in the product —
-            it exists so the sign-in page has a colour anchor, and it never
-            reappears once you're inside. */}
-        <aside className="relative hidden flex-col justify-between overflow-hidden bg-sage-900 p-11 text-paper lg:flex">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                'radial-gradient(28rem 22rem at 85% 8%, rgba(175,196,174,0.30), transparent 62%)',
-            }}
-          />
-          <div className="relative">
-            <Brandmark size={52} />
-            <p className="mt-6 text-[12px] font-bold uppercase tracking-[0.18em] text-sage-300">
-              Assist
-            </p>
-            <p className="mt-3 font-display text-[30px] font-semibold leading-[1.18] tracking-tight">
-              Quietly watching over
-              <br />
-              someone you love.
-            </p>
+    <div className="grid min-h-full lg:grid-cols-[1.1fr_1fr]">
+      <aside className="relative hidden flex-col justify-between overflow-hidden bg-ink p-12 text-white lg:flex">
+        <div className="pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full bg-[radial-gradient(closest-side,rgba(52,211,153,0.16),transparent)]" />
+        <div className="flex items-center gap-2.5">
+          <Logo size={30} inverse />
+          <span className="text-xl font-bold">Assist</span>
+        </div>
+        <div className="relative max-w-[520px]">
+          <h1 className="text-[44px] font-bold leading-[1.08] tracking-[-0.03em]">
+            Know they're okay
+            <br />
+            <span className="text-white/50">without hovering.</span>
+          </h1>
+          <p className="mt-5 text-lg text-white/70">
+            A home camera and a watch turn the day into plain sentences. You hear about it only when
+            something actually needs you.
+          </p>
+          <div className="mt-10">
+            <DemoRibbon />
           </div>
-
-          <ul className="relative mt-10 space-y-5">
-            {PROMISES.map((item) => (
-              <li key={item.text} className="flex items-start gap-3.5">
-                <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-pill bg-white/10 text-sage-200">
-                  <Icon name={item.icon} size={18} />
-                </span>
-                <p className="text-[14.5px] leading-relaxed text-sage-100/90">{item.text}</p>
+          <ul className="mt-8 grid grid-cols-3 gap-5 text-sm text-white/70">
+            {[
+              ['shield', 'Alerts when they leave the places you draw'],
+              ['spark', 'A daily memory quiz from what really happened'],
+              ['camera', 'Photos expire after 7 days unless you keep them'],
+            ].map(([icon, text]) => (
+              <li key={text}>
+                <Icon name={icon} size={20} className="mb-2 text-emerald-300" />
+                {text}
               </li>
             ))}
           </ul>
-
-          <p className="relative mt-10 text-[12.5px] leading-relaxed text-sage-300/80">
-            Built around one person: someone with mild-to-moderate memory impairment, living
-            semi-independently.
-          </p>
-        </aside>
-
-        {/* Form */}
-        <div className="flex flex-col justify-center p-8 sm:p-11">
-          <div className="mb-8 lg:hidden">
-            <Brandmark size={44} />
-          </div>
-
-          <h1 className="font-display text-[42px] font-semibold leading-[1.04] tracking-tight text-ink sm:text-[46px]">
-            Welcome
-            <br />
-            back.
-          </h1>
-          <p className="mt-3 text-[15px] leading-relaxed text-ink-faint">
-            Sign in with your caregiver account.
-          </p>
-
-          <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
-            <Field
-              label="Email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="caregiver@example.com"
-            />
-            <Field
-              label="Password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-            />
-
-            {mutation.isError && (
-              <ErrorBanner
-                error={mutation.error}
-                label="We couldn't sign you in"
-              />
-            )}
-
-            <Button
-              type="submit"
-              size="lg"
-              loading={mutation.isPending}
-              className="w-full"
-              iconAfter={mutation.isPending ? undefined : 'chevronRight'}
-            >
-              {mutation.isPending ? 'Signing in…' : 'Sign in'}
-            </Button>
-          </form>
-
-          <p className="mt-7 flex items-start gap-2.5 rounded-card bg-surface-sunken px-4 py-3 text-[13px] leading-relaxed text-ink-faint">
-            <span className="mt-px shrink-0 text-sage-700">
-              <Icon name="info" size={16} />
-            </span>
-            This dashboard is for family caregivers. If you're the person the system looks after,
-            use the companion app on your phone instead.
-          </p>
         </div>
-      </div>
+        <p className="text-sm text-white/40">For families caring for someone with memory loss.</p>
+      </aside>
+
+      <main className="flex items-center justify-center bg-surface px-6 py-12">
+        <form onSubmit={submit} className="w-full max-w-[380px]">
+          <div className="mb-8 flex items-center gap-2.5 lg:hidden">
+            <Logo size={30} />
+            <span className="text-xl font-bold">Assist</span>
+          </div>
+          <h2 className="text-2xl font-bold tracking-[-0.01em]">Sign in</h2>
+          <p className="mt-1 text-md text-ink-3">Use your family caregiver account.</p>
+          <div className="mt-8 space-y-4">
+            <Field label="Email">
+              <input
+                className="input h-11"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+              />
+            </Field>
+            <Field label="Password">
+              <input
+                className="input h-11"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </Field>
+            {error && <ErrorNote>{error}</ErrorNote>}
+            <Button type="submit" variant="primary" size="lg" className="w-full" loading={busy}>
+              Sign in
+            </Button>
+          </div>
+          <p className="mt-8 rounded border border-line bg-subtle px-3 py-2.5 text-sm text-ink-3">
+            Demo account: <span className="font-semibold text-ink-2">caregiver@example.com</span> /{' '}
+            <span className="font-semibold text-ink-2">caregiver123</span>
+          </p>
+        </form>
+      </main>
     </div>
   );
 }

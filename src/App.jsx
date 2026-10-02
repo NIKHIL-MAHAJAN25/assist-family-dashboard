@@ -2,13 +2,11 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login.jsx';
 import Today from './pages/Today.jsx';
-import Timeline from './pages/Timeline.jsx';
-import Alerts from './pages/Alerts.jsx';
-import Setup from './pages/Setup.jsx';
-import GeofenceZones from './pages/GeofenceZones.jsx';
-import Faces from './pages/Faces.jsx';
-import QuizHistory from './pages/QuizHistory.jsx';
-import DeviceRegistration from './pages/DeviceRegistration.jsx';
+import Log from './pages/Log.jsx';
+import Places from './pages/Places.jsx';
+import People from './pages/People.jsx';
+import Memory from './pages/Memory.jsx';
+import Settings from './pages/Settings.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 export default function App() {
@@ -18,16 +16,22 @@ export default function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route path="/today" element={<Today />} />
-        <Route path="/timeline" element={<Timeline />} />
-        <Route path="/alerts" element={<Alerts />} />
-        <Route path="/setup" element={<Setup />} />
-        <Route path="/geofences" element={<GeofenceZones />} />
-        <Route path="/faces" element={<Faces />} />
-        <Route path="/quiz-history" element={<QuizHistory />} />
-        <Route path="/devices/register" element={<DeviceRegistration />} />
+        <Route path="/log" element={<Log />} />
+        <Route path="/places" element={<Places />} />
+        <Route path="/people" element={<People />} />
+        <Route path="/memory" element={<Memory />} />
+        <Route path="/settings" element={<Settings />} />
+
+        {/* Old routes, kept so existing bookmarks still land somewhere sensible. */}
+        <Route path="/timeline" element={<Navigate to="/log" replace />} />
+        <Route path="/alerts" element={<Navigate to="/log?show=flagged" replace />} />
+        <Route path="/geofences" element={<Navigate to="/places" replace />} />
+        <Route path="/faces" element={<Navigate to="/people" replace />} />
+        <Route path="/quiz-history" element={<Navigate to="/memory" replace />} />
+        <Route path="/setup" element={<Navigate to="/settings" replace />} />
+        <Route path="/devices/register" element={<Navigate to="/settings" replace />} />
       </Route>
 
-      <Route path="/" element={<Navigate to="/today" replace />} />
       <Route path="*" element={<Navigate to="/today" replace />} />
     </Routes>
   );
