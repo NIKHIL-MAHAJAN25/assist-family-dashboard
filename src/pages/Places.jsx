@@ -117,7 +117,7 @@ export default function Places() {
   }
 
   return (
-    <div className="grid h-[calc(100vh-56px)] grid-cols-[380px_1fr]">
+    <div className="grid h-[calc(100vh-84px)] grid-cols-[380px_1fr]">
       <aside className="flex flex-col overflow-y-auto border-r border-line bg-surface">
         <div className="border-b border-line p-5">
           <h1 className="text-xl font-bold">Safe places</h1>

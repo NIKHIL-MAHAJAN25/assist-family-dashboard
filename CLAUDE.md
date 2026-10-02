@@ -23,7 +23,7 @@ react-leaflet (OpenStreetMap tiles, desaturated in `index.css`), face-api.js (in
   Screens never interpret raw entries themselves — add logic here.
 - `src/lib/hooks.js` — react-query hooks (`useEntries`, `useZones`, `useStatus`,
   `useQuizHistory`, `useNow`). Query keys: `entries`, `zones`, `status`, `quiz`, `faces`.
-- `src/components/` — `Layout` (dark top bar), `DayRibbon`, `ZoneMap`, `MomentList`,
+- `src/components/` — `Layout` (floating dark header capsule: patient status chip, sliding nav pill, clock, alerts bell; time-of-day wash + hairline), `DayRibbon`, `ZoneMap`, `MomentList`,
   `IncidentCard`, `DayPicker` (glass date pill over a hidden native date input).
 - `src/ui/index.jsx` — primitives: `Button` (`primary|secondary|ghost|danger`, `sm|md|lg`),
   `IconButton`, `Badge` (`ok|watch|act|neutral`), `StatusDot`, `Panel` (`title`, `action`,
