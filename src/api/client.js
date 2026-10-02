@@ -2,7 +2,14 @@ import axios from 'axios';
 
 const STORAGE_KEY = 'family_dashboard_auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+// When the dashboard is opened from another device on the LAN (e.g. a phone at
+// http://192.168.x.x:5173), "localhost" would point at that device, so reuse the
+// page's own host for the API instead.
+const configured = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const API_BASE_URL =
+  typeof window !== 'undefined' && !['localhost', '127.0.0.1'].includes(window.location.hostname)
+    ? configured.replace(/\/\/(localhost|127\.0\.0\.1)/, `//${window.location.hostname}`)
+    : configured;
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

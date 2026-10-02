@@ -1,80 +1,151 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { login as loginRequest } from '../api/auth.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { CATEGORIES } from '../lib/story.js';
-import { Button, ErrorNote, Field, Icon, Logo } from '../ui';
+import { Icon, Logo, Spinner, cx } from '../ui';
 
-// A decorative, static day so the sign-in screen shows what the product actually does.
-const DEMO_DAY = [
-  [7, 8.2, 'meal'],
-  [8.2, 10.5, 'leisure'],
-  [10.5, 11.6, 'out'],
-  [11.6, 12.1, 'unseen'],
-  [12.1, 13, 'out'],
-  [13, 14.6, 'meal'],
-  [14.6, 17.5, 'leisure'],
-  [17.5, 18.4, 'rest'],
+// ---------------------------------------------------------------------------
+// The left half is the product itself: a week of someone's life as seven woven
+// 24-hour strips. It's illustrative (static, invented), never real data.
+// ---------------------------------------------------------------------------
+
+const COLORS = {
+  sleep: '#26324A',
+  meal: '#60A5FA',
+  rest: '#64748B',
+  leisure: '#A78BFA',
+  out: '#34D399',
+  away: '#EF4444',
+};
+
+// [start hour, end hour, kind] — each day varies a little, the way real days do.
+const BASE = [
+  [0, 6.8, 'sleep'], [6.8, 8, 'meal'], [8, 10.2, 'rest'], [10.2, 11.4, 'out'],
+  [11.4, 13, 'leisure'], [13, 13.8, 'meal'], [13.8, 16, 'rest'], [16, 16.7, 'meal'],
+  [16.7, 19.5, 'leisure'], [19.5, 20.3, 'meal'], [20.3, 22.2, 'leisure'], [22.2, 24, 'sleep'],
+];
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+function dayFor(i) {
+  const shift = [0, 0.3, -0.2, 0.1, 0.4, -0.3, 0.2][i];
+  const segs = BASE.map(([a, b, k], j) => [
+    j === 0 ? 0 : a + shift * (j % 3 === 0 ? 1 : -0.5),
+    j === BASE.length - 1 ? 24 : b + shift * ((j + 1) % 3 === 0 ? 1 : -0.5),
+    k,
+  ]);
+  if (i === 3) {
+    // Thursday: the walk ran long and went past the safe zones.
+    segs.splice(3, 1, [10.2, 10.9, 'out'], [10.9, 11.6, 'away'], [11.6, 12, 'out']);
+  }
+  if (i === 5) segs.splice(3, 1, [10.2, 12.4, 'out']);
+  return segs;
+}
+
+const MOMENTS = [
+  ['07:42', 'Made breakfast — toast and tea'],
+  ['10:15', 'Walked to the park'],
+  ['11:02', 'Back home, sitting in the living room'],
+  ['13:20', 'Had lunch at the table'],
+  ['16:05', 'Remembered 2 of 3 quiz questions'],
+  ['18:30', 'Watching television'],
 ];
 
-function DemoRibbon() {
+function WeekWeave() {
+  const days = useMemo(() => DAYS.map((_, i) => dayFor(i)), []);
+  const now = new Date();
+  const nowPct = ((now.getHours() + now.getMinutes() / 60) / 24) * 100;
   return (
-    <div className="rounded-md border border-white/10 bg-white/[0.04] p-4">
-      <div className="mb-3 flex items-center justify-between text-sm">
-        <span className="font-semibold text-white">Margaret's Tuesday</span>
-        <span className="flex items-center gap-1.5 text-white/60">
-          <span className="h-2 w-2 rounded-full bg-emerald-400" /> At home
-        </span>
+    <div className="relative">
+      <div className="space-y-[7px]">
+        {days.map((segs, d) => {
+          const today = d === 6;
+          return (
+            <div key={d} className="flex items-center gap-3">
+              <span className={cx('w-8 text-[11px] font-semibold uppercase tracking-wider', today ? 'text-white' : 'text-white/35')}>
+                {DAYS[d]}
+              </span>
+              <div className="relative h-[22px] flex-1 overflow-hidden rounded-[5px] bg-white/[0.04]">
+                {segs.map(([a, b, k], j) => {
+                  const end = today ? Math.min(b, (nowPct / 100) * 24) : b;
+                  if (end <= a) return null;
+                  return (
+                    <span
+                      key={j}
+                      className="weave-seg absolute inset-y-0"
+                      style={{
+                        left: `${(a / 24) * 100}%`,
+                        width: `calc(${((end - a) / 24) * 100}% - 2px)`,
+                        background: COLORS[k],
+                        animationDelay: `${d * 90 + j * 35}ms`,
+                      }}
+                    >
+                      {k === 'away' && <span className="weave-ping absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />}
+                    </span>
+                  );
+                })}
+                {today && (
+                  <span className="absolute inset-y-[-3px] w-[2px] bg-white" style={{ left: `${nowPct}%` }}>
+                    <span className="absolute -top-0 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-white" />
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
-      <div className="relative h-7 rounded bg-white/[0.06]">
-        {DEMO_DAY.map(([a, b, c], i) => (
-          <span
-            key={i}
-            className="absolute inset-y-0"
-            style={{
-              left: `${(a / 24) * 100}%`,
-              width: `${((b - a) / 24) * 100}%`,
-              background: CATEGORIES[c].color,
-              opacity: c === 'unseen' ? 1 : 0.85,
-            }}
-          />
-        ))}
-        <span className="absolute inset-y-[-4px] w-0.5 bg-white" style={{ left: `${(18.4 / 24) * 100}%` }} />
-      </div>
-      <div className="mt-2 flex justify-between text-[11px] text-white/40">
-        <span>12a</span>
-        <span>6a</span>
-        <span>12p</span>
-        <span>6p</span>
-        <span>12a</span>
+      <div className="mt-2 flex justify-between pl-11 text-[10px] font-medium text-white/30">
+        <span>midnight</span>
+        <span>6 am</span>
+        <span>noon</span>
+        <span>6 pm</span>
+        <span>midnight</span>
       </div>
     </div>
   );
 }
+
+function Ticker() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setI((x) => (x + 1) % MOMENTS.length), 2600);
+    return () => clearInterval(id);
+  }, []);
+  const [t, text] = MOMENTS[i];
+  return (
+    <div className="flex h-7 items-center gap-3 overflow-hidden text-[15px]">
+      <span className="font-mono text-white/40">{t}</span>
+      <span key={i} className="ticker-in text-white/85">
+        {text}
+      </span>
+    </div>
+  );
+}
+
+const DEMO = { email: 'caregiver@example.com', password: 'caregiver123' };
 
 export default function Login() {
   const { isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [show, setShow] = useState(false);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 
   if (isAuthenticated) return <Navigate to="/today" replace />;
 
-  async function submit(e) {
-    e.preventDefault();
+  async function signIn(creds) {
     setError(null);
     setBusy(true);
     try {
-      const data = await loginRequest(email.trim(), password);
+      const data = await loginRequest(creds.email.trim(), creds.password);
       login(data.token, data.user);
       navigate('/today', { replace: true });
     } catch (err) {
       setError(
         err?.response?.status === 401
           ? "That email and password don't match."
-          : 'Could not reach the server. Is the backend running?'
+          : "Can't reach the server. Is the backend running?"
       );
     } finally {
       setBusy(false);
@@ -82,82 +153,156 @@ export default function Login() {
   }
 
   return (
-    <div className="grid min-h-full lg:grid-cols-[1.1fr_1fr]">
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-ink p-12 text-white lg:flex">
-        <div className="pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full bg-[radial-gradient(closest-side,rgba(52,211,153,0.16),transparent)]" />
-        <div className="flex items-center gap-2.5">
-          <Logo size={30} inverse />
-          <span className="text-xl font-bold">Assist</span>
-        </div>
-        <div className="relative max-w-[520px]">
-          <h1 className="text-[44px] font-bold leading-[1.08] tracking-[-0.03em]">
-            Know they're okay
-            <br />
-            <span className="text-white/50">without hovering.</span>
-          </h1>
-          <p className="mt-5 text-lg text-white/70">
-            A home camera and a watch turn the day into plain sentences. You hear about it only when
-            something actually needs you.
-          </p>
-          <div className="mt-10">
-            <DemoRibbon />
-          </div>
-          <ul className="mt-8 grid grid-cols-3 gap-5 text-sm text-white/70">
-            {[
-              ['shield', 'Alerts when they leave the places you draw'],
-              ['spark', 'A daily memory quiz from what really happened'],
-              ['camera', 'Photos expire after 7 days unless you keep them'],
-            ].map(([icon, text]) => (
-              <li key={text}>
-                <Icon name={icon} size={20} className="mb-2 text-emerald-300" />
-                {text}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <p className="text-sm text-white/40">For families caring for someone with memory loss.</p>
-      </aside>
+    <div className="grid min-h-full bg-[#0B0F17] lg:grid-cols-[1.2fr_1fr]">
+      <style>{`
+        @keyframes weave-in { from { transform: scaleX(0); opacity: 0 } to { transform: scaleX(1); opacity: 1 } }
+        .weave-seg { transform-origin: left; animation: weave-in .7s cubic-bezier(.2,.8,.2,1) both; border-radius: 3px }
+        @keyframes ticker-in { from { transform: translateY(70%); opacity: 0 } to { transform: none; opacity: 1 } }
+        .ticker-in { animation: ticker-in .45s ease-out both }
+        @keyframes weave-ping { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,.7) } 100% { box-shadow: 0 0 0 10px rgba(239,68,68,0) } }
+        .weave-ping { animation: weave-ping 1.6s ease-out infinite }
+      `}</style>
 
-      <main className="flex items-center justify-center bg-surface px-6 py-12">
-        <form onSubmit={submit} className="w-full max-w-[380px]">
-          <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <Logo size={30} />
-            <span className="text-xl font-bold">Assist</span>
+      {/* The product, as the welcome */}
+      <section className="relative hidden flex-col overflow-hidden px-14 py-12 text-white lg:flex">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_10%,rgba(96,165,250,0.12),transparent),radial-gradient(50%_40%_at_90%_90%,rgba(52,211,153,0.10),transparent)]" />
+        <div className="relative flex items-center gap-2.5">
+          <Logo size={28} inverse />
+          <span className="text-lg font-bold">Assist</span>
+        </div>
+
+        <div className="relative my-auto max-w-[640px]">
+          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.14em] text-emerald-300/80">
+            One week, quietly understood
+          </p>
+          <h1 className="text-[46px] font-bold leading-[1.05] tracking-[-0.035em]">
+            You can't be there
+            <br />
+            every hour.
+            <span className="block text-white/40">Now you don't have to guess.</span>
+          </h1>
+
+          <div className="mt-12 rounded-xl border border-white/[0.08] bg-white/[0.025] p-6 backdrop-blur-sm">
+            <div className="mb-5 flex items-center justify-between">
+              <p className="text-sm font-semibold text-white/80">Margaret's week</p>
+              <div className="flex gap-3 text-[11px] text-white/45">
+                {[['sleep', 'Sleep'], ['meal', 'Meals'], ['out', 'Out'], ['leisure', 'TV & radio']].map(([k, l]) => (
+                  <span key={k} className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-sm" style={{ background: COLORS[k] }} />
+                    {l}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <WeekWeave />
+            <p className="mt-4 flex items-center gap-2 text-[13px] text-white/60">
+              <span className="h-2 w-2 rounded-full bg-[#EF4444]" />
+              Thursday, 10:54 — walked past the safe zones. Family was alerted; back home in 42 minutes.
+            </p>
+            <div className="mt-6 border-t border-white/[0.07] pt-4">
+              <Ticker />
+            </div>
           </div>
-          <h2 className="text-2xl font-bold tracking-[-0.01em]">Sign in</h2>
-          <p className="mt-1 text-md text-ink-3">Use your family caregiver account.</p>
-          <div className="mt-8 space-y-4">
-            <Field label="Email">
+        </div>
+
+        <p className="relative text-xs text-white/35">
+          Camera and watch readings, turned into plain sentences. Illustrative data.
+        </p>
+      </section>
+
+      {/* Sign in */}
+      <main className="flex items-center justify-center bg-surface px-6 py-12 lg:rounded-l-[28px]">
+        <div className="w-full max-w-[360px]">
+          <div className="mb-10 flex items-center gap-2.5 lg:hidden">
+            <Logo size={28} />
+            <span className="text-lg font-bold">Assist</span>
+          </div>
+
+          <h2 className="text-[32px] font-bold leading-tight tracking-[-0.02em]">Welcome back</h2>
+          <p className="mt-2 text-md text-ink-3">Check in on the people you care for.</p>
+
+          <form
+            className="mt-9 space-y-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              signIn({ email, password });
+            }}
+          >
+            <label className="block">
+              <span className="mb-1.5 block text-sm font-semibold text-ink-2">Email</span>
               <input
-                className="input h-11"
+                className="input h-12 text-md"
                 type="email"
                 autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="you@family.com"
               />
-            </Field>
-            <Field label="Password">
-              <input
-                className="input h-11"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </Field>
-            {error && <ErrorNote>{error}</ErrorNote>}
-            <Button type="submit" variant="primary" size="lg" className="w-full" loading={busy}>
-              Sign in
-            </Button>
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-sm font-semibold text-ink-2">Password</span>
+              <span className="relative block">
+                <input
+                  className="input h-12 pr-16 text-md"
+                  type={show ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShow((s) => !s)}
+                  className="absolute inset-y-0 right-3 text-sm font-semibold text-ink-3 hover:text-ink"
+                >
+                  {show ? 'Hide' : 'Show'}
+                </button>
+              </span>
+            </label>
+
+            {error && (
+              <p className="flex items-center gap-2 text-sm text-act">
+                <Icon name="warning" size={15} /> {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={busy}
+              className="group flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink text-md font-semibold text-white transition hover:bg-ink-2 disabled:opacity-60"
+            >
+              {busy ? <Spinner /> : 'Sign in'}
+              {!busy && <Icon name="chevronRight" size={17} className="transition group-hover:translate-x-0.5" />}
+            </button>
+          </form>
+
+          <div className="my-7 flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-ink-4">
+            <span className="h-px flex-1 bg-line" /> or <span className="h-px flex-1 bg-line" />
           </div>
-          <p className="mt-8 rounded border border-line bg-subtle px-3 py-2.5 text-sm text-ink-3">
-            Demo account: <span className="font-semibold text-ink-2">caregiver@example.com</span> /{' '}
-            <span className="font-semibold text-ink-2">caregiver123</span>
+
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              setEmail(DEMO.email);
+              setPassword(DEMO.password);
+              signIn(DEMO);
+            }}
+            className="flex w-full items-center gap-3 rounded-md border border-line-strong p-3 text-left transition hover:border-ink-4 hover:bg-subtle"
+          >
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-[#E0E7FF] text-sm font-bold text-[#3730A3]">M</span>
+            <span className="flex-1">
+              <span className="block text-base font-semibold">Use the demo account</span>
+              <span className="block text-sm text-ink-3">See a day with Margaret, including one incident</span>
+            </span>
+            <Icon name="chevronRight" size={17} className="text-ink-3" />
+          </button>
+
+          <p className="mt-10 text-sm text-ink-3">
+            New here? Accounts are set up by the person's care coordinator — ask them for an invite.
           </p>
-        </form>
+        </div>
       </main>
     </div>
   );
