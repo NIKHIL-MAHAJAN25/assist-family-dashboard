@@ -31,10 +31,17 @@ function whereLine(name, loc) {
 function Hero({ status, openIncident, openCount, summary, now }) {
   const name = status.patient?.name || 'Your person';
   const stale = status.is_stale;
-  const tone = openIncident && !openIncident.resolved ? 'act' : openIncident || stale ? 'watch' : 'ok';
+  // Being outside the zones is never "normal", even once someone has acknowledged the alert.
+  const outside = status.location?.inside_safe_zone === false;
+  const tone =
+    openIncident && !openIncident.resolved ? 'act' : openIncident || stale || outside ? 'watch' : 'ok';
   const verdict = {
     ok: 'Everything looks normal',
-    watch: openIncident ? 'Back safe — worth a look' : 'Devices have gone quiet',
+    watch: outside
+      ? "Still outside — you've already checked in"
+      : openIncident
+        ? 'Back safe — worth a look'
+        : 'Devices have gone quiet',
     act: 'Needs your attention',
   }[tone];
 
@@ -265,7 +272,7 @@ export default function Today() {
                 {derived.todaysIncidents
                   .filter((i) => i.acknowledged)
                   .map((i) => (
-                    <IncidentCard key={i.id} incident={i} compact />
+                    <IncidentCard key={i.id} incident={i} />
                   ))}
               </div>
             </div>

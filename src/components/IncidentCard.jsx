@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { updateLogEntryAcknowledged } from '../api/logEntries.js';
@@ -11,7 +11,8 @@ function lasted(a, b) {
   return `${Math.floor(m / 60)} h ${m % 60} min`;
 }
 
-export default function IncidentCard({ incident, compact, showDate }) {
+export default function IncidentCard({ incident, showDate, defaultOpen = false }) {
+  const [expanded, setExpanded] = useState(defaultOpen);
   const qc = useQueryClient();
   const ack = useMutation({
     mutationFn: (value) =>
@@ -32,10 +33,13 @@ export default function IncidentCard({ incident, compact, showDate }) {
         open ? (incident.resolved ? 'border-watch-line' : 'border-act-line') : 'border-line'
       )}
     >
-      <div
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
         className={cx(
-          'flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3',
-          open && (incident.resolved ? 'bg-watch-soft' : 'bg-act-soft')
+          'flex w-full flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 text-left transition-colors',
+          open ? (incident.resolved ? 'bg-watch-soft hover:brightness-[0.98]' : 'bg-act-soft hover:brightness-[0.98]') : 'hover:bg-subtle'
         )}
       >
         <span
@@ -62,9 +66,15 @@ export default function IncidentCard({ incident, compact, showDate }) {
         ) : (
           <Badge>Handled</Badge>
         )}
-      </div>
+        <Icon
+          name="chevronDown"
+          size={18}
+          className={cx('text-ink-3 transition-transform duration-200', expanded && 'rotate-180')}
+        />
+      </button>
 
-      {!compact && (
+      {expanded && (
+      <>
         <ol className="flex flex-wrap gap-y-3 px-4 pb-1 pt-4">
           {incident.steps.map((s, i) => (
             <li key={i} className="flex min-w-[150px] flex-1 items-start">
@@ -90,7 +100,6 @@ export default function IncidentCard({ incident, compact, showDate }) {
             </li>
           ))}
         </ol>
-      )}
 
       <div className="flex flex-wrap items-center justify-end gap-2 px-4 py-3">
         {incident.lastFix && (
@@ -116,6 +125,8 @@ export default function IncidentCard({ incident, compact, showDate }) {
           </Button>
         )}
       </div>
+      </>
+      )}
     </article>
   );
 }
