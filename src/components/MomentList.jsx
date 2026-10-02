@@ -103,7 +103,7 @@ export function MomentRow({ m, last, onToggleSave, showObjects }) {
             </p>
           )}
         </div>
-        {m.image && <Thumb publicId={m.image} />}
+        {m.image && <Thumb publicId={m.image} size={80} />}
         {onToggleSave && m.entries?.some((e) => e.imagePublicId) && (
           <button
             type="button"

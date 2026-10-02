@@ -10,12 +10,14 @@ export const CATEGORIES = {
   leisure: { label: 'TV, radio & reading', color: '#A78BFA', icon: 'heart' },
   out: { label: 'Out walking', color: '#34D399', icon: 'walk' },
   unseen: { label: 'Not visible', color: '#EF4444', icon: 'warning' },
-  other: { label: 'Other', color: '#E5E7EB', icon: 'dot' },
+  other: { label: 'Quiet / no one in view', color: '#E5E7EB', icon: 'dot' },
 };
 
 export function categorize(activity = '') {
   const a = activity.toLowerCase();
-  if (/not visible|unknown|no one|empty/.test(a)) return 'unseen';
+  // "Not visible" is a safety signal; an empty room is just a quiet moment.
+  if (/not visible|unknown/.test(a)) return 'unseen';
+  if (/empty|no one|no activity/.test(a)) return 'other';
   if (/breakfast|lunch|dinner|eat|meal|tea|coffee|drink|cook|kitchen/.test(a)) return 'meal';
   if (/walk|outdoor|outside|park|garden/.test(a)) return 'out';
   if (/tele|tv|radio|read|book|music|newspaper/.test(a)) return 'leisure';
