@@ -31,8 +31,8 @@ export default function IncidentCard({ incident, showDate, defaultOpen = false, 
     <article
       className={cx(
         embedded
-          ? 'overflow-hidden rounded-xl bg-surface/70 ring-1 ring-black/[0.04]'
-          : 'overflow-hidden rounded-2xl border bg-surface/85 shadow-card backdrop-blur-xl',
+          ? 'overflow-hidden rounded-xl bg-white/45 ring-1 ring-white/60'
+          : 'glass overflow-hidden rounded-2xl',
         !embedded && (open ? (incident.resolved ? 'border-watch-line' : 'border-act-line') : 'border-white/60')
       )}
     >

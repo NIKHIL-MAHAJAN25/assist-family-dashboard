@@ -41,9 +41,13 @@
     @apply mb-1.5 block text-sm font-semibold text-ink-2;
   }
 
-  /* Floating card: translucent ivory over the ambient backdrop, soft warm shadow, no hard outline. */
+  /* Frosted glass over the painted backdrop: the colour behind shows through, a top highlight gives it an edge. */
+  .glass {
+    @apply border border-white/50 bg-white/30 backdrop-blur-2xl;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 12px 32px -18px rgba(62, 46, 30, 0.22);
+  }
   .panel {
-    @apply rounded-2xl border border-white/60 bg-surface/80 shadow-card backdrop-blur-xl;
+    @apply glass rounded-2xl;
   }
 
   .section-title {

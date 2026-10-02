@@ -110,11 +110,25 @@ export function StatusDot({ tone = 'ok', pulse, className }) {
   );
 }
 
-export function Panel({ title, action, children, className, bodyClassName, flush }) {
+// `bare` drops the glass box: the title sits on the backdrop and the content carries its own colour.
+export function Panel({ title, action, children, className, bodyClassName, flush, bare }) {
+  if (bare) {
+    return (
+      <section className={className}>
+        {(title || action) && (
+          <header className="mb-3 flex items-center justify-between gap-3 px-1">
+            <h2 className="text-lg font-semibold tracking-[-0.01em] text-ink">{title}</h2>
+            {action}
+          </header>
+        )}
+        <div className={bodyClassName}>{children}</div>
+      </section>
+    );
+  }
   return (
     <section className={cx('panel', className)}>
       {(title || action) && (
-        <header className="flex items-center justify-between gap-3 border-b border-black/[0.05] px-5 py-3.5">
+        <header className="flex items-center justify-between gap-3 border-b border-white/60 px-5 py-3.5">
           <h2 className="text-md font-semibold text-ink">{title}</h2>
           {action}
         </header>

@@ -53,7 +53,7 @@ export default function WeekStrip({ selected, today, onSelect }) {
               'group relative rounded-xl border p-2.5 text-left transition-all',
               active
                 ? 'border-ink bg-ink text-white shadow-pop'
-                : 'border-white/60 bg-surface/80 shadow-card backdrop-blur-xl hover:-translate-y-0.5 hover:shadow-lift'
+                : 'glass hover:-translate-y-0.5 hover:bg-white/55'
             )}
           >
             <div className="flex items-baseline justify-between">

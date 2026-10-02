@@ -33,7 +33,7 @@ export default function DayPicker({ value, max, onChange, onStep, onToday }) {
 
   return (
     <div className="flex items-center gap-2">
-      <div className="flex items-center gap-0.5 rounded-full border border-white/60 bg-surface/80 p-1 shadow-card backdrop-blur-xl">
+      <div className="flex items-center gap-0.5 rounded-full glass p-1">
         <button type="button" aria-label="Previous day" className={arrow} onClick={() => onStep(-1)}>
           <Icon name="chevronLeft" size={17} strokeWidth={2.2} />
         </button>
@@ -78,7 +78,7 @@ export default function DayPicker({ value, max, onChange, onStep, onToday }) {
         type="button"
         onClick={onToday}
         className={cx(
-          'flex h-11 items-center gap-1.5 rounded-full border border-white/60 bg-surface/80 px-4 text-[13px] font-semibold text-ink-2 shadow-card backdrop-blur-xl transition-all hover:text-ink hover:shadow-lift',
+          'flex h-11 items-center gap-1.5 rounded-full glass px-4 text-[13px] font-semibold text-ink-2 shadow-card backdrop-blur-xl transition-all hover:text-ink hover:shadow-lift',
           atMax ? 'pointer-events-none w-0 overflow-hidden border-0 px-0 opacity-0' : 'opacity-100'
         )}
       >

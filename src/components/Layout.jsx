@@ -207,25 +207,27 @@ function Bell() {
   );
 }
 
-// A soft wash of colour under the header that follows the time of day, so the page
-// never sits on flat grey. Kept faint: it's atmosphere, not decoration.
+// The page is painted, not grey: a soft field of colour blobs that follows the time of day.
+// Cards are frosted glass over it, so the colour reads through everything instead of being boxed out.
 const AMBIENT = {
-  morning: ['rgba(244,170,110,0.30)', 'rgba(250,214,165,0.34)'],
-  afternoon: ['rgba(150,190,215,0.30)', 'rgba(200,222,214,0.34)'],
-  evening: ['rgba(222,150,170,0.28)', 'rgba(190,170,215,0.28)'],
-  night: ['rgba(150,140,195,0.20)', 'rgba(205,170,190,0.18)'],
+  morning: ['#F3BE90', '#F1D7A8', '#C3D6B8', '#E8B8AE'],
+  afternoon: ['#ADCBE0', '#C2DBC8', '#EAD9B8', '#C8CCE8'],
+  evening: ['#E8AFBB', '#C8B6E0', '#F0C6A2', '#D4A8C4'],
+  night: ['#B8B5DE', '#D8B8D2', '#ADBAD8', '#EBC9B6'],
 };
 
 function Ambient({ part }) {
-  const [a, b] = AMBIENT[part];
+  const [a, b, c, d] = AMBIENT[part];
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 -z-10"
+      className="pointer-events-none fixed inset-0 -z-10 transition-[background] duration-1000"
       style={{
-        background: `radial-gradient(1100px 520px at 12% -8%, ${a}, transparent 62%),
-                     radial-gradient(900px 480px at 88% -4%, ${b}, transparent 60%),
-                     radial-gradient(700px 400px at 50% 110%, rgba(251,249,246,0.7), transparent 70%)`,
+        background: `radial-gradient(70vw 70vh at 5% 0%, ${a}, transparent 72%),
+                     radial-gradient(65vw 75vh at 100% 15%, ${b}, transparent 72%),
+                     radial-gradient(70vw 70vh at 80% 105%, ${c}, transparent 72%),
+                     radial-gradient(65vw 70vh at 0% 100%, ${d}, transparent 72%),
+                     #ECE7DF`,
       }}
     />
   );
@@ -242,7 +244,7 @@ export default function Layout({ children }) {
       <Ambient part={part} />
       <header className="sticky top-0 z-[900] mx-auto w-full max-w-[1760px] px-6 pt-3 lg:px-10">
         <div
-          className="relative flex h-[60px] items-center gap-5 rounded-[20px] border border-white/70 bg-surface/70 pl-5 pr-2.5 text-ink shadow-card backdrop-blur-2xl"
+          className="relative flex h-[60px] items-center gap-5 rounded-[20px] border border-white/60 bg-white/45 pl-5 pr-2.5 text-ink shadow-card backdrop-blur-2xl"
           
         >
           {/* time-of-day hairline along the bottom edge */}

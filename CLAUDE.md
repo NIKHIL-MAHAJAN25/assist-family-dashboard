@@ -32,7 +32,9 @@ react-leaflet (OpenStreetMap tiles, desaturated in `index.css`), face-api.js (in
 
 ## Design rules ("Linen")
 
-- Every neutral shares one warm tint (linen ground, ivory surfaces, warm charcoal ink) — no pure
+- The page is painted: `Ambient` in Layout lays a time-of-day field of colour blobs; cards are
+  frosted `.glass` (white/30 + blur) so the paint shows through. `Panel bare` drops the box where
+  content carries its own colour (ribbon, sky sections). Neutrals share one warm tint — no pure
   white, no cold grey, no black bars. Status colours are earthy (sage / ochre / terracotta).
 - Say each alert once: open incidents live inside the Today hero (`IncidentCard embedded`).
 - Tokens only, from `tailwind.config.js`: `ground`, `surface`, `subtle`, `line`, `ink`/`ink-2..4`,

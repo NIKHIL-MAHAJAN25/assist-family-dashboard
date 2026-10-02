@@ -32,9 +32,9 @@ function whereLine(name, loc) {
 // The hero is the one place that states the situation. Open incidents live inside it rather than
 // as separate red banners, so "she's outside" is said once, calmly, with the details one click away.
 const HERO_WASH = {
-  ok: 'linear-gradient(115deg, rgba(234,241,234,0.95) 0%, rgba(251,249,246,0.8) 55%)',
-  watch: 'linear-gradient(115deg, rgba(247,238,221,0.95) 0%, rgba(251,249,246,0.8) 55%)',
-  act: 'linear-gradient(115deg, rgba(246,229,223,0.95) 0%, rgba(251,249,246,0.8) 55%)',
+  ok: 'linear-gradient(115deg, rgba(234,241,234,0.75) 0%, rgba(255,255,255,0.25) 60%)',
+  watch: 'linear-gradient(115deg, rgba(247,238,221,0.75) 0%, rgba(255,255,255,0.25) 60%)',
+  act: 'linear-gradient(115deg, rgba(246,229,223,0.75) 0%, rgba(255,255,255,0.25) 60%)',
 };
 
 function Hero({ status, incidents, summary, now, dayStart }) {
@@ -62,7 +62,7 @@ function Hero({ status, incidents, summary, now, dayStart }) {
 
   return (
     <section
-      className="relative overflow-hidden rounded-3xl border border-white/60 shadow-card backdrop-blur-xl"
+      className="glass relative overflow-hidden rounded-3xl"
       style={{ background: HERO_WASH[tone] }}
     >
       <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6 px-8 pb-7 pt-7">
@@ -236,6 +236,7 @@ export default function Today() {
       />
 
       <Panel
+        bare
         title="Today at a glance"
         action={
           <Link to="/log" className="text-sm font-semibold text-accent hover:underline">
@@ -243,7 +244,7 @@ export default function Today() {
           </Link>
         }
       >
-        <div className="pt-6">
+        <div className="pt-7">
           <DayRibbon
             segments={derived.segments}
             incidents={derived.todaysIncidents}
@@ -255,6 +256,7 @@ export default function Today() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px] 2xl:grid-cols-[minmax(0,1fr)_520px]">
         <Panel
+          bare
           title="The day so far"
           action={<span className="text-sm text-ink-3">{derived.moments.length} moments, newest first</span>}
         >
