@@ -88,7 +88,7 @@ export function MomentRow({ m, last, onToggleSave, showObjects }) {
             )}
           </div>
           <p className="mt-0.5 text-sm text-ink-3">
-            {[m.detail, dur && `for ${dur}`, m.count > 1 && `${m.count} sightings`]
+            {[m.detail, dur && `for ${dur}`, m.count > 1 && `${m.count} ${m.countLabel || 'sightings'}`]
               .filter(Boolean)
               .join(' · ')}
           </p>

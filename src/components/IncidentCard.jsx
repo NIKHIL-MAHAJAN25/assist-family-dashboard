@@ -77,7 +77,11 @@ export default function IncidentCard({ incident, compact, showDate }) {
                 />
               </div>
               <div className="ml-2 mr-3 min-w-0">
-                <p className="text-xs font-semibold text-ink-3">{formatTime(s.at)}</p>
+                <p className="text-xs font-semibold text-ink-3">
+                  {formatTime(s.at)}
+                  {s.until && `–${formatTime(s.until)}`}
+                  {s.count > 1 && <span className="font-normal"> · {s.count} readings</span>}
+                </p>
                 <p className="text-sm text-ink">{s.text}</p>
               </div>
               {i < incident.steps.length - 1 && (

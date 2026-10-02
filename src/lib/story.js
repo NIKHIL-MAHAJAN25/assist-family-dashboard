@@ -57,6 +57,7 @@ export function buildMoments(entries, zones) {
   const sorted = [...entries].sort((a, b) => ts(a) - ts(b));
   const moments = [];
   let lastPlace = null;
+  let lastPlaceMoment = null;
 
   for (const e of sorted) {
     const t = ts(e);
@@ -89,22 +90,33 @@ export function buildMoments(entries, zones) {
     } else if (e.entryType === 'geofence') {
       const place = placeOf(e, zones);
       const key = place.inside ? place.zone.id : 'outside';
-      if (key === lastPlace && !e.requiresAttention) continue;
+      if (key === lastPlace && lastPlaceMoment) {
+        // Same place as the last ping: extend that stretch instead of adding a row per ping.
+        lastPlaceMoment.end = t;
+        lastPlaceMoment.count += 1;
+        lastPlaceMoment.entries.push(e);
+        lastPlaceMoment.flagged ||= e.requiresAttention;
+        if (!place.inside) lastPlaceMoment.title = `Outside the safe zones — ${place.label}`;
+        continue;
+      }
       const wasOutside = lastPlace === 'outside';
       lastPlace = key;
-      moments.push({
+      lastPlaceMoment = {
         kind: 'place',
         title: place.inside
           ? wasOutside
             ? `Back inside ${place.label}`
             : `At ${place.label}`
-          : `Left the safe zones — ${place.label}`,
+          : `Outside the safe zones — ${place.label}`,
         start: t,
         end: t,
+        count: 1,
+        countLabel: 'location readings',
         entries: [e],
         inside: place.inside,
         flagged: e.requiresAttention,
-      });
+      };
+      moments.push(lastPlaceMoment);
     } else if (e.entryType === 'heartrate') {
       const p = e.payload || {};
       if (!e.requiresAttention && p.scenario === 'normal') continue;
@@ -168,6 +180,20 @@ export function buildIncidents(entries, zones, gapMin = 45) {
       kind: e.entryType,
       entry: e,
     }));
+    // Consecutive location readings become one step: "13 readings, 9:33–9:45".
+    const compact = [];
+    for (const st of steps) {
+      const prev = compact[compact.length - 1];
+      if (prev && prev.kind === 'geofence' && st.kind === 'geofence') {
+        prev.until = st.at;
+        prev.count = (prev.count || 1) + 1;
+        prev.text = st.text;
+      } else {
+        compact.push({ ...st });
+      }
+    }
+    steps.length = 0;
+    steps.push(...compact);
     if (resolved) steps.push({ at: resolved.at, text: `Back at ${resolved.place}`, kind: 'resolved' });
 
     const lastFix = [...g.entries].reverse().find((e) => e.entryType === 'geofence');
