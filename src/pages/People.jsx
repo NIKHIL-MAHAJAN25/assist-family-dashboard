@@ -8,6 +8,12 @@ import { Avatar, Button, Empty, ErrorNote, Field, Icon, IconButton, Loading, Pag
 
 const MAX_PEOPLE = 6;
 
+/** "Raj (son)" -> { name: "Raj", relation: "son" }; plain names have no relation. */
+function splitName(full) {
+  const m = /^(.*?)\s*\((.+)\)\s*$/.exec(full || '');
+  return m ? { name: m[1], relation: m[2] } : { name: full, relation: null };
+}
+
 function AddPerson({ onDone, patientId }) {
   const qc = useQueryClient();
   const [name, setName] = useState('');
@@ -137,11 +143,20 @@ export default function People() {
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((f) => (
-            <li key={f.id} className="panel flex items-center gap-4 p-4">
-              <Avatar name={f.name} size={52} />
+            <li key={f.id} className="panel group flex items-center gap-4 p-4 transition-shadow hover:shadow-sm">
+              <span className="rounded-full p-[3px] ring-1 ring-line transition group-hover:ring-ink-4">
+                <Avatar name={f.name} size={52} />
+              </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-md font-semibold">{f.name}</p>
-                <p className="text-sm text-ink-3">Added {formatDateTime(f.createdAt)}</p>
+                <p className="truncate text-md font-semibold">{splitName(f.name).name}</p>
+                <div className="mt-1 flex items-center gap-2">
+                  {splitName(f.name).relation && (
+                    <span className="rounded-sm bg-accent-soft px-1.5 py-0.5 text-xs font-semibold capitalize text-accent">
+                      {splitName(f.name).relation}
+                    </span>
+                  )}
+                  <span className="text-xs text-ink-4">Added {formatDateTime(f.createdAt)}</span>
+                </div>
               </div>
               {confirm === f.id ? (
                 <span className="flex gap-1">

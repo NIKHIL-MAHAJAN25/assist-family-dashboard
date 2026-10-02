@@ -15,6 +15,40 @@ function outcome(q) {
   return { state: a.correct ? 'right' : 'wrong', a };
 }
 
+function Ring({ value, size = 84, stroke = 9 }) {
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const pct = value == null ? 0 : value / 100;
+  const color = value == null ? '#E4E6EA' : value >= 70 ? '#15803D' : value >= 40 ? '#B45309' : '#C81E1E';
+  return (
+    <svg width={size} height={size} className="shrink-0 -rotate-90">
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#EEF0F2" strokeWidth={stroke} />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke={color}
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeDasharray={c}
+        strokeDashoffset={c * (1 - pct)}
+        style={{ transition: 'stroke-dashoffset 900ms cubic-bezier(.2,.8,.2,1)' }}
+      />
+      <text
+        x="50%"
+        y="50%"
+        dominantBaseline="central"
+        textAnchor="middle"
+        transform={`rotate(90 ${size / 2} ${size / 2})`}
+        className="fill-ink text-[19px] font-bold"
+      >
+        {value == null ? '—' : `${value}%`}
+      </text>
+    </svg>
+  );
+}
+
 export default function Memory() {
   const quiz = useQuizHistory();
 
@@ -67,8 +101,16 @@ export default function Memory() {
           <div className="space-y-4">
             <div className="panel p-5">
               <p className="section-title">Recall rate</p>
-              <p className="mt-2 text-3xl font-bold">{rate == null ? '—' : `${rate}%`}</p>
-              <p className="mt-1 text-sm text-ink-3">
+              <div className="mt-3 flex items-center gap-4">
+                <Ring value={rate} />
+                <div>
+                  <p className="text-sm font-semibold text-ink-2">
+                    {rate == null ? 'No answers yet' : rate >= 70 ? 'Strong recall' : rate >= 40 ? 'Some recall' : 'Recall is low'}
+                  </p>
+                  <p className="text-xs text-ink-3">Across everything answered</p>
+                </div>
+              </div>
+              <p className="mt-3 text-sm text-ink-3">
                 {totals.right} remembered out of {totals.answered} answered, across {days.length} day
                 {days.length === 1 ? '' : 's'}.
               </p>

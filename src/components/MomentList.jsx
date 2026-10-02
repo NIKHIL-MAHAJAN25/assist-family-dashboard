@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CATEGORIES } from '../lib/story.js';
+import { CATEGORIES, dayPart } from '../lib/story.js';
 import { buildCloudinaryUrl } from '../api/client.js';
 import { formatTime } from '../utils/datetime.js';
 import { Badge, Icon, cx } from '../ui';
@@ -122,19 +122,35 @@ export function MomentRow({ m, last, onToggleSave, showObjects }) {
   );
 }
 
-export default function MomentList({ moments, newestFirst = true, onToggleSave, showObjects }) {
+const PART_ICON = { Morning: '☀', Afternoon: '◐', Evening: '☾', Night: '✦' };
+
+export default function MomentList({ moments, newestFirst = true, onToggleSave, showObjects, groupByPart = true }) {
   const list = newestFirst ? [...moments].reverse() : moments;
+  let lastPart = null;
   return (
     <ol>
-      {list.map((m, i) => (
-        <MomentRow
-          key={`${m.kind}-${m.start}-${i}`}
-          m={m}
-          last={i === list.length - 1}
-          onToggleSave={onToggleSave}
-          showObjects={showObjects}
-        />
-      ))}
+      {list.map((m, i) => {
+        const part = dayPart(m.start);
+        const header = groupByPart && part !== lastPart;
+        lastPart = part;
+        return (
+          <React.Fragment key={`${m.kind}-${m.start}-${i}`}>
+            {header && (
+              <li className={cx('mb-3 flex items-center gap-2 pl-[98px]', i > 0 && 'mt-2')}>
+                <span className="text-[13px] text-ink-4">{PART_ICON[part]}</span>
+                <span className="text-xs font-bold uppercase tracking-[0.08em] text-ink-3">{part}</span>
+                <span className="h-px flex-1 bg-line" />
+              </li>
+            )}
+            <MomentRow
+              m={m}
+              last={i === list.length - 1}
+              onToggleSave={onToggleSave}
+              showObjects={showObjects}
+            />
+          </React.Fragment>
+        );
+      })}
     </ol>
   );
 }

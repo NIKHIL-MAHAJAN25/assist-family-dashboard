@@ -292,3 +292,31 @@ export function daySummary(name, moments, incidents) {
       : `${texts.slice(0, -1).join(', ')}, then ${texts[texts.length - 1]}`;
   return `So far today, ${name} ${list}.`;
 }
+
+export function dayPart(t) {
+  const h = new Date(t).getHours();
+  if (h < 5) return 'Night';
+  if (h < 12) return 'Morning';
+  if (h < 17) return 'Afternoon';
+  if (h < 21) return 'Evening';
+  return 'Night';
+}
+
+/**
+ * Minutes spent inside each zone, from consecutive location pings. A gap longer than
+ * `maxGapMin` isn't counted — no pings means we don't actually know where they were.
+ */
+export function minutesInZones(entries, zones, maxGapMin = 45) {
+  const pings = entries
+    .filter((e) => e.entryType === 'geofence' && typeof e.payload?.lat === 'number')
+    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  const totals = {};
+  for (let i = 0; i < pings.length - 1; i++) {
+    const place = placeOf(pings[i], zones);
+    if (!place.inside) continue;
+    const gap = (new Date(pings[i + 1].timestamp) - new Date(pings[i].timestamp)) / 60000;
+    if (gap > maxGapMin) continue;
+    totals[place.zone.id] = (totals[place.zone.id] || 0) + gap;
+  }
+  return totals;
+}

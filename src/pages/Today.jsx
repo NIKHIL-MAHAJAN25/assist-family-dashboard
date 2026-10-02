@@ -6,6 +6,7 @@ import { buildIncidents, buildMoments, dayBounds, daySummary, ribbonSegments } f
 import { formatTime, timeAgo } from '../utils/datetime.js';
 import DayRibbon from '../components/DayRibbon.jsx';
 import ZoneMap from '../components/ZoneMap.jsx';
+import CameraWindow from '../components/CameraWindow.jsx';
 import MomentList from '../components/MomentList.jsx';
 import IncidentCard from '../components/IncidentCard.jsx';
 import { Badge, Button, Empty, ErrorNote, Icon, Loading, Panel, StatusDot, cx } from '../ui';
@@ -280,6 +281,7 @@ export default function Today() {
         </Panel>
 
         <div className="space-y-6">
+          <CameraWindow entries={entries.data} now={now} />
           <Panel
             title={`Where ${status.data?.patient?.name || 'they'} went today`}
             flush

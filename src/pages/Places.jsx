@@ -6,7 +6,7 @@ import {
   updateGeofenceZone,
 } from '../api/geofenceZones.js';
 import { useEntries, usePatientId, useStatus, useZones } from '../lib/hooks.js';
-import { dayBounds } from '../lib/story.js';
+import { dayBounds, minutesInZones } from '../lib/story.js';
 import { formatTime } from '../utils/datetime.js';
 import { formatDistance, haversineMeters } from '../utils/geo.js';
 import ZoneMap from '../components/ZoneMap.jsx';
@@ -96,6 +96,8 @@ export default function Places() {
   );
 
   const list = zones.data || [];
+  const minutes = useMemo(() => minutesInZones(entries.data || [], list), [entries.data, list]);
+  const fmtMins = (m) => (m >= 60 ? `${Math.floor(m / 60)} h ${Math.round(m % 60)} min` : `${Math.round(m)} min`);
   const editingId = draft?.id;
   const shownZones = list.filter((z) => z.id !== editingId);
 
@@ -164,10 +166,21 @@ export default function Places() {
                           </span>
                           <span className="min-w-0">
                             <span className="block truncate font-semibold">{z.name}</span>
-                            <span className="block text-sm text-ink-3">{formatDistance(z.radiusMeters)} radius</span>
+                            <span className="block text-sm text-ink-3">
+                              {formatDistance(z.radiusMeters)} radius
+                              {minutes[z.id] >= 1 && <> · <span className="font-semibold text-ink-2">{fmtMins(minutes[z.id])}</span> here today</>}
+                            </span>
                           </span>
                         </button>
-                        {inside && <Badge tone="ok" dot>Here now</Badge>}
+                        {inside && (
+                          <span className="flex items-center gap-1.5 rounded-sm bg-ok-soft px-1.5 py-0.5 text-xs font-semibold text-ok">
+                            <span className="relative flex h-2 w-2">
+                              <span className="absolute inset-0 animate-ping rounded-full bg-ok opacity-60" />
+                              <span className="relative h-2 w-2 rounded-full bg-ok" />
+                            </span>
+                            Here now
+                          </span>
+                        )}
                         {confirmDelete === z.id ? null : (
                           <>
                             <IconButton icon="pencil" label={`Edit ${z.name}`} onClick={() => startEdit(z)} />

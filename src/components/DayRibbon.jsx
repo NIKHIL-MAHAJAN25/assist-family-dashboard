@@ -25,7 +25,15 @@ export default function DayRibbon({ segments, incidents = [], dayStart, now, isT
     <div>
       <div className="relative h-12 select-none" onMouseLeave={() => setHover(null)}>
         {/* track */}
-        <div className="absolute inset-y-2 left-0 right-0 rounded bg-subtle ring-1 ring-inset ring-line" />
+        <div className="absolute inset-y-2 left-0 right-0 rounded-md bg-subtle ring-1 ring-inset ring-line" />
+        {/* 3-hour gridlines */}
+        {HOURS.slice(1, -1).map((h) => (
+          <span
+            key={h}
+            className="absolute inset-y-2 w-px bg-line"
+            style={{ left: `${(h / 24) * 100}%` }}
+          />
+        ))}
         {/* future shading */}
         {isToday && (
           <div
@@ -36,10 +44,10 @@ export default function DayRibbon({ segments, incidents = [], dayStart, now, isT
         {segments.map((s, i) => (
           <div
             key={i}
-            className="absolute inset-y-2 transition-opacity hover:opacity-80"
+            className="absolute inset-y-[10px] rounded-[4px] transition-[transform,opacity] duration-150 hover:scale-y-[1.18] hover:opacity-90"
             style={{
               left: pct(s.start),
-              width: width(s.start, s.end),
+              width: `calc(${width(s.start, s.end)} - 1.5px)`,
               background: CATEGORIES[s.category]?.color,
             }}
             onMouseEnter={() => setHover({ ...s, x: pct(s.start + (s.end - s.start) / 2) })}
@@ -64,7 +72,7 @@ export default function DayRibbon({ segments, incidents = [], dayStart, now, isT
           </div>
         ))}
         {isToday && (
-          <div className="absolute inset-y-0 z-10 w-0.5 bg-ink" style={{ left: pct(now) }}>
+          <div className="absolute inset-y-0 z-10 w-0.5 bg-ink shadow-[0_0_0_3px_rgba(17,20,24,0.12)]" style={{ left: pct(now) }}>
             <span className="absolute -top-5 left-1/2 -translate-x-1/2 rounded-sm bg-ink px-1.5 py-px text-[10px] font-bold uppercase tracking-wide text-white">
               Now
             </span>

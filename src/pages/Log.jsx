@@ -8,6 +8,7 @@ import { formatDayLabel } from '../utils/datetime.js';
 import DayRibbon from '../components/DayRibbon.jsx';
 import MomentList from '../components/MomentList.jsx';
 import IncidentCard from '../components/IncidentCard.jsx';
+import WeekStrip from '../components/WeekStrip.jsx';
 import { Button, Empty, ErrorNote, IconButton, Loading, PageTitle, Panel, Segmented } from '../ui';
 
 const toKey = (d) => {
@@ -108,6 +109,18 @@ export default function Log() {
           </>
         }
       />
+
+      <div className="mb-6">
+        <WeekStrip
+          selected={fromKey(dayKey)}
+          today={new Date(now)}
+          onSelect={(d) => {
+            const next = new URLSearchParams(params);
+            next.set('day', toKey(d));
+            setParams(next);
+          }}
+        />
+      </div>
 
       {entries.isError && <ErrorNote error={entries.error} />}
       {entries.isLoading ? (
