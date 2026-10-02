@@ -9,7 +9,8 @@ import DayRibbon from '../components/DayRibbon.jsx';
 import MomentList from '../components/MomentList.jsx';
 import IncidentCard from '../components/IncidentCard.jsx';
 import WeekStrip from '../components/WeekStrip.jsx';
-import { Button, Empty, ErrorNote, IconButton, Loading, PageTitle, Panel, Segmented } from '../ui';
+import DayPicker from '../components/DayPicker.jsx';
+import { Empty, ErrorNote, Loading, PageTitle, Panel, Segmented } from '../ui';
 
 const toKey = (d) => {
   const x = new Date(d);
@@ -85,28 +86,13 @@ export default function Log() {
               : 'Nothing was recorded on this day.'
         }
         actions={
-          <>
-            <IconButton icon="chevronLeft" label="Previous day" onClick={() => go(-1)} />
-            <input
-              type="date"
-              className="input h-9 w-[150px]"
-              value={dayKey}
-              max={todayKey}
-              onChange={(e) => e.target.value && setParams({ day: e.target.value, show: filter })}
-            />
-            <IconButton
-              icon="chevronRight"
-              label="Next day"
-              onClick={() => go(1)}
-              disabled={isToday}
-              className="disabled:opacity-30"
-            />
-            {!isToday && (
-              <Button size="sm" onClick={() => setParams({ show: filter })}>
-                Today
-              </Button>
-            )}
-          </>
+          <DayPicker
+            value={dayKey}
+            max={todayKey}
+            onStep={go}
+            onChange={(k) => setParams({ day: k, show: filter })}
+            onToday={() => setParams({ show: filter })}
+          />
         }
       />
 

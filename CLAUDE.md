@@ -24,7 +24,7 @@ react-leaflet (OpenStreetMap tiles, desaturated in `index.css`), face-api.js (in
 - `src/lib/hooks.js` — react-query hooks (`useEntries`, `useZones`, `useStatus`,
   `useQuizHistory`, `useNow`). Query keys: `entries`, `zones`, `status`, `quiz`, `faces`.
 - `src/components/` — `Layout` (dark top bar), `DayRibbon`, `ZoneMap`, `MomentList`,
-  `IncidentCard`.
+  `IncidentCard`, `DayPicker` (glass date pill over a hidden native date input).
 - `src/ui/index.jsx` — primitives: `Button` (`primary|secondary|ghost|danger`, `sm|md|lg`),
   `IconButton`, `Badge` (`ok|watch|act|neutral`), `StatusDot`, `Panel` (`title`, `action`,
   `flush`), `PageTitle`, `Field`, `Segmented`, `Loading`, `ErrorNote`, `Empty`, `Logo`
