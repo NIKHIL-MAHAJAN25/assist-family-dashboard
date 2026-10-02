@@ -47,7 +47,7 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 12px 32px -18px rgba(62, 46, 30, 0.22);
   }
   .panel {
-    @apply glass rounded-2xl;
+    @apply glass min-w-0 rounded-2xl;
   }
 
   .section-title {

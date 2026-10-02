@@ -63,9 +63,9 @@ export default function IncidentCard({ incident, showDate, defaultOpen = false, 
           </p>
         </div>
         {embedded ? (
-          <span className="text-sm font-semibold text-ink-3">{expanded ? 'Hide details' : 'What happened'}</span>
+          <span className="hidden text-sm font-semibold text-ink-3 sm:inline">{expanded ? 'Hide details' : 'What happened'}</span>
         ) : open ? (
-          <Badge tone={tone} dot>
+          <Badge tone={tone} dot className="hidden sm:inline-flex">
             {incident.resolved ? 'Resolved — needs a look' : 'Needs attention now'}
           </Badge>
         ) : (

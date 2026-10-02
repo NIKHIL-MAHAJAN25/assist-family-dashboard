@@ -106,16 +106,16 @@ function PatientChip() {
   return (
     <Link
       to="/today"
-      className="flex items-center gap-3 rounded-full py-1 pl-1 pr-4 transition hover:bg-black/[0.04]"
+      className="flex min-w-0 items-center gap-3 rounded-full py-1 pl-1 pr-2 transition hover:bg-black/[0.04] sm:pr-4"
     >
       <span className="relative grid place-items-center">
         <span className="rounded-full p-[2px]" style={{ boxShadow: `0 0 0 2px ${t.ring}` }}>
           <Avatar name={name} size={28} />
         </span>
       </span>
-      <span className="leading-tight">
+      <span className="min-w-0 leading-tight">
         <span className="block text-[13px] font-semibold text-ink">{name}</span>
-        <span className={cx('block whitespace-nowrap text-[11px] font-medium', t.text)}>
+        <span className={cx('block truncate text-[11px] font-medium', t.text)}>
           {where}
           {data && <span className="text-ink-4"> · {ago(data.minutes_since_update)}</span>}
         </span>
@@ -125,7 +125,7 @@ function PatientChip() {
 }
 
 // One track with a white pill that glides to the active page.
-function Nav() {
+function Nav({ dock = false }) {
   const { pathname } = useLocation();
   const refs = useRef({});
   const [pill, setPill] = useState(null);
@@ -136,11 +136,13 @@ function Nav() {
       setPill(el ? { left: el.offsetLeft, width: el.offsetWidth } : null);
     };
     measure();
+    window.addEventListener('resize', measure);
     // Public Sans may land after first paint and change the tab widths.
     document.fonts?.ready.then(measure);
+    return () => window.removeEventListener('resize', measure);
   }, [pathname]);
   return (
-    <nav className="relative flex items-center rounded-full bg-black/[0.035] p-1">
+    <nav className={cx('relative flex items-center rounded-full p-1', dock ? 'w-full justify-between' : 'bg-black/[0.035]')}>
       {pill && (
         <span
           aria-hidden="true"
@@ -155,12 +157,13 @@ function Nav() {
           ref={(el) => (refs.current[item.to] = el)}
           className={({ isActive }) =>
             cx(
-              'relative z-10 flex h-9 items-center gap-2 rounded-full px-4 text-[13px] font-semibold transition-colors duration-300',
+              'relative z-10 flex items-center rounded-full font-semibold transition-colors duration-300',
+              dock ? 'h-12 flex-1 flex-col justify-center gap-0.5 text-[10.5px]' : 'h-9 gap-2 px-4 text-[13px]',
               isActive ? 'text-surface' : 'text-ink-3 hover:text-ink'
             )
           }
         >
-          <Icon name={item.icon} size={15} />
+          <Icon name={item.icon} size={dock ? 17 : 15} />
           {item.label}
         </NavLink>
       ))}
@@ -234,18 +237,15 @@ function Ambient({ part }) {
 }
 
 export default function Layout({ children }) {
-  const { pathname } = useLocation();
-  const fullBleed = pathname.startsWith('/places');
   const now = useNow();
   const part = partOfDay(now);
 
   return (
     <div className="relative flex min-h-full flex-col">
       <Ambient part={part} />
-      <header className="sticky top-0 z-[900] mx-auto w-full max-w-[1760px] px-6 pt-3 lg:px-10">
+      <header className="sticky top-0 z-[900] mx-auto w-full max-w-[1760px] px-3 pt-3 sm:px-6 lg:px-10">
         <div
-          className="relative flex h-[60px] items-center gap-5 rounded-[20px] border border-white/60 bg-white/45 pl-5 pr-2.5 text-ink shadow-card backdrop-blur-2xl"
-          
+          className="relative flex h-[60px] items-center gap-3 rounded-[20px] border border-white/60 bg-white/45 pl-3 pr-2 text-ink shadow-card backdrop-blur-2xl sm:gap-5 sm:pl-5 sm:pr-2.5"
         >
           {/* time-of-day hairline along the bottom edge */}
           <span
@@ -253,15 +253,15 @@ export default function Layout({ children }) {
             className="pointer-events-none absolute inset-x-16 -bottom-px h-px"
             style={{ background: `linear-gradient(90deg, transparent, ${GLOW[part]}, transparent)` }}
           />
-          <Link to="/today" className="flex items-center gap-2.5">
+          <Link to="/today" className="flex shrink-0 items-center gap-2.5">
             <Logo size={26} />
-            <span className="text-lg font-bold tracking-[-0.01em]">Assist</span>
+            <span className="hidden text-lg font-bold tracking-[-0.01em] sm:inline lg:hidden xl:inline">Assist</span>
           </Link>
           <PatientChip />
-          <div className="mx-auto">
+          <div className="mx-auto hidden lg:block">
             <Nav />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-3 lg:ml-0">
             <Clock now={now} part={part} />
             <span className="hidden h-7 w-px bg-black/[0.07] xl:block" />
             <Bell />
@@ -269,9 +269,15 @@ export default function Layout({ children }) {
           </div>
         </div>
       </header>
-      <main className={cx('flex-1', fullBleed ? 'pt-3' : 'mx-auto w-full max-w-[1760px] px-6 pb-8 pt-6 lg:px-10')}>
+      <main className="mx-auto w-full max-w-[1760px] flex-1 px-4 pb-28 pt-5 sm:px-6 lg:px-10 lg:pb-8 lg:pt-6">
         {children}
       </main>
+      {/* Below lg the nav moves to a floating dock at the thumb, like a phone app. */}
+      <div className="fixed inset-x-3 bottom-3 z-[900] lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="mx-auto max-w-md rounded-[22px] border border-white/60 bg-white/55 p-1 shadow-lift backdrop-blur-2xl">
+          <Nav dock />
+        </div>
+      </div>
     </div>
   );
 }

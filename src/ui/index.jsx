@@ -116,7 +116,7 @@ export function Panel({ title, action, children, className, bodyClassName, flush
     return (
       <section className={className}>
         {(title || action) && (
-          <header className="mb-3 flex items-center justify-between gap-3 px-1">
+          <header className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
             <h2 className="text-lg font-semibold tracking-[-0.01em] text-ink">{title}</h2>
             {action}
           </header>
@@ -128,7 +128,7 @@ export function Panel({ title, action, children, className, bodyClassName, flush
   return (
     <section className={cx('panel', className)}>
       {(title || action) && (
-        <header className="flex items-center justify-between gap-3 border-b border-white/60 px-5 py-3.5">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-white/60 px-5 py-3.5">
           <h2 className="text-md font-semibold text-ink">{title}</h2>
           {action}
         </header>

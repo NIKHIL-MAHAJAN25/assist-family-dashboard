@@ -39,7 +39,7 @@ export default function WeekStrip({ selected, today, onSelect }) {
   const selStart = dayBounds(selected)[0];
 
   return (
-    <div className="grid grid-cols-7 gap-2">
+    <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-7 sm:overflow-visible sm:px-0 sm:pb-0">
       {days.map((d) => {
         const date = new Date(d.start);
         const active = d.start === selStart;
@@ -50,7 +50,7 @@ export default function WeekStrip({ selected, today, onSelect }) {
             type="button"
             onClick={() => onSelect(date)}
             className={cx(
-              'group relative rounded-xl border p-2.5 text-left transition-all',
+              'group relative min-w-[104px] shrink-0 snap-start rounded-xl border p-2.5 text-left transition-all sm:min-w-0',
               active
                 ? 'border-ink bg-ink text-white shadow-pop'
                 : 'glass hover:-translate-y-0.5 hover:bg-white/55'

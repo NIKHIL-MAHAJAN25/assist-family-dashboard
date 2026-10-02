@@ -117,9 +117,9 @@ export default function Places() {
   }
 
   return (
-    <div className="grid h-[calc(100vh-84px)] grid-cols-[380px_1fr]">
-      <aside className="flex flex-col overflow-y-auto border-r border-line bg-surface">
-        <div className="border-b border-line p-5">
+    <div className="flex flex-col-reverse gap-4 lg:grid lg:h-[calc(100vh-128px)] lg:grid-cols-[380px_1fr]">
+      <aside className="panel flex flex-col overflow-hidden lg:overflow-y-auto">
+        <div className="border-b border-white/60 p-5">
           <h1 className="text-xl font-bold">Safe places</h1>
           <p className="mt-1 text-sm text-ink-3">
             Leaving every one of these sends an alert. Draw generously — a tight circle around home
@@ -217,8 +217,8 @@ export default function Places() {
           )}
         </div>
 
-        <div className="border-t border-line bg-subtle px-5 py-3 text-xs text-ink-3">
-          <p className="flex items-center gap-2">
+        <div className="border-t border-white/60 px-5 py-3 text-xs text-ink-3">
+          <p className="flex flex-wrap items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-accent" /> Where they are now
             <span className="ml-2 h-2.5 w-2.5 rounded-full bg-ink" /> Today's path
             <span className="ml-2 h-2.5 w-2.5 rounded-full bg-act" /> Outside
@@ -226,6 +226,7 @@ export default function Places() {
         </div>
       </aside>
 
+      <div className="h-[55vh] overflow-hidden rounded-2xl border border-white/60 shadow-card lg:h-auto">
       <ZoneMap
         zones={shownZones}
         path={path}
@@ -238,6 +239,7 @@ export default function Places() {
         style={{ height: '100%', width: '100%' }}
         fitKey={`${list.length}-${path.length}-${current ? 1 : 0}`}
       />
+      </div>
     </div>
   );
 }

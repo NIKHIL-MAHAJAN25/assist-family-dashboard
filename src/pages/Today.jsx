@@ -65,7 +65,7 @@ function Hero({ status, incidents, summary, now, dayStart }) {
       className="glass relative overflow-hidden rounded-3xl"
       style={{ background: HERO_WASH[tone] }}
     >
-      <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6 px-8 pb-7 pt-7">
+      <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6 px-5 pb-6 pt-6 sm:px-8 sm:pb-7 sm:pt-7">
         <div className="min-w-0 max-w-4xl">
           <p
             className={cx(
@@ -75,7 +75,7 @@ function Hero({ status, incidents, summary, now, dayStart }) {
           >
             <StatusDot tone={tone} pulse={tone === 'act'} /> {verdict}
           </p>
-          <h1 className="text-[40px] font-bold leading-[1.1] tracking-[-0.025em] text-ink">
+          <h1 className="text-[30px] font-bold leading-[1.1] tracking-[-0.025em] text-ink sm:text-[40px]">
             {whereLine(name, status.location)}.
           </h1>
           <p className="mt-3 text-lg text-ink-2">
@@ -104,7 +104,7 @@ function Hero({ status, incidents, summary, now, dayStart }) {
         </dl>
       </div>
       {incidents.length > 0 && (
-        <div className="space-y-2 px-4 pb-4">
+        <div className="space-y-2 px-3 pb-3 sm:px-4 sm:pb-4">
           {incidents.map((i) => (
             <IncidentCard key={i.id} incident={i} showDate={i.start < dayStart} embedded />
           ))}

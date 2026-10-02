@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CATEGORIES } from '../lib/story.js';
 import { formatTime } from '../utils/datetime.js';
+import { cx } from '../ui';
 
 const HOURS = [0, 3, 6, 9, 12, 15, 18, 21, 24];
 
@@ -94,7 +95,7 @@ export default function DayRibbon({ segments, incidents = [], dayStart, now, isT
         {HOURS.map((h) => (
           <span
             key={h}
-            className="absolute -translate-x-1/2"
+            className={cx('absolute -translate-x-1/2', h % 6 !== 0 && 'hidden sm:inline')}
             style={{ left: `${(h / 24) * 100}%`, transform: h === 0 ? 'none' : h === 24 ? 'translateX(-100%)' : undefined }}
           >
             {hourLabel(h)}
