@@ -41,9 +41,9 @@
     @apply mb-1.5 block text-sm font-semibold text-ink-2;
   }
 
-  /* Floating card: translucent white over the ambient backdrop, soft shadow, no hard outline. */
+  /* Floating card: translucent ivory over the ambient backdrop, soft warm shadow, no hard outline. */
   .panel {
-    @apply rounded-2xl border border-white/80 bg-white/80 shadow-card backdrop-blur-xl;
+    @apply rounded-2xl border border-white/60 bg-surface/80 shadow-card backdrop-blur-xl;
   }
 
   .section-title {
@@ -54,7 +54,7 @@
 /* Leaflet chrome, toned to match */
 .leaflet-container {
   font-family: inherit;
-  background: #e8eaed;
+  background: #E6E0D6;
 }
 .leaflet-tile-pane {
   filter: grayscale(1) contrast(0.78) brightness(1.12);

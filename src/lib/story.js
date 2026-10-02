@@ -5,12 +5,12 @@ import { findContainingZone, nearestZone, formatDistance } from '../utils/geo.js
 const ts = (e) => new Date(e.timestamp).getTime();
 
 export const CATEGORIES = {
-  meal: { label: 'Meals & drinks', color: '#60A5FA', icon: 'clock' },
-  rest: { label: 'Resting', color: '#CBD5E1', icon: 'home' },
-  leisure: { label: 'TV, radio & reading', color: '#A78BFA', icon: 'heart' },
-  out: { label: 'Out walking', color: '#34D399', icon: 'walk' },
-  unseen: { label: 'Not visible', color: '#EF4444', icon: 'warning' },
-  other: { label: 'Quiet / no one in view', color: '#E5E7EB', icon: 'dot' },
+  meal: { label: 'Meals & drinks', color: '#7E9FC4', icon: 'clock' },
+  rest: { label: 'Resting', color: '#C9C0B3', icon: 'home' },
+  leisure: { label: 'TV, radio & reading', color: '#A898C8', icon: 'heart' },
+  out: { label: 'Out walking', color: '#82AE8E', icon: 'walk' },
+  unseen: { label: 'Not visible', color: '#C9705C', icon: 'warning' },
+  other: { label: 'Quiet / no one in view', color: '#E3DCD1', icon: 'dot' },
 };
 
 export function categorize(activity = '') {

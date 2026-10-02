@@ -148,7 +148,7 @@ const SKIES = {
   },
   Night: {
     range: '9 pm – 5 am',
-    bg: 'linear-gradient(180deg, #0B1530 0%, #14234A 60%, #1B2C55 100%)',
+    bg: 'linear-gradient(180deg, #2A2C44 0%, #34364F 55%, #423F58 100%)',
     ink: 'text-white/85',
     dark: true,
   },
@@ -177,7 +177,7 @@ function SkyBackdrop({ sky }) {
         ))}
         {/* crescent: a pale disc with a sky-coloured disc offset over it */}
         <span className="absolute left-[46%] top-4 h-9 w-9 rounded-full bg-[#F4EFD8] shadow-[0_0_34px_10px_rgba(244,239,216,0.22)]">
-          <span className="absolute -right-1.5 -top-1.5 h-8 w-8 rounded-full bg-[#0D1834]" />
+          <span className="absolute -right-1.5 -top-1.5 h-8 w-8 rounded-full bg-[#2B2D45]" />
         </span>
       </div>
     );

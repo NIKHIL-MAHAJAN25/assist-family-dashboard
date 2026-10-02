@@ -17,7 +17,7 @@ export default function CameraWindow({ entries, now }) {
 
   if (!latest || !url || broken) {
     return (
-      <div className="panel flex aspect-[16/10] flex-col items-center justify-center gap-2 bg-[repeating-linear-gradient(135deg,#F8F9FA_0_10px,#F3F4F6_10px_20px)] text-center">
+      <div className="panel flex aspect-[16/10] flex-col items-center justify-center gap-2 bg-[repeating-linear-gradient(135deg,#F6F2EC_0_10px,#F0EBE3_10px_20px)] text-center">
         <span className="grid h-10 w-10 place-items-center rounded-full bg-surface text-ink-3 shadow-sm">
           <Icon name="camera" size={19} />
         </span>

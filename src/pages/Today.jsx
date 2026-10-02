@@ -29,9 +29,18 @@ function whereLine(name, loc) {
   return `${name}'s location is unknown`;
 }
 
-function Hero({ status, openIncident, openCount, summary, now }) {
+// The hero is the one place that states the situation. Open incidents live inside it rather than
+// as separate red banners, so "she's outside" is said once, calmly, with the details one click away.
+const HERO_WASH = {
+  ok: 'linear-gradient(115deg, rgba(234,241,234,0.95) 0%, rgba(251,249,246,0.8) 55%)',
+  watch: 'linear-gradient(115deg, rgba(247,238,221,0.95) 0%, rgba(251,249,246,0.8) 55%)',
+  act: 'linear-gradient(115deg, rgba(246,229,223,0.95) 0%, rgba(251,249,246,0.8) 55%)',
+};
+
+function Hero({ status, incidents, summary, now, dayStart }) {
   const name = status.patient?.name || 'Your person';
   const stale = status.is_stale;
+  const openIncident = incidents[0];
   // Being outside the zones is never "normal", even once someone has acknowledged the alert.
   const outside = status.location?.inside_safe_zone === false;
   const tone =
@@ -45,34 +54,31 @@ function Hero({ status, openIncident, openCount, summary, now }) {
         : 'Devices have gone quiet',
     act: 'Needs your attention',
   }[tone];
+  const stats = [
+    { k: 'logged today', v: status.today?.entry_count ?? 0 },
+    { k: 'quiz', v: status.today?.quiz_total ? `${status.today.quiz_correct}/${status.today.quiz_total}` : '—' },
+    { k: incidents.length === 1 ? 'open incident' : 'open incidents', v: incidents.length },
+  ];
 
   return (
     <section
-      className={cx(
-        'relative overflow-hidden rounded-2xl border bg-white/85 shadow-card backdrop-blur-xl',
-        tone === 'act' ? 'border-act-line' : tone === 'watch' ? 'border-watch-line' : 'border-white/80'
-      )}
+      className="relative overflow-hidden rounded-3xl border border-white/60 shadow-card backdrop-blur-xl"
+      style={{ background: HERO_WASH[tone] }}
     >
-      <div
-        className={cx(
-          'absolute inset-y-0 left-0 w-1.5',
-          tone === 'act' ? 'bg-act' : tone === 'watch' ? 'bg-watch' : 'bg-ok'
-        )}
-      />
-      <div className="flex flex-wrap items-center justify-between gap-6 py-6 pl-8 pr-6">
-        <div className="min-w-0">
+      <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6 px-8 pb-7 pt-7">
+        <div className="min-w-0 max-w-4xl">
           <p
             className={cx(
-              'mb-2 flex items-center gap-2 text-sm font-bold',
+              'mb-3 flex items-center gap-2 text-sm font-semibold',
               tone === 'act' ? 'text-act' : tone === 'watch' ? 'text-watch' : 'text-ok'
             )}
           >
-            <StatusDot tone={tone} pulse={tone !== 'ok'} /> {verdict}
+            <StatusDot tone={tone} pulse={tone === 'act'} /> {verdict}
           </p>
-          <h1 className="text-3xl font-bold tracking-[-0.02em] text-ink">
+          <h1 className="text-[40px] font-bold leading-[1.1] tracking-[-0.025em] text-ink">
             {whereLine(name, status.location)}.
           </h1>
-          <p className="mt-2 text-lg text-ink-2">
+          <p className="mt-3 text-lg text-ink-2">
             {stale ? (
               <>
                 No update from the camera or watch for{' '}
@@ -86,24 +92,24 @@ function Hero({ status, openIncident, openCount, summary, now }) {
               </>
             )}
           </p>
-          {summary && <p className="mt-4 max-w-3xl text-md leading-relaxed text-ink-3">{summary}</p>}
+          {summary && <p className="mt-3 text-md leading-relaxed text-ink-3">{summary}</p>}
         </div>
-        <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-md border border-line bg-line text-center">
-          {[
-            { k: 'Logged today', v: status.today?.entry_count ?? 0 },
-            {
-              k: 'Quiz',
-              v: status.today?.quiz_total ? `${status.today.quiz_correct}/${status.today.quiz_total}` : '—',
-            },
-            { k: openCount === 1 ? 'Open incident' : 'Open incidents', v: openCount, act: openCount > 0 },
-          ].map((s) => (
-            <div key={s.k} className="min-w-[104px] bg-surface px-4 py-3">
-              <dd className={cx('text-2xl font-bold', s.act ? 'text-act' : 'text-ink')}>{s.v}</dd>
-              <dt className="text-xs font-semibold text-ink-3">{s.k}</dt>
+        <dl className="flex items-end gap-8">
+          {stats.map((s) => (
+            <div key={s.k} className="text-right">
+              <dd className="text-[28px] font-bold leading-none tracking-[-0.02em] text-ink">{s.v}</dd>
+              <dt className="mt-1.5 text-xs font-medium text-ink-3">{s.k}</dt>
             </div>
           ))}
         </dl>
       </div>
+      {incidents.length > 0 && (
+        <div className="space-y-2 px-4 pb-4">
+          {incidents.map((i) => (
+            <IncidentCard key={i.id} incident={i} showDate={i.start < dayStart} embedded />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -204,7 +210,6 @@ export default function Today() {
   if (status.isLoading || entries.isLoading) return <Loading label="Reading today" />;
   if (status.isError) return <ErrorNote error={status.error} />;
 
-  const openIncident = [...derived.todaysIncidents, ...derived.olderOpen].find((i) => !i.acknowledged);
   const loc = status.data?.location;
   const current = loc?.lat != null ? { lat: loc.lat, lng: loc.lng } : null;
   const firstName = user?.name?.split(' ')[0];
@@ -224,17 +229,11 @@ export default function Today() {
 
       <Hero
         status={status.data}
-        openIncident={openIncident}
-        openCount={[...derived.todaysIncidents, ...derived.olderOpen].filter((i) => !i.acknowledged).length}
+        incidents={[...derived.olderOpen, ...derived.todaysIncidents].filter((i) => !i.acknowledged)}
         summary={daySummary(status.data.patient?.name || 'they', derived.moments, derived.todaysIncidents)}
         now={now}
+        dayStart={dayStart}
       />
-
-      {[...derived.olderOpen, ...derived.todaysIncidents]
-        .filter((i) => !i.acknowledged)
-        .map((i) => (
-          <IncidentCard key={i.id} incident={i} showDate={i.start < dayStart} />
-        ))}
 
       <Panel
         title="Today at a glance"

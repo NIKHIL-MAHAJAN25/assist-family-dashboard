@@ -11,7 +11,8 @@ function lasted(a, b) {
   return `${Math.floor(m / 60)} h ${m % 60} min`;
 }
 
-export default function IncidentCard({ incident, showDate, defaultOpen = false }) {
+// `embedded` drops the card chrome so the incident can sit inside the Today hero without repeating its alarm.
+export default function IncidentCard({ incident, showDate, defaultOpen = false, embedded = false }) {
   const [expanded, setExpanded] = useState(defaultOpen);
   const qc = useQueryClient();
   const ack = useMutation({
@@ -29,8 +30,10 @@ export default function IncidentCard({ incident, showDate, defaultOpen = false }
   return (
     <article
       className={cx(
-        'overflow-hidden rounded-2xl border bg-white/85 shadow-card backdrop-blur-xl',
-        open ? (incident.resolved ? 'border-watch-line' : 'border-act-line') : 'border-white/80'
+        embedded
+          ? 'overflow-hidden rounded-xl bg-surface/70 ring-1 ring-black/[0.04]'
+          : 'overflow-hidden rounded-2xl border bg-surface/85 shadow-card backdrop-blur-xl',
+        !embedded && (open ? (incident.resolved ? 'border-watch-line' : 'border-act-line') : 'border-white/60')
       )}
     >
       <button
@@ -39,13 +42,13 @@ export default function IncidentCard({ incident, showDate, defaultOpen = false }
         aria-expanded={expanded}
         className={cx(
           'flex w-full flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 text-left transition-colors',
-          open ? (incident.resolved ? 'bg-watch-soft hover:brightness-[0.98]' : 'bg-act-soft hover:brightness-[0.98]') : 'hover:bg-subtle'
+          'hover:bg-black/[0.02]'
         )}
       >
         <span
           className={cx(
-            'grid h-8 w-8 place-items-center rounded-full text-white',
-            open ? (incident.resolved ? 'bg-watch' : 'bg-act') : 'bg-ink-4'
+            'grid h-8 w-8 place-items-center rounded-full',
+            open ? (incident.resolved ? 'bg-watch-soft text-watch' : 'bg-act-soft text-act') : 'bg-subtle text-ink-3'
           )}
         >
           <Icon name="warning" size={16} strokeWidth={2} />
@@ -59,7 +62,9 @@ export default function IncidentCard({ incident, showDate, defaultOpen = false }
               : ' · still ongoing'}
           </p>
         </div>
-        {open ? (
+        {embedded ? (
+          <span className="text-sm font-semibold text-ink-3">{expanded ? 'Hide details' : 'What happened'}</span>
+        ) : open ? (
           <Badge tone={tone} dot>
             {incident.resolved ? 'Resolved — needs a look' : 'Needs attention now'}
           </Badge>

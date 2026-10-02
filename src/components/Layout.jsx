@@ -38,12 +38,12 @@ function AccountMenu() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-full py-1 pl-1 pr-2 transition hover:bg-white/10"
+        className="flex items-center gap-1.5 rounded-full py-1 pl-1 pr-2 transition hover:bg-black/[0.04]"
         aria-haspopup="menu"
         aria-expanded={open}
       >
         <Avatar name={user?.name} size={30} />
-        <Icon name="chevronDown" size={14} className="text-white/50" />
+        <Icon name="chevronDown" size={14} className="text-ink-4" />
       </button>
       {open && (
         <div className="absolute right-0 top-12 z-[1000] w-60 overflow-hidden rounded-xl border border-line bg-surface text-ink shadow-pop">
@@ -80,10 +80,10 @@ function ago(min) {
 }
 
 const TONE = {
-  ok: { ring: '#22C55E', text: 'text-[#86EFAC]' },
-  watch: { ring: '#F59E0B', text: 'text-[#FCD34D]' },
-  act: { ring: '#EF4444', text: 'text-[#FCA5A5]' },
-  neutral: { ring: 'rgba(255,255,255,0.3)', text: 'text-white/50' },
+  ok: { ring: '#4D7C5A', text: 'text-ok' },
+  watch: { ring: '#AD772A', text: 'text-watch' },
+  act: { ring: '#B4503C', text: 'text-act' },
+  neutral: { ring: '#D4CCBF', text: 'text-ink-3' },
 };
 
 // Who you're watching, plus the one line you'd want before opening anything: where, and how fresh.
@@ -106,21 +106,18 @@ function PatientChip() {
   return (
     <Link
       to="/today"
-      className="flex items-center gap-3 rounded-full bg-white/[0.06] py-1 pl-1 pr-4 ring-1 ring-white/[0.06] transition hover:bg-white/[0.1]"
+      className="flex items-center gap-3 rounded-full py-1 pl-1 pr-4 transition hover:bg-black/[0.04]"
     >
       <span className="relative grid place-items-center">
-        {tone === 'act' && (
-          <span className="absolute inset-0 animate-ping rounded-full opacity-70" style={{ boxShadow: `0 0 0 2px ${t.ring}` }} />
-        )}
         <span className="rounded-full p-[2px]" style={{ boxShadow: `0 0 0 2px ${t.ring}` }}>
           <Avatar name={name} size={28} />
         </span>
       </span>
       <span className="leading-tight">
-        <span className="block text-[13px] font-semibold text-white">{name}</span>
+        <span className="block text-[13px] font-semibold text-ink">{name}</span>
         <span className={cx('block whitespace-nowrap text-[11px] font-medium', t.text)}>
           {where}
-          {data && <span className="text-white/35"> · {ago(data.minutes_since_update)}</span>}
+          {data && <span className="text-ink-4"> · {ago(data.minutes_since_update)}</span>}
         </span>
       </span>
     </Link>
@@ -143,11 +140,11 @@ function Nav() {
     document.fonts?.ready.then(measure);
   }, [pathname]);
   return (
-    <nav className="relative flex items-center rounded-full bg-white/[0.06] p-1 ring-1 ring-white/[0.06]">
+    <nav className="relative flex items-center rounded-full bg-black/[0.035] p-1">
       {pill && (
         <span
           aria-hidden="true"
-          className="absolute inset-y-1 rounded-full bg-white shadow-[0_6px_18px_-6px_rgba(255,255,255,0.5)] transition-all duration-300 ease-[cubic-bezier(.2,.8,.2,1)]"
+          className="absolute inset-y-1 rounded-full bg-ink shadow-[0_6px_16px_-8px_rgba(42,38,34,0.6)] transition-all duration-300 ease-[cubic-bezier(.2,.8,.2,1)]"
           style={{ left: pill.left, width: pill.width }}
         />
       )}
@@ -159,7 +156,7 @@ function Nav() {
           className={({ isActive }) =>
             cx(
               'relative z-10 flex h-9 items-center gap-2 rounded-full px-4 text-[13px] font-semibold transition-colors duration-300',
-              isActive ? 'text-ink' : 'text-white/60 hover:text-white'
+              isActive ? 'text-surface' : 'text-ink-3 hover:text-ink'
             )
           }
         >
@@ -172,7 +169,7 @@ function Nav() {
 }
 
 // The header's hairline, the clock glyph and the page wash all follow the time of day.
-const GLOW = { morning: '#FDBA74', afternoon: '#7DD3FC', evening: '#F9A8D4', night: '#A5B4FC' };
+const GLOW = { morning: '#F0A36A', afternoon: '#6FAFD0', evening: '#D98BB0', night: '#8C94D6' };
 const PART_LABEL = { morning: 'Morning', afternoon: 'Afternoon', evening: 'Evening', night: 'Night' };
 
 function partOfDay(t = Date.now()) {
@@ -183,10 +180,10 @@ function partOfDay(t = Date.now()) {
 function Clock({ now, part }) {
   return (
     <div className="hidden text-right leading-tight xl:block">
-      <p className="text-[13px] font-semibold tabular-nums text-white">
+      <p className="text-[13px] font-semibold tabular-nums text-ink">
         {new Date(now).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
       </p>
-      <p className="flex items-center justify-end gap-1.5 text-[11px] font-medium text-white/45">
+      <p className="flex items-center justify-end gap-1.5 text-[11px] font-medium text-ink-3">
         <span className="h-1.5 w-1.5 rounded-full" style={{ background: GLOW[part], boxShadow: `0 0 8px ${GLOW[part]}` }} />
         {PART_LABEL[part]} · {new Date(now).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}
       </p>
@@ -202,14 +199,10 @@ function Bell() {
       to="/today"
       aria-label={n ? `${n} readings need a look` : 'Nothing needs a look'}
       title={n ? `${n} readings need a look` : 'Nothing needs a look'}
-      className="relative grid h-9 w-9 place-items-center rounded-full text-white/70 ring-1 ring-white/[0.08] transition hover:bg-white/10 hover:text-white"
+      className="relative grid h-9 w-9 place-items-center rounded-full text-ink-3 transition hover:bg-black/[0.04] hover:text-ink"
     >
       <Icon name="bell" size={16} />
-      {n > 0 && (
-        <span className="absolute -right-1 -top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-act px-1 text-[10px] font-bold text-white ring-2 ring-[#15181D]">
-          {n > 9 ? '9+' : n}
-        </span>
-      )}
+      {n > 0 && <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-act ring-2 ring-surface" />}
     </Link>
   );
 }
@@ -217,10 +210,10 @@ function Bell() {
 // A soft wash of colour under the header that follows the time of day, so the page
 // never sits on flat grey. Kept faint: it's atmosphere, not decoration.
 const AMBIENT = {
-  morning: ['rgba(253,186,116,0.34)', 'rgba(254,215,170,0.30)'],
-  afternoon: ['rgba(147,197,253,0.34)', 'rgba(186,230,253,0.32)'],
-  evening: ['rgba(249,168,212,0.30)', 'rgba(196,181,253,0.30)'],
-  night: ['rgba(37,56,120,0.26)', 'rgba(99,102,241,0.18)'],
+  morning: ['rgba(244,170,110,0.30)', 'rgba(250,214,165,0.34)'],
+  afternoon: ['rgba(150,190,215,0.30)', 'rgba(200,222,214,0.34)'],
+  evening: ['rgba(222,150,170,0.28)', 'rgba(190,170,215,0.28)'],
+  night: ['rgba(150,140,195,0.20)', 'rgba(205,170,190,0.18)'],
 };
 
 function Ambient({ part }) {
@@ -232,7 +225,7 @@ function Ambient({ part }) {
       style={{
         background: `radial-gradient(1100px 520px at 12% -8%, ${a}, transparent 62%),
                      radial-gradient(900px 480px at 88% -4%, ${b}, transparent 60%),
-                     radial-gradient(700px 400px at 50% 110%, rgba(255,255,255,0.6), transparent 70%)`,
+                     radial-gradient(700px 400px at 50% 110%, rgba(251,249,246,0.7), transparent 70%)`,
       }}
     />
   );
@@ -249,8 +242,8 @@ export default function Layout({ children }) {
       <Ambient part={part} />
       <header className="sticky top-0 z-[900] mx-auto w-full max-w-[1760px] px-6 pt-3 lg:px-10">
         <div
-          className="relative flex h-[60px] items-center gap-5 rounded-[20px] bg-[#15181D]/[0.94] pl-5 pr-2.5 text-white shadow-[0_18px_40px_-18px_rgba(17,20,24,0.55)] ring-1 ring-white/[0.06] backdrop-blur-xl"
-          style={{ backgroundImage: 'linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0) 60%)' }}
+          className="relative flex h-[60px] items-center gap-5 rounded-[20px] border border-white/70 bg-surface/70 pl-5 pr-2.5 text-ink shadow-card backdrop-blur-2xl"
+          
         >
           {/* time-of-day hairline along the bottom edge */}
           <span
@@ -259,7 +252,7 @@ export default function Layout({ children }) {
             style={{ background: `linear-gradient(90deg, transparent, ${GLOW[part]}, transparent)` }}
           />
           <Link to="/today" className="flex items-center gap-2.5">
-            <Logo size={26} inverse />
+            <Logo size={26} />
             <span className="text-lg font-bold tracking-[-0.01em]">Assist</span>
           </Link>
           <PatientChip />
@@ -268,7 +261,7 @@ export default function Layout({ children }) {
           </div>
           <div className="flex items-center gap-3">
             <Clock now={now} part={part} />
-            <span className="hidden h-7 w-px bg-white/10 xl:block" />
+            <span className="hidden h-7 w-px bg-black/[0.07] xl:block" />
             <Bell />
             <AccountMenu />
           </div>

@@ -207,8 +207,8 @@ export function Empty({ icon = 'inbox', title, children, action }) {
 export function Logo({ size = 28, inverse }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-      <rect width="32" height="32" rx="8" fill={inverse ? '#fff' : '#111418'} />
-      <circle cx="16" cy="16" r="6" fill="none" stroke={inverse ? '#111418' : '#fff'} strokeWidth="3" />
+      <rect width="32" height="32" rx="8" fill={inverse ? '#fff' : '#2A2622'} />
+      <circle cx="16" cy="16" r="6" fill="none" stroke={inverse ? '#2A2622' : '#fff'} strokeWidth="3" />
       <circle cx="16" cy="16" r="1.8" fill="#34D399" />
     </svg>
   );
@@ -225,8 +225,8 @@ export function Avatar({ name, size = 32, className }) {
   // Stable, muted hue per name so a family list is easy to scan.
   let hash = 0;
   for (const ch of name || '') hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  const hues = ['#E0E7FF', '#DCFCE7', '#FEF3C7', '#FCE7F3', '#E0F2FE', '#F3E8FF'];
-  const fgs = ['#3730A3', '#166534', '#92400E', '#9D174D', '#075985', '#6B21A8'];
+  const hues = ['#E6E3EF', '#E3ECE2', '#F4E8D2', '#F2E0DD', '#DFE8EA', '#ECE2EA'];
+  const fgs = ['#5A4F86', '#40694A', '#8A5B1E', '#9A4A3E', '#3D6670', '#7A4D6E'];
   const i = hash % hues.length;
   return (
     <span

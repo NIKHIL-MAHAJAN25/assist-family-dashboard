@@ -8,20 +8,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        ground: '#F5F4F1',
-        surface: '#FFFFFF',
-        subtle: '#F8F9FA',
-        line: { DEFAULT: '#E4E6EA', strong: '#D1D5DB' },
+        // "Linen": every neutral shares one warm tint, so page, cards and text read as one family.
+        ground: '#ECE7DF',
+        surface: '#FBF9F6',
+        subtle: '#F3EFE9',
+        line: { DEFAULT: '#E5DFD5', strong: '#D4CCBF' },
         ink: {
-          DEFAULT: '#111418',
-          2: '#3D434C',
-          3: '#6B7280',
-          4: '#9CA3AF',
+          DEFAULT: '#2A2622',
+          2: '#4F4943',
+          3: '#7D756B',
+          4: '#A9A094',
         },
-        accent: { DEFAULT: '#1D4ED8', soft: '#EEF2FF' },
-        ok: { DEFAULT: '#15803D', soft: '#ECFDF3', line: '#BBF7D0' },
-        watch: { DEFAULT: '#B45309', soft: '#FFF7ED', line: '#FED7AA' },
-        act: { DEFAULT: '#C81E1E', soft: '#FEF2F2', line: '#FECACA' },
+        accent: { DEFAULT: '#3D6B63', soft: '#E4EEEA' },
+        // Status, toned down from traffic-light primaries to earthy ones so red still leads but doesn't shout.
+        ok: { DEFAULT: '#4D7C5A', soft: '#EAF1EA', line: '#C8DCCB' },
+        watch: { DEFAULT: '#AD772A', soft: '#F7EEDD', line: '#E9D3AC' },
+        act: { DEFAULT: '#B4503C', soft: '#F6E5DF', line: '#E9C3B6' },
       },
       fontFamily: {
         sans: ['"Public Sans"', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
@@ -44,9 +46,9 @@ export default {
         lg: '14px',
       },
       boxShadow: {
-        pop: '0 12px 32px -12px rgba(17,20,24,0.25), 0 2px 6px rgba(17,20,24,0.06)',
-        card: '0 1px 2px rgba(17,20,24,0.04), 0 10px 30px -14px rgba(17,20,24,0.14)',
-        lift: '0 2px 4px rgba(17,20,24,0.05), 0 18px 40px -18px rgba(17,20,24,0.22)',
+        pop: '0 12px 32px -12px rgba(62,46,30,0.28), 0 2px 6px rgba(62,46,30,0.06)',
+        card: '0 1px 2px rgba(62,46,30,0.04), 0 12px 32px -16px rgba(62,46,30,0.16)',
+        lift: '0 2px 4px rgba(62,46,30,0.05), 0 20px 44px -20px rgba(62,46,30,0.26)',
       },
     },
   },

@@ -19,8 +19,8 @@ const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">Open
 const nowIcon = L.divIcon({
   className: '',
   html: `<span style="position:relative;display:block;width:22px;height:22px">
-    <span style="position:absolute;inset:0;border-radius:50%;background:#1D4ED8;opacity:.25;animation:ping 1.6s cubic-bezier(0,0,.2,1) infinite"></span>
-    <span style="position:absolute;inset:4px;border-radius:50%;background:#1D4ED8;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></span>
+    <span style="position:absolute;inset:0;border-radius:50%;background:#3D6B63;opacity:.25;animation:ping 1.6s cubic-bezier(0,0,.2,1) infinite"></span>
+    <span style="position:absolute;inset:4px;border-radius:50%;background:#3D6B63;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></span>
   </span>`,
   iconSize: [22, 22],
   iconAnchor: [11, 11],
@@ -33,8 +33,8 @@ const handleIcon = (color, cursor) =>
     iconSize: [16, 16],
     iconAnchor: [8, 8],
   });
-const centerHandle = handleIcon('#111418', 'move');
-const edgeHandle = handleIcon('#1D4ED8', 'ew-resize');
+const centerHandle = handleIcon('#2A2622', 'move');
+const edgeHandle = handleIcon('#3D6B63', 'ew-resize');
 
 function offsetEast(lat, lng, meters) {
   const d = (meters / (6378137 * Math.cos((Math.PI * lat) / 180))) * (180 / Math.PI);
@@ -107,9 +107,9 @@ export default function ZoneMap({
             center={[z.centerLat, z.centerLng]}
             radius={z.radiusMeters}
             pathOptions={{
-              color: selected ? '#1D4ED8' : '#15803D',
+              color: selected ? '#3D6B63' : '#4D7C5A',
               weight: selected ? 2.5 : 1.5,
-              fillColor: selected ? '#1D4ED8' : '#22C55E',
+              fillColor: selected ? '#3D6B63' : '#6E9E7B',
               fillOpacity: selected ? 0.16 : 0.1,
             }}
             eventHandlers={onZoneClick ? { click: () => onZoneClick(z) } : undefined}
@@ -124,7 +124,7 @@ export default function ZoneMap({
       {path.length > 1 && (
         <Polyline
           positions={path.map((p) => [p.lat, p.lng])}
-          pathOptions={{ color: '#111418', weight: 2.5, opacity: 0.55, dashArray: '2 6', lineCap: 'round' }}
+          pathOptions={{ color: '#2A2622', weight: 2.5, opacity: 0.55, dashArray: '2 6', lineCap: 'round' }}
         />
       )}
       {path.map((p, i) => (
@@ -135,7 +135,7 @@ export default function ZoneMap({
           pathOptions={{
             color: '#fff',
             weight: 2,
-            fillColor: p.flagged ? '#C81E1E' : '#111418',
+            fillColor: p.flagged ? '#B4503C' : '#2A2622',
             fillOpacity: 1,
           }}
         >
@@ -150,7 +150,7 @@ export default function ZoneMap({
           <Circle
             center={[draft.lat, draft.lng]}
             radius={draft.radius}
-            pathOptions={{ color: '#1D4ED8', weight: 2, dashArray: '6 6', fillColor: '#1D4ED8', fillOpacity: 0.12 }}
+            pathOptions={{ color: '#3D6B63', weight: 2, dashArray: '6 6', fillColor: '#3D6B63', fillOpacity: 0.12 }}
           />
           <Marker
             position={[draft.lat, draft.lng]}

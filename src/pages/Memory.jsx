@@ -19,10 +19,10 @@ function Ring({ value, size = 84, stroke = 9 }) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const pct = value == null ? 0 : value / 100;
-  const color = value == null ? '#E4E6EA' : value >= 70 ? '#15803D' : value >= 40 ? '#B45309' : '#C81E1E';
+  const color = value == null ? '#E5DFD5' : value >= 70 ? '#4D7C5A' : value >= 40 ? '#AD772A' : '#B4503C';
   return (
     <svg width={size} height={size} className="shrink-0 -rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#EEF0F2" strokeWidth={stroke} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#EDE7DE" strokeWidth={stroke} />
       <circle
         cx={size / 2}
         cy={size / 2}

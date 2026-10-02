@@ -23,15 +23,18 @@ react-leaflet (OpenStreetMap tiles, desaturated in `index.css`), face-api.js (in
   Screens never interpret raw entries themselves — add logic here.
 - `src/lib/hooks.js` — react-query hooks (`useEntries`, `useZones`, `useStatus`,
   `useQuizHistory`, `useNow`). Query keys: `entries`, `zones`, `status`, `quiz`, `faces`.
-- `src/components/` — `Layout` (floating dark header capsule: patient status chip, sliding nav pill, clock, alerts bell; time-of-day wash + hairline), `DayRibbon`, `ZoneMap`, `MomentList`,
+- `src/components/` — `Layout` (floating ivory glass header: patient status chip, sliding nav pill, clock, alerts bell; time-of-day wash + hairline), `DayRibbon`, `ZoneMap`, `MomentList`,
   `IncidentCard`, `DayPicker` (glass date pill over a hidden native date input).
 - `src/ui/index.jsx` — primitives: `Button` (`primary|secondary|ghost|danger`, `sm|md|lg`),
   `IconButton`, `Badge` (`ok|watch|act|neutral`), `StatusDot`, `Panel` (`title`, `action`,
   `flush`), `PageTitle`, `Field`, `Segmented`, `Loading`, `ErrorNote`, `Empty`, `Logo`
   (`inverse` on dark), `Avatar`, `cx`. `Icon` names live in `src/ui/Icon.jsx`.
 
-## Design rules ("Clear")
+## Design rules ("Linen")
 
+- Every neutral shares one warm tint (linen ground, ivory surfaces, warm charcoal ink) — no pure
+  white, no cold grey, no black bars. Status colours are earthy (sage / ochre / terracotta).
+- Say each alert once: open incidents live inside the Today hero (`IncidentCard embedded`).
 - Tokens only, from `tailwind.config.js`: `ground`, `surface`, `subtle`, `line`, `ink`/`ink-2..4`,
   `accent`, and the status trio `ok` / `watch` / `act` (each with `-soft`, `-line`).
 - Colour means status. Green = fine, amber = worth a look, red = act now. Activity categories
