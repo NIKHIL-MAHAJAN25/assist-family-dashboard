@@ -29,8 +29,8 @@ export default function IncidentCard({ incident, showDate, defaultOpen = false }
   return (
     <article
       className={cx(
-        'overflow-hidden rounded-md border bg-surface',
-        open ? (incident.resolved ? 'border-watch-line' : 'border-act-line') : 'border-line'
+        'overflow-hidden rounded-2xl border bg-white/85 shadow-card backdrop-blur-xl',
+        open ? (incident.resolved ? 'border-watch-line' : 'border-act-line') : 'border-white/80'
       )}
     >
       <button

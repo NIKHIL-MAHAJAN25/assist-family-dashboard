@@ -41,8 +41,9 @@
     @apply mb-1.5 block text-sm font-semibold text-ink-2;
   }
 
+  /* Floating card: translucent white over the ambient backdrop, soft shadow, no hard outline. */
   .panel {
-    @apply rounded-md border border-line bg-surface;
+    @apply rounded-2xl border border-white/80 bg-white/80 shadow-card backdrop-blur-xl;
   }
 
   .section-title {

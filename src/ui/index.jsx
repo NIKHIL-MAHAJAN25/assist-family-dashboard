@@ -114,12 +114,12 @@ export function Panel({ title, action, children, className, bodyClassName, flush
   return (
     <section className={cx('panel', className)}>
       {(title || action) && (
-        <header className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
+        <header className="flex items-center justify-between gap-3 border-b border-black/[0.05] px-5 py-3.5">
           <h2 className="text-md font-semibold text-ink">{title}</h2>
           {action}
         </header>
       )}
-      <div className={cx(!flush && 'p-4', bodyClassName)}>{children}</div>
+      <div className={cx(!flush && 'p-5', bodyClassName)}>{children}</div>
     </section>
   );
 }

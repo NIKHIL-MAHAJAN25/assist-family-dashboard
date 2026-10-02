@@ -49,8 +49,8 @@ function Hero({ status, openIncident, openCount, summary, now }) {
   return (
     <section
       className={cx(
-        'relative overflow-hidden rounded-lg border bg-surface',
-        tone === 'act' ? 'border-act-line' : tone === 'watch' ? 'border-watch-line' : 'border-line'
+        'relative overflow-hidden rounded-2xl border bg-white/85 shadow-card backdrop-blur-xl',
+        tone === 'act' ? 'border-act-line' : tone === 'watch' ? 'border-watch-line' : 'border-white/80'
       )}
     >
       <div

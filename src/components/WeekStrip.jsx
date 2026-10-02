@@ -50,10 +50,10 @@ export default function WeekStrip({ selected, today, onSelect }) {
             type="button"
             onClick={() => onSelect(date)}
             className={cx(
-              'group relative rounded-md border p-2.5 text-left transition-all',
+              'group relative rounded-xl border p-2.5 text-left transition-all',
               active
                 ? 'border-ink bg-ink text-white shadow-pop'
-                : 'border-line bg-surface hover:-translate-y-0.5 hover:border-line-strong hover:shadow-sm'
+                : 'border-white/80 bg-white/75 shadow-card backdrop-blur-xl hover:-translate-y-0.5 hover:shadow-lift'
             )}
           >
             <div className="flex items-baseline justify-between">

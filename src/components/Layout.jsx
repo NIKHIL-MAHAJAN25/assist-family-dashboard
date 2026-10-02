@@ -86,12 +86,39 @@ function PatientChip() {
   );
 }
 
+// A soft wash of colour under the header that follows the time of day, so the page
+// never sits on flat grey. Kept faint: it's atmosphere, not decoration.
+const AMBIENT = {
+  morning: ['rgba(253,186,116,0.34)', 'rgba(254,215,170,0.30)'],
+  afternoon: ['rgba(147,197,253,0.34)', 'rgba(186,230,253,0.32)'],
+  evening: ['rgba(249,168,212,0.30)', 'rgba(196,181,253,0.30)'],
+  night: ['rgba(37,56,120,0.26)', 'rgba(99,102,241,0.18)'],
+};
+
+function Ambient() {
+  const h = new Date().getHours();
+  const part = h >= 5 && h < 12 ? 'morning' : h < 17 && h >= 12 ? 'afternoon' : h >= 17 && h < 21 ? 'evening' : 'night';
+  const [a, b] = AMBIENT[part];
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 -z-10"
+      style={{
+        background: `radial-gradient(1100px 520px at 12% -8%, ${a}, transparent 62%),
+                     radial-gradient(900px 480px at 88% -4%, ${b}, transparent 60%),
+                     radial-gradient(700px 400px at 50% 110%, rgba(255,255,255,0.6), transparent 70%)`,
+      }}
+    />
+  );
+}
+
 export default function Layout({ children }) {
   const { pathname } = useLocation();
   const fullBleed = pathname.startsWith('/places');
 
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="relative flex min-h-full flex-col">
+      <Ambient />
       <header className="sticky top-0 z-[900] bg-ink text-white">
         <div className="mx-auto flex h-14 max-w-[1760px] items-center gap-6 px-6 lg:px-10">
           <NavLink to="/today" className="flex items-center gap-2.5">

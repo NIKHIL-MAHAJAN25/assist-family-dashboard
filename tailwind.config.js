@@ -8,7 +8,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        ground: '#F3F4F6',
+        ground: '#F5F4F1',
         surface: '#FFFFFF',
         subtle: '#F8F9FA',
         line: { DEFAULT: '#E4E6EA', strong: '#D1D5DB' },
@@ -45,6 +45,8 @@ export default {
       },
       boxShadow: {
         pop: '0 12px 32px -12px rgba(17,20,24,0.25), 0 2px 6px rgba(17,20,24,0.06)',
+        card: '0 1px 2px rgba(17,20,24,0.04), 0 10px 30px -14px rgba(17,20,24,0.14)',
+        lift: '0 2px 4px rgba(17,20,24,0.05), 0 18px 40px -18px rgba(17,20,24,0.22)',
       },
     },
   },
