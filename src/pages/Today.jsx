@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useEntries, useNow, useQuizHistory, useStatus, useZones } from '../lib/hooks.js';
-import { buildIncidents, buildMoments, dayBounds, daySummary, ribbonSegments } from '../lib/story.js';
+import { buildIncidents, buildMoments, dayBounds, daySummary, partsAhead, ribbonSegments } from '../lib/story.js';
 import { formatTime, timeAgo } from '../utils/datetime.js';
 import DayRibbon from '../components/DayRibbon.jsx';
 import ZoneMap from '../components/ZoneMap.jsx';
@@ -259,11 +259,14 @@ export default function Today() {
           action={<span className="text-sm text-ink-3">{derived.moments.length} moments, newest first</span>}
         >
           {derived.moments.length ? (
-            <MomentList moments={derived.moments} />
+            <MomentList moments={derived.moments} ahead={partsAhead(now)} />
           ) : (
-            <Empty icon="clock" title="Nothing recorded yet today">
-              Activity from the camera and watch shows up here as it happens.
-            </Empty>
+            <>
+              <Empty icon="clock" title="Nothing recorded yet today">
+                Activity from the camera and watch shows up here as it happens.
+              </Empty>
+              <MomentList moments={[]} ahead={partsAhead(now)} />
+            </>
           )}
           {derived.todaysIncidents.some((i) => i.acknowledged) && (
             <div className="mt-4 border-t border-line pt-4">

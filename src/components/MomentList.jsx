@@ -197,7 +197,43 @@ function SkyBackdrop({ sky }) {
   );
 }
 
-export default function MomentList({ moments, newestFirst = true, onToggleSave, showObjects, groupByPart = true }) {
+const AHEAD_HINT = {
+  Morning: 'Waking up, breakfast and the morning tablets usually land here.',
+  Afternoon: 'Lunch, a rest, and any time spent outside.',
+  Evening: 'Dinner, the radio or TV, and winding down for bed.',
+};
+
+// A part of the day that hasn't happened yet: its sky, faded, with skeleton rows where moments will go.
+function AheadSky({ part }) {
+  const sky = SKIES[part];
+  return (
+    <section className="relative overflow-hidden rounded-lg border border-dashed border-black/[0.08]">
+      <div className="absolute inset-0 opacity-50" style={{ background: sky.bg }} />
+      <div className="opacity-50">
+        <SkyBackdrop sky={sky} />
+      </div>
+      <header className="relative flex items-baseline gap-2 px-5 pb-1 pt-4">
+        <span className={cx('text-sm font-bold uppercase tracking-[0.1em] opacity-60', sky.ink)}>{part}</span>
+        <span className="text-xs text-ink-4">{sky.range}</span>
+      </header>
+      <p className="relative px-5 text-sm text-ink-3">{AHEAD_HINT[part]}</p>
+      <div className="relative space-y-3 px-5 pb-5 pt-4" aria-hidden="true">
+        {[0.62, 0.44].map((w, i) => (
+          <div key={i} className="grid grid-cols-[86px_28px_1fr] items-center gap-x-3">
+            <span className="ml-auto h-2.5 w-12 rounded-full bg-black/[0.06]" />
+            <span className="mx-auto h-3.5 w-3.5 rounded-full border-2 border-dashed border-black/[0.12]" />
+            <span className="space-y-1.5">
+              <span className="block h-2.5 rounded-full bg-black/[0.06]" style={{ width: `${w * 100}%` }} />
+              <span className="block h-2 rounded-full bg-black/[0.04]" style={{ width: `${w * 60}%` }} />
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default function MomentList({ moments, newestFirst = true, onToggleSave, showObjects, groupByPart = true, ahead = [] }) {
   const list = newestFirst ? [...moments].reverse() : moments;
 
   if (!groupByPart) {
@@ -256,6 +292,16 @@ export default function MomentList({ moments, newestFirst = true, onToggleSave, 
           </section>
         );
       })}
+      {ahead.length > 0 && (
+        <>
+          <p className="section-title flex items-center gap-3 pt-3">
+            Later today <span className="h-px flex-1 bg-black/[0.06]" />
+          </p>
+          {ahead.map((part) => (
+            <AheadSky key={part} part={part} />
+          ))}
+        </>
+      )}
     </div>
   );
 }

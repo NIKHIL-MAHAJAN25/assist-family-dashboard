@@ -302,6 +302,12 @@ export function dayPart(t) {
   return 'Night';
 }
 
+/** Parts of today that haven't started yet, in order — the Today page sketches them as placeholders. */
+export function partsAhead(t) {
+  const h = new Date(t).getHours();
+  return ['Morning', 'Afternoon', 'Evening'].filter((p) => ({ Morning: 5, Afternoon: 12, Evening: 17 })[p] > h);
+}
+
 /**
  * Minutes spent inside each zone, from consecutive location pings. A gap longer than
  * `maxGapMin` isn't counted — no pings means we don't actually know where they were.
