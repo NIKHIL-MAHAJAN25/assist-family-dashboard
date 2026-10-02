@@ -87,7 +87,7 @@ export default function Settings() {
   return (
     <>
       <PageTitle title="Settings" subtitle="Devices, the patient record, and your account." />
-      <div className="grid max-w-5xl gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         <Panel title="Set up the companion phone">
           <ol className="space-y-3 text-base text-ink-2">
             <li className="flex gap-3">

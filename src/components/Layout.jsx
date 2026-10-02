@@ -93,7 +93,7 @@ export default function Layout({ children }) {
   return (
     <div className="flex min-h-full flex-col">
       <header className="sticky top-0 z-[900] bg-ink text-white">
-        <div className="mx-auto flex h-14 max-w-[1320px] items-center gap-6 px-5">
+        <div className="mx-auto flex h-14 max-w-[1760px] items-center gap-6 px-6 lg:px-10">
           <NavLink to="/today" className="flex items-center gap-2.5">
             <Logo size={26} inverse />
             <span className="text-lg font-bold tracking-[-0.01em]">Assist</span>
@@ -124,7 +124,7 @@ export default function Layout({ children }) {
           </div>
         </div>
       </header>
-      <main className={cx('flex-1', !fullBleed && 'mx-auto w-full max-w-[1320px] px-5 py-7')}>
+      <main className={cx('flex-1', !fullBleed && 'mx-auto w-full max-w-[1760px] px-6 py-7 lg:px-10')}>
         {children}
       </main>
     </div>

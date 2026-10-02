@@ -254,7 +254,7 @@ export default function Today() {
         </div>
       </Panel>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px] 2xl:grid-cols-[minmax(0,1fr)_520px]">
         <Panel
           title="The day so far"
           action={<span className="text-sm text-ink-3">{derived.moments.length} moments, newest first</span>}

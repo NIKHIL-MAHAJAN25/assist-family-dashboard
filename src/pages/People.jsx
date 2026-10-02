@@ -141,7 +141,7 @@ export default function People() {
           </Empty>
         </Panel>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {list.map((f) => (
             <li key={f.id} className="panel group flex items-center gap-4 p-4 transition-shadow hover:shadow-sm">
               <span className="rounded-full p-[3px] ring-1 ring-line transition group-hover:ring-ink-4">
