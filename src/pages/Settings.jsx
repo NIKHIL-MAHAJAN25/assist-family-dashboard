@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { registerDevice } from '../api/devices.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import EmergencyTag from '../components/EmergencyTag.jsx';
 import { Button, ErrorNote, Field, Icon, PageTitle, Panel, Segmented } from '../ui';
 
 function Copyable({ value, label }) {
@@ -88,6 +89,8 @@ export default function Settings() {
     <>
       <PageTitle title="Settings" subtitle="Devices, the patient record, and your account." />
       <div className="grid gap-6 lg:grid-cols-2">
+        <EmergencyTag patientId={user?.patient_id} patientName={user?.patient_name} />
+
         <Panel title="Set up the companion phone">
           <ol className="space-y-3 text-base text-ink-2">
             <li className="flex gap-3">

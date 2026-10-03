@@ -119,6 +119,23 @@ export function buildMoments(entries, zones) {
         flagged: e.requiresAttention,
       };
       moments.push(lastPlaceMoment);
+    } else if (e.entryType === 'sighting') {
+      const p = e.payload || {};
+      const where = typeof p.lat === 'number' ? placeOf(e, zones) : null;
+      moments.push({
+        kind: 'place',
+        title: p.kind === 'scan'
+          ? 'Someone tapped the emergency tag'
+          : where
+            ? `A passer-by shared where they are — ${where.inside ? `at ${where.label}` : where.label}`
+            : 'A passer-by said they are with them',
+        start: t,
+        end: t,
+        count: 1,
+        entries: [e],
+        inside: Boolean(where?.inside),
+        flagged: e.requiresAttention,
+      });
     } else if (e.entryType === 'heartrate') {
       const p = e.payload || {};
       if (!e.requiresAttention && p.scenario === 'normal') continue;
@@ -157,7 +174,10 @@ export function buildIncidents(entries, zones, gapMin = 45) {
     const hasGeo = g.entries.some((e) => e.entryType === 'geofence');
     const hasUnseen = g.entries.some((e) => categorize(e.payload?.activity) === 'unseen');
     const hasVitals = g.entries.some((e) => e.entryType === 'heartrate');
-    const title = hasGeo
+    const hasSighting = g.entries.some((e) => e.entryType === 'sighting');
+    const title = hasSighting
+      ? 'Someone found them and tapped the emergency tag'
+      : hasGeo
       ? 'Wandered outside the safe zones'
       : hasVitals
         ? 'Unusual heart rate'
@@ -174,7 +194,13 @@ export function buildIncidents(entries, zones, gapMin = 45) {
     const steps = g.entries.map((e) => ({
       at: ts(e),
       text:
-        e.entryType === 'geofence'
+        e.entryType === 'sighting'
+          ? e.payload?.kind === 'scan'
+            ? 'Emergency tag tapped'
+            : typeof e.payload?.lat === 'number'
+              ? `Passer-by shared location: ${placeOf(e, zones).label}`
+              : 'Passer-by said they are with them'
+          : e.entryType === 'geofence'
           ? placeOf(e, zones).label
           : e.entryType === 'heartrate'
             ? `Heart rate ${e.payload?.heart_rate} bpm`
@@ -198,7 +224,7 @@ export function buildIncidents(entries, zones, gapMin = 45) {
     steps.push(...compact);
     if (resolved) steps.push({ at: resolved.at, text: `Back at ${resolved.place}`, kind: 'resolved' });
 
-    const lastFix = [...g.entries].reverse().find((e) => e.entryType === 'geofence');
+    const lastFix = [...g.entries].reverse().find((e) => (e.entryType === 'geofence' || e.entryType === 'sighting') && typeof e.payload?.lat === 'number');
     return {
       id: g.entries[0].id,
       title,
@@ -275,13 +301,14 @@ export function daySummary(name, moments, incidents) {
   }
   for (const inc of incidents) {
     const mins = Math.round(((inc.resolved?.at ?? inc.end) - inc.start) / 60000);
-    parts.push({
-      at: inc.start,
-      text: inc.resolved
+    const text = inc.entries.some((e) => e.entryType === 'sighting')
+      ? 'was found by someone who tapped the emergency tag'
+      : inc.resolved
         ? `was outside the safe zones for ${mins} minutes before coming back`
-        : 'left the safe zones and has not come back yet',
-      alert: true,
-    });
+        : 'left the safe zones and has not come back yet';
+    if (seen.has(text)) continue; // one mention per kind of incident, not one per incident
+    seen.add(text);
+    parts.push({ at: inc.start, text, alert: true });
   }
   parts.sort((a, b) => a.at - b.at);
   if (!parts.length) return null;
