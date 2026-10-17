@@ -34,7 +34,7 @@ react-leaflet (OpenStreetMap tiles, desaturated in `index.css`), face-api.js (in
 
 ## Design rules ("Atria")
 
-- Pale blue page gradient; soft oat tiles (`bg-paper` #F1ECE2, `rounded-[20px]`, no border) floating on
+- Pale blue page gradient; soft near-white tiles (`bg-paper` #F5F4EF, `rounded-[20px]`, no border) floating on
   it; off-white top bar with a sky-blue sliding pill. Black only for buttons (pills, round arrows).
 - Type: `font-serif` (DM Serif Display) for titles and big numbers; Public Sans for the rest.
 - One blue→lime gradient (`GRADIENT` in Today.jsx) for the day chart and the selected moment.

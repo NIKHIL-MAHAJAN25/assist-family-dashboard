@@ -12,10 +12,10 @@ export default {
         // Pale blue page, off-white cards, near-black ink; serif for headings and big numbers.
         ground: '#DCE8F4',
         frame: '#141414',
-        surface: '#FAF7F1',
-        subtle: '#F1ECE2',
-        paper: '#F1ECE2',
-        line: { DEFAULT: '#E3DCCF', strong: '#D1C8B8' },
+        surface: '#FCFBF8',
+        subtle: '#F5F4EF',
+        paper: '#F5F4EF',
+        line: { DEFAULT: '#E6E4DC', strong: '#D3D0C6' },
         ink: {
           DEFAULT: '#151515',
           2: '#4B4B48',
