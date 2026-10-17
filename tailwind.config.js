@@ -9,17 +9,25 @@ export default {
     extend: {
       colors: {
         // "Linen": every neutral shares one warm tint, so page, cards and text read as one family.
-        ground: '#ECE7DF',
-        surface: '#FBF9F6',
-        subtle: '#F3EFE9',
-        line: { DEFAULT: '#E5DFD5', strong: '#D4CCBF' },
+        // Cream page, paper cards: flat, so the colour blocks below carry the page.
+        ground: '#F7F1E5',
+        surface: '#FBF7EE',
+        subtle: '#EFE7D8',
+        paper: '#EFE7D8',
+        line: { DEFAULT: '#E4DACA', strong: '#D3C8B5' },
         ink: {
-          DEFAULT: '#2A2622',
-          2: '#4F4943',
-          3: '#7D756B',
-          4: '#A9A094',
+          DEFAULT: '#1E1C1A',
+          2: '#4A4540',
+          3: '#7E766B',
+          4: '#A89F92',
         },
-        accent: { DEFAULT: '#3D6B63', soft: '#E4EEEA' },
+        // Colour blocks: one per kind of thing, never for status (status keeps ok/watch/act).
+        butter: { DEFAULT: '#F2D46B', deep: '#E2BE45' },
+        rose: { DEFAULT: '#F2B8CF', deep: '#E79AB9' },
+        sage: { DEFAULT: '#A3B57A', deep: '#8A9E62' },
+        sky: { DEFAULT: '#B3C6EA', deep: '#93ABDB' },
+        coral: { DEFAULT: '#EFA48E', deep: '#E2856C' },
+        accent: { DEFAULT: '#1E1C1A', soft: '#F2B8CF' },
         // Status, toned down from traffic-light primaries to earthy ones so red still leads but doesn't shout.
         ok: { DEFAULT: '#4D7C5A', soft: '#EAF1EA', line: '#C8DCCB' },
         watch: { DEFAULT: '#AD772A', soft: '#F7EEDD', line: '#E9D3AC' },

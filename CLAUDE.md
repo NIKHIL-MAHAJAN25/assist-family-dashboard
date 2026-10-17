@@ -23,26 +23,29 @@ react-leaflet (OpenStreetMap tiles, desaturated in `index.css`), face-api.js (in
   Screens never interpret raw entries themselves — add logic here.
 - `src/lib/hooks.js` — react-query hooks (`useEntries`, `useZones`, `useStatus`,
   `useQuizHistory`, `useNow`). Query keys: `entries`, `zones`, `status`, `quiz`, `faces`.
-- `src/components/` — `Layout` (floating ivory glass header: patient status chip, sliding nav pill, clock, alerts bell; time-of-day wash + hairline), `DayRibbon`, `ZoneMap`, `MomentList`,
-  `IncidentCard`, `DayPicker` (glass date pill over a hidden native date input).
+- `src/components/` — `Layout` (black floating top bar: patient status chip, rose sliding nav
+  pill, clock, alerts bell; black bottom dock below lg), `Tour` (coachmarks: welcome card, then a
+  spotlight over `data-tour="<target>"` elements; `?` button replays; seen-state in localStorage
+  `tour:<id>`), `DayRibbon`, `ZoneMap`, `MomentList`, `IncidentCard`, `DayPicker`.
 - `src/ui/index.jsx` — primitives: `Button` (`primary|secondary|ghost|danger`, `sm|md|lg`),
   `IconButton`, `Badge` (`ok|watch|act|neutral`), `StatusDot`, `Panel` (`title`, `action`,
   `flush`), `PageTitle`, `Field`, `Segmented`, `Loading`, `ErrorNote`, `Empty`, `Logo`
   (`inverse` on dark), `Avatar`, `cx`. `Icon` names live in `src/ui/Icon.jsx`.
 
-## Design rules ("Linen")
+## Design rules ("Colour-block")
 
-- The page is painted: `Ambient` in Layout lays a time-of-day field of colour blobs; cards are
-  frosted `.glass` (white/30 + blur) so the paint shows through. `Panel bare` drops the box where
-  content carries its own colour (ribbon, sky sections). Neutrals share one warm tint — no pure
-  white, no cold grey, no black bars. Status colours are earthy (sage / ochre / terracotta).
-- Say each alert once: open incidents live inside the Today hero (`IncidentCard embedded`).
-- Tokens only, from `tailwind.config.js`: `ground`, `surface`, `subtle`, `line`, `ink`/`ink-2..4`,
-  `accent`, and the status trio `ok` / `watch` / `act` (each with `-soft`, `-line`).
-- Colour means status. Green = fine, amber = worth a look, red = act now. Activity categories
-  in the ribbon use `CATEGORIES` colours from `story.js`, never status colours.
-- One font (Public Sans), tabular numerals on `body`. No serif, no pill-shaped everything, no
-  uppercase eyebrow labels except `.section-title`.
+- Flat cream page (`ground`), paper cards (`.glass` / `.panel` = `bg-paper`, no border, no blur),
+  black for chrome and actions (top bar, dock, primary pills). No gradients behind content.
+- Colour blocks (`butter`, `rose`, `sage`, `sky`, `coral`, each with `-deep` for its one big soft
+  shape) mark *kinds* of things on Today (day, memory, places, moments). The status block is the
+  exception: sage = fine, apricot = worth a look, coral = act now.
+- Say each alert once: open incidents sit under the Today greeting (`IncidentCard embedded`).
+- Tokens only, from `tailwind.config.js`: `ground`, `surface`, `subtle`/`paper`, `line`, `ink`/`ink-2..4`,
+  `accent` (= ink), the blocks above, and the status trio `ok` / `watch` / `act` (each with `-soft`, `-line`).
+- Badges, dots and alerts still use status colours only (green = fine, amber = worth a look,
+  red = act now). Activity categories in the ribbon use `CATEGORIES` colours from `story.js`.
+- One font (Public Sans), tabular numerals on `body`. No serif. Small uppercase labels only under
+  a stat number (`Stats` on Today) and in `.section-title`.
 - Inline confirm for destructive actions (no `window.confirm`). Times go through
   `src/utils/datetime.js`.
 - Don't gender the patient in copy — use their name.

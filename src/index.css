@@ -22,11 +22,11 @@
   }
 
   :focus-visible {
-    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-surface;
+    @apply outline-none ring-2 ring-ink ring-offset-2 ring-offset-ground;
   }
 
   ::selection {
-    @apply bg-accent-soft;
+    @apply bg-rose;
   }
 }
 
@@ -41,10 +41,9 @@
     @apply mb-1.5 block text-sm font-semibold text-ink-2;
   }
 
-  /* Frosted glass over the painted backdrop: the colour behind shows through, a top highlight gives it an edge. */
+  /* Paper card on the cream page: flat, no border, no blur. (Kept the old name so every page follows.) */
   .glass {
-    @apply border border-white/50 bg-white/30 backdrop-blur-2xl;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 12px 32px -18px rgba(62, 46, 30, 0.22);
+    @apply bg-paper;
   }
   .panel {
     @apply glass min-w-0 rounded-2xl;
@@ -53,6 +52,11 @@
   .section-title {
     @apply text-xs font-bold uppercase tracking-[0.06em] text-ink-3;
   }
+}
+
+@keyframes tourpulse {
+  0% { opacity: 0.9; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.03); }
 }
 
 /* Leaflet chrome, toned to match */
