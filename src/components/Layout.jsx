@@ -221,7 +221,7 @@ export default function Layout({ children }) {
     <div className="relative flex min-h-full flex-col">
       <header className="sticky top-0 z-[900] mx-auto w-full max-w-[1760px] px-3 pt-3 sm:px-6 lg:px-10">
         <div
-          className="relative flex h-16 items-center gap-3 rounded-[22px] bg-ink pl-3 pr-2 text-white shadow-lift sm:gap-5 sm:pl-5 sm:pr-3"
+          className="relative flex h-16 items-center gap-3 rounded-[22px] glass-dark pl-3 pr-2 text-white sm:gap-5 sm:pl-5 sm:pr-3"
         >
           <Link to="/today" className="hidden shrink-0 items-center gap-2.5 sm:flex">
             <span className="text-[22px] font-semibold tracking-[-0.04em] text-white">assist</span>
@@ -243,7 +243,7 @@ export default function Layout({ children }) {
       </main>
       {/* Below lg the nav moves to a floating dock at the thumb, like a phone app. */}
       <div className="fixed inset-x-3 bottom-3 z-[900] lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="mx-auto max-w-md rounded-[22px] bg-ink p-1 shadow-lift">
+        <div className="mx-auto max-w-md rounded-[22px] glass-dark p-1">
           <Nav dock />
         </div>
       </div>
