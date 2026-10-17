@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useEntries, useNow, useQuizHistory, useStatus, useZones } from '../lib/hooks.js';
 import { buildIncidents, buildMoments, dayBounds, daySummary, ribbonSegments } from '../lib/story.js';
-import { buildCloudinaryUrl } from '../api/client.js';
+import { buildCloudinaryUrl, enhancedPhoto } from '../api/client.js';
 import { formatTime, timeAgo } from '../utils/datetime.js';
 import ZoneMap from '../components/ZoneMap.jsx';
 import CameraWindow from '../components/CameraWindow.jsx';
@@ -262,8 +262,10 @@ function momentIcon(m) {
 }
 
 function MomentDetail({ m }) {
-  const [broken, setBroken] = useState(false);
+  const [stage, setStage] = useState(0); // 0 enhanced, 1 plain, 2 none
   const url = m.image && buildCloudinaryUrl(m.image);
+  const photo = enhancedPhoto(m.image, 720, 300);
+  const broken = stage > 1;
   const mins = Math.round((m.end - m.start) / 60000);
   return (
     <div className={cx('min-w-0 rounded-[22px] p-5 text-[13px] sm:rounded-tl-none', momentTone(m))}>
@@ -302,9 +304,10 @@ function MomentDetail({ m }) {
       {url && !broken ? (
         <a href={url} target="_blank" rel="noreferrer">
           <img
-            src={url.replace('/upload/', '/upload/c_fill,w_720,h_300,q_auto/')}
+            key={m.image}
+            src={stage === 0 ? photo.src : photo.fallback}
             alt=""
-            onError={() => setBroken(true)}
+            onError={() => setStage((x) => x + 1)}
             className="mt-4 h-[150px] w-full rounded-2xl object-cover"
           />
         </a>
@@ -368,7 +371,7 @@ function Moments({ moments }) {
               );
             })}
           </ul>
-          {chosen && <MomentDetail m={chosen} />}
+          {chosen && <MomentDetail key={`${chosen.kind}-${chosen.start}`} m={chosen} />}
         </div>
       )}
     </section>
@@ -377,31 +380,57 @@ function Moments({ moments }) {
 
 // ---- right rail ---------------------------------------------------------------------------
 
-function Week({ now }) {
-  const days = Array.from({ length: 7 }, (_, i) => now - (6 - i) * 86400000);
+/** Month calendar that stretches to fill its row; days with readings get a dot, each opens its log. */
+function MonthCalendar({ now, activeDays }) {
+  const [offset, setOffset] = useState(0);
+  const today = new Date(now);
+  const first = new Date(today.getFullYear(), today.getMonth() + offset, 1);
+  const lead = (first.getDay() + 6) % 7; // Monday first
+  const inMonth = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+  const cells = [...Array(lead).fill(null), ...Array.from({ length: inMonth }, (_, k) => k + 1)];
+  while (cells.length % 7) cells.push(null);
+  const todayKey = dayKey(now);
   return (
-    <div data-tour="week">
-      <p className="mb-3 text-center">
+    <div data-tour="week" className="flex h-full min-h-[300px] flex-col">
+      <div className="mb-3 flex items-center justify-between">
+        <button type="button" onClick={() => setOffset((o) => o - 1)} aria-label="Previous month" className="grid h-8 w-8 place-items-center rounded-full hover:bg-paper">
+          <Icon name="chevronLeft" size={18} />
+        </button>
         <span className="rounded-full bg-rose px-3.5 py-1 text-[13px]">
-          {new Date(now).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+          {first.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
         </span>
-      </p>
-      <div className="grid grid-cols-7 gap-1 text-center">
-        {days.map((t, i) => {
-          const today = i === 6;
-          return (
-            <Link key={t} to={today ? '/log' : `/log?day=${dayKey(t)}`} className="group">
-              <span className="block text-[10px] uppercase text-ink-3">
-                {new Date(t).toLocaleDateString(undefined, { weekday: 'short' }).slice(0, 2)}
-              </span>
-              <span
-                className={cx(
-                  'mx-auto mt-1 grid aspect-square w-full max-w-[40px] place-items-center rounded-full text-[13px] transition',
-                  today ? 'bg-rose font-bold' : 'group-hover:bg-paper'
-                )}
-              >
-                {new Date(t).getDate()}
-              </span>
+        <button type="button" onClick={() => setOffset((o) => Math.min(0, o + 1))} disabled={offset === 0} aria-label="Next month" className="grid h-8 w-8 place-items-center rounded-full hover:bg-paper disabled:opacity-25">
+          <Icon name="chevronRight" size={18} />
+        </button>
+      </div>
+      <div className="grid grid-cols-7 text-center text-[10px] uppercase text-ink-3">
+        {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((w) => (
+          <span key={w} className="pb-1.5">{w}</span>
+        ))}
+      </div>
+      <div className="grid flex-1 grid-cols-7 text-center" style={{ gridAutoRows: '1fr' }}>
+        {cells.map((n, k) => {
+          if (!n) return <span key={`x${k}`} />;
+          const t = new Date(first.getFullYear(), first.getMonth(), n).getTime();
+          const key = dayKey(t);
+          const isToday = key === todayKey;
+          const future = t > now;
+          const inner = (
+            <span
+              className={cx(
+                'relative mx-auto grid aspect-square h-full max-h-[40px] place-items-center rounded-full text-[13px] transition',
+                isToday ? 'bg-rose font-bold' : future ? 'text-ink-4' : 'hover:bg-paper'
+              )}
+            >
+              {n}
+              {activeDays.has(key) && !isToday && <i className="absolute bottom-1 h-1 w-1 rounded-full bg-ink/50" />}
+            </span>
+          );
+          return future ? (
+            <span key={key} className="flex items-center justify-center">{inner}</span>
+          ) : (
+            <Link key={key} to={isToday ? '/log' : `/log?day=${key}`} className="flex items-center justify-center" title="Open this day's log">
+              {inner}
             </Link>
           );
         })}
@@ -435,7 +464,7 @@ const TOUR = [
   { target: 'memory', key: 'Memory', color: '#F2B8CF', title: 'How {name}’s memory is doing', body: 'Today’s quiz and the week so far. Tap the card for every question and answer.' },
   { target: 'places', key: 'Places', color: '#B3C6EA', title: 'Where {name} went', body: 'The safe places and any time spent outside them. Tap to draw or move a safe place.' },
   { target: 'moments', key: 'Moments', color: '#B3C6EA', title: 'What the camera saw', body: '{name}’s day, newest first. Pick a moment to see the photo and what the camera made of it.' },
-  { target: 'week', key: 'Other days', color: '#F2B8CF', title: 'Look back', body: 'Tap any day this week to open its full log.' },
+  { target: 'week', key: 'Other days', color: '#F2B8CF', title: 'Look back', body: 'Tap any day to open its full log. Days with a dot have readings.' },
   { target: 'camera', key: 'Right now', color: '#A3B57A', title: 'The latest photo', body: 'The most recent photo from the home camera. That’s the tour — the ? button brings it back any time.' },
 ];
 
@@ -496,8 +525,12 @@ export default function Today() {
   const loc = s.location;
   const current = loc?.lat != null ? { lat: loc.lat, lng: loc.lng } : null;
 
+  const activeDays = new Set((entries.data || []).map((e) => dayKey(new Date(e.timestamp).getTime())));
+
+  // Three rows, two columns on wide screens, so the rail lines up with the blocks beside it:
+  // greeting + first blocks | calendar, Memory/Places | latest photo, moments | map + devices.
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <div className="grid gap-x-8 gap-y-3.5 xl:grid-cols-[minmax(0,1fr)_360px]">
       <div className="min-w-0">
         <h1 className="text-[32px] font-semibold leading-[1.1] tracking-[-0.035em] sm:text-[40px]">
           {greeting(new Date(now).getHours())}
@@ -521,25 +554,31 @@ export default function Today() {
           <StatusBlock status={s} tone={tone} incidents={d.open} now={now} />
           <DayBlock moments={d.moments} segments={d.segments} now={now} dayStart={dayStart} />
         </div>
-        <div className="mt-3.5 grid gap-3.5 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-          <MemoryBlock quiz={quiz.data || []} dayStart={dayStart} />
-          <PlacesBlock status={s} zones={zones.data || []} moments={d.moments} />
-        </div>
-
-        <div className="mt-8">
-          <Moments moments={d.moments} />
-        </div>
       </div>
 
-      <aside className="min-w-0 space-y-6">
-        <Week now={now} />
+      <div className="mt-4 flex min-w-0 flex-col gap-4 xl:mt-0">
+        <div className="flex-1">
+          <MonthCalendar now={now} activeDays={activeDays} />
+        </div>
         <Link to="/log" className="block rounded-full bg-ink py-3 text-center text-[14px] font-medium text-white">
           Open today’s full log
         </Link>
-        <div data-tour="camera">
-          <h2 className="mb-3 px-1 text-[19px] font-semibold tracking-[-0.01em]">Right now</h2>
-          <CameraWindow entries={entries.data} now={now} />
-        </div>
+      </div>
+
+      <div className="grid min-w-0 gap-3.5 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+        <MemoryBlock quiz={quiz.data || []} dayStart={dayStart} />
+        <PlacesBlock status={s} zones={zones.data || []} moments={d.moments} />
+      </div>
+
+      <div data-tour="camera" className="min-w-0">
+        <CameraWindow entries={entries.data} now={now} className="xl:aspect-auto xl:h-full xl:min-h-[190px]" />
+      </div>
+
+      <div className="mt-6 min-w-0">
+        <Moments moments={d.moments} />
+      </div>
+
+      <aside className="mt-6 min-w-0 space-y-6">
         <div>
           <h2 className="mb-3 flex items-center justify-between px-1 text-[19px] font-semibold tracking-[-0.01em]">
             Where {name.split(' ')[0]} went

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { buildCloudinaryUrl } from '../api/client.js';
+import React, { useEffect, useState } from 'react';
+import { buildCloudinaryUrl, enhancedPhoto } from '../api/client.js';
 import { sentence } from '../lib/story.js';
 import { timeAgo } from '../utils/datetime.js';
 import { Icon, cx } from '../ui';
@@ -8,16 +8,24 @@ import { Icon, cx } from '../ui';
  * The most recent camera photo, as a window into the room, with the AI's one-line reading of
  * it laid over the bottom. Photos are only there if the camera actually sent one.
  */
-export default function CameraWindow({ entries, now }) {
-  const [broken, setBroken] = useState(false);
+export default function CameraWindow({ entries, now, className }) {
+  const [stage, setStage] = useState(0); // 0 enhanced, 1 plain, 2 broken
+  const broken = stage > 1;
   const latest = [...(entries || [])]
     .filter((e) => e.entryType === 'frame' && e.imagePublicId)
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
   const url = latest && buildCloudinaryUrl(latest.imagePublicId);
+  // A new photo gets its own try at the enhanced version.
+  useEffect(() => setStage(0), [latest?.imagePublicId]);
 
   if (!latest || !url || broken) {
     return (
-      <div className="panel flex aspect-[16/10] flex-col items-center justify-center gap-2 bg-[repeating-linear-gradient(135deg,#F6F2EC_0_10px,#F0EBE3_10px_20px)] text-center">
+      <div
+        className={cx(
+          'panel flex aspect-[16/10] flex-col items-center justify-center gap-2 bg-[repeating-linear-gradient(135deg,#F6F2EC_0_10px,#F0EBE3_10px_20px)] text-center',
+          className
+        )}
+      >
         <span className="grid h-10 w-10 place-items-center rounded-full bg-surface text-ink-3 shadow-sm">
           <Icon name="camera" size={19} />
         </span>
@@ -29,14 +37,15 @@ export default function CameraWindow({ entries, now }) {
 
   const mins = (now - new Date(latest.timestamp).getTime()) / 60000;
   const live = mins < 10;
-  const sized = url.replace('/upload/', '/upload/c_fill,w_800,h_500,q_auto/');
+  const photo = enhancedPhoto(latest.imagePublicId, 800, 640);
+  const sized = stage === 0 ? photo.src : photo.fallback;
 
   return (
-    <figure className="group relative aspect-[16/10] overflow-hidden rounded-md border border-line bg-ink">
+    <figure className={cx('group relative aspect-[16/10] overflow-hidden rounded-[22px] bg-ink', className)}>
       <img
         src={sized}
         alt={latest.payload?.activity || 'Latest camera photo'}
-        onError={() => setBroken(true)}
+        onError={() => setStage((x) => x + 1)}
         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
       />
       <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">

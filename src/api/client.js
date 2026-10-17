@@ -57,3 +57,18 @@ export function buildCloudinaryUrl(imagePublicId) {
   if (!cloudName) return null;
   return `https://res.cloudinary.com/${cloudName}/image/upload/${imagePublicId}`;
 }
+
+/**
+ * A camera photo cleaned up by Cloudinary: generative restore (removes the ESP32's JPEG blocks),
+ * 4x AI upscale, auto-improve, then cropped to size. Cloudinary caches each result, so a photo is
+ * processed once. `fallback` is the same crop without the AI steps, for when those fail.
+ */
+export function enhancedPhoto(imagePublicId, w, h) {
+  const url = buildCloudinaryUrl(imagePublicId);
+  if (!url) return { src: null, fallback: null };
+  const crop = `c_fill,w_${w},h_${h},g_auto/q_auto`;
+  return {
+    src: url.replace('/upload/', `/upload/e_gen_restore/e_upscale/e_improve/${crop}/`),
+    fallback: url.replace('/upload/', `/upload/${crop}/`),
+  };
+}
