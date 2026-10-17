@@ -13,6 +13,9 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Login mode="signup" />} />
+      <Route path="/join" element={<Login mode="join" />} />
+      <Route path="/join/:code" element={<Login />} />
 
       <Route element={<ProtectedRoute />}>
         <Route path="/today" element={<Today />} />

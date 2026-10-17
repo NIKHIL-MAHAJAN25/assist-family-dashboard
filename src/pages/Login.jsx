@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { login as loginRequest } from '../api/auth.js';
+import { Navigate, useParams } from 'react-router-dom';
+import AuthPanel from '../components/AuthPanel.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Icon, Logo, Spinner, cx } from '../ui';
+import { Logo, cx } from '../ui';
 
 // ---------------------------------------------------------------------------
 // The left half is the product itself: a week of someone's life as seven woven
@@ -121,36 +121,11 @@ function Ticker() {
   );
 }
 
-const DEMO = { email: 'caregiver@example.com', password: 'caregiver123' };
+export default function Login({ mode }) {
+  const { isAuthenticated } = useAuth();
+  const { code } = useParams();
 
-export default function Login() {
-  const { isAuthenticated, login } = useAuth();
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [show, setShow] = useState(false);
-  const [error, setError] = useState(null);
-  const [busy, setBusy] = useState(false);
-
-  if (isAuthenticated) return <Navigate to="/today" replace />;
-
-  async function signIn(creds) {
-    setError(null);
-    setBusy(true);
-    try {
-      const data = await loginRequest(creds.email.trim(), creds.password);
-      login(data.token, data.user);
-      navigate('/today', { replace: true });
-    } catch (err) {
-      setError(
-        err?.response?.status === 401
-          ? "That email and password don't match."
-          : "Can't reach the server. Is the backend running?"
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
+  if (isAuthenticated && !code) return <Navigate to="/today" replace />;
 
   return (
     <div className="grid min-h-full bg-[#0B0F17] lg:grid-cols-[1.2fr_1fr]">
@@ -210,99 +185,9 @@ export default function Login() {
         </p>
       </section>
 
-      {/* Sign in */}
+      {/* Sign in / create an account / join with a code */}
       <main className="flex items-center justify-center bg-surface px-6 py-12 lg:rounded-l-[28px]">
-        <div className="w-full max-w-[360px]">
-          <div className="mb-10 flex items-center gap-2.5 lg:hidden">
-            <Logo size={28} />
-            <span className="text-lg font-bold">Assist</span>
-          </div>
-
-          <h2 className="text-[32px] font-bold leading-tight tracking-[-0.02em]">Welcome back</h2>
-          <p className="mt-2 text-md text-ink-3">Check in on the people you care for.</p>
-
-          <form
-            className="mt-9 space-y-5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              signIn({ email, password });
-            }}
-          >
-            <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold text-ink-2">Email</span>
-              <input
-                className="input h-12 text-md"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@family.com"
-              />
-            </label>
-            <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold text-ink-2">Password</span>
-              <span className="relative block">
-                <input
-                  className="input h-12 pr-16 text-md"
-                  type={show ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShow((s) => !s)}
-                  className="absolute inset-y-0 right-3 text-sm font-semibold text-ink-3 hover:text-ink"
-                >
-                  {show ? 'Hide' : 'Show'}
-                </button>
-              </span>
-            </label>
-
-            {error && (
-              <p className="flex items-center gap-2 text-sm text-act">
-                <Icon name="warning" size={15} /> {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={busy}
-              className="group flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink text-md font-semibold text-white transition hover:bg-ink-2 disabled:opacity-60"
-            >
-              {busy ? <Spinner /> : 'Sign in'}
-              {!busy && <Icon name="chevronRight" size={17} className="transition group-hover:translate-x-0.5" />}
-            </button>
-          </form>
-
-          <div className="my-7 flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-ink-4">
-            <span className="h-px flex-1 bg-line" /> or <span className="h-px flex-1 bg-line" />
-          </div>
-
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              setEmail(DEMO.email);
-              setPassword(DEMO.password);
-              signIn(DEMO);
-            }}
-            className="flex w-full items-center gap-3 rounded-md border border-line-strong p-3 text-left transition hover:border-ink-4 hover:bg-subtle"
-          >
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-[#E0E7FF] text-sm font-bold text-[#3730A3]">M</span>
-            <span className="flex-1">
-              <span className="block text-base font-semibold">Use the demo account</span>
-              <span className="block text-sm text-ink-3">See a day with Margaret, including one incident</span>
-            </span>
-            <Icon name="chevronRight" size={17} className="text-ink-3" />
-          </button>
-
-          <p className="mt-10 text-sm text-ink-3">
-            New here? Accounts are set up by the person's care coordinator — ask them for an invite.
-          </p>
-        </div>
+        <AuthPanel initialMode={code ? 'join' : mode || 'signin'} initialCode={code || ''} />
       </main>
     </div>
   );

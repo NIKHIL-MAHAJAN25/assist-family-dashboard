@@ -15,7 +15,10 @@ react-leaflet (OpenStreetMap tiles, desaturated in `index.css`), face-api.js (in
 
 ## Layout
 
-- `src/pages/` — `Login`, `Today`, `Log`, `Places`, `People`, `Memory`, `Settings`. Old routes
+- `src/pages/` — `Login`, `Today`, `Log`, `Places`, `People`, `Memory`, `Settings`. `Login` also serves
+  `/signup`, `/join`, `/join/:code` through `components/AuthPanel.jsx` (sign in | create account | join with code).
+  Settings panels for the family circle, phone pairing code and Drex decisions live in `components/SettingsPanels.jsx`;
+  account/invite calls in `src/api/accounts.js`. Old routes
   (`/timeline`, `/alerts`, `/geofences`, …) redirect in `App.jsx`.
 - `src/lib/story.js` — all interpretation of raw `log_entries`: `buildMoments` (merges repeated
   frames, collapses location pings to place changes), `buildIncidents` (groups flagged entries

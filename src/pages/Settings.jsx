@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
+import { DecisionLayer, FamilyCircle, PairPhone, Welcome } from '../components/SettingsPanels.jsx';
 import { registerDevice } from '../api/devices.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import EmergencyTag from '../components/EmergencyTag.jsx';
@@ -85,30 +87,15 @@ function RegisterDevice({ patientId }) {
 
 export default function Settings() {
   const { user, logout } = useAuth();
+  const [params] = useSearchParams();
   return (
     <>
-      <PageTitle title="Settings" subtitle="Devices, the patient record, and your account." />
+      <PageTitle title="Settings" subtitle="Family, devices, the patient record, and your account." />
+      {params.get('welcome') && <Welcome name={user?.patient_name} />}
       <div className="grid gap-6 lg:grid-cols-2">
+        <FamilyCircle patientId={user?.patient_id} patientName={user?.patient_name} />
+        <PairPhone patientId={user?.patient_id} patientName={user?.patient_name} />
         <EmergencyTag patientId={user?.patient_id} patientName={user?.patient_name} />
-
-        <Panel title="Set up the companion phone">
-          <ol className="space-y-3 text-base text-ink-2">
-            <li className="flex gap-3">
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-ink text-xs font-bold text-white">1</span>
-              Install the Assist app on {user?.patient_name ? `${user.patient_name}'s` : 'the'} phone and open it.
-            </li>
-            <li className="flex gap-3">
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-ink text-xs font-bold text-white">2</span>
-              When it asks for a patient ID, enter this one:
-            </li>
-          </ol>
-          <div className="mt-3 pl-9">
-            <Copyable value={user?.patient_id || ''} label="patient ID" />
-          </div>
-          <p className="mt-3 pl-9 text-sm text-ink-3">
-            The phone registers itself and then relays the home camera and its own location.
-          </p>
-        </Panel>
 
         <Panel title="Register a device manually">
           <p className="mb-4 text-sm text-ink-3">
@@ -116,6 +103,8 @@ export default function Settings() {
           </p>
           <RegisterDevice patientId={user?.patient_id} />
         </Panel>
+
+        <DecisionLayer patientId={user?.patient_id} />
 
         <Panel title="Your account">
           <dl className="space-y-3 text-base">
