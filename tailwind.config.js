@@ -22,11 +22,11 @@ export default {
           4: '#A89F92',
         },
         // Colour blocks: one per kind of thing, never for status (status keeps ok/watch/act).
-        butter: { DEFAULT: '#F2D46B', deep: '#E2BE45' },
+        butter: { DEFAULT: '#FFD951', deep: '#F5C518' },
         rose: { DEFAULT: '#F2B8CF', deep: '#E79AB9' },
         sage: { DEFAULT: '#A3B57A', deep: '#8A9E62' },
         sky: { DEFAULT: '#B3C6EA', deep: '#93ABDB' },
-        coral: { DEFAULT: '#EFA48E', deep: '#E2856C' },
+        coral: { DEFAULT: '#F29A82', deep: '#E57A5E' },
         accent: { DEFAULT: '#1E1C1A', soft: '#F2B8CF' },
         // Status, toned down from traffic-light primaries to earthy ones so red still leads but doesn't shout.
         ok: { DEFAULT: '#4D7C5A', soft: '#EAF1EA', line: '#C8DCCB' },

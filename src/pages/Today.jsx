@@ -75,8 +75,8 @@ function Stats({ items }) {
   );
 }
 
-const STATUS_TONE = { ok: 'bg-sage', watch: 'bg-[#F3C77E]', act: 'bg-coral' };
-const STATUS_SHAPE = { ok: '#8A9E62', watch: '#E8AE55', act: '#E2856C' };
+const STATUS_TONE = { ok: 'bg-sage', watch: 'bg-[#F9BE8E]', act: 'bg-coral' };
+const STATUS_SHAPE = { ok: '#8A9E62', watch: '#F2A36A', act: '#E57A5E' };
 
 function StatusBlock({ status, tone, incidents, now }) {
   const name = status.patient?.name || 'Your person';
@@ -141,7 +141,7 @@ function DayBlock({ moments, segments, now, dayStart }) {
       title="The day so far"
       shape={
         <svg style={{ position: 'absolute', right: -20, top: -26, opacity: 0.7 }} width="170" height="170" viewBox="0 0 100 100">
-          <path d="M35 0h30v35h35v30H65v35H35V65H0V35h35z" fill="#E2BE45" />
+          <path d="M35 0h30v35h35v30H65v35H35V65H0V35h35z" fill="#F5C518" />
         </svg>
       }
     >
@@ -460,7 +460,7 @@ function DeviceLine({ icon, name, last, now }) {
 
 const TOUR = [
   { target: 'status', key: 'Start here', color: '#A3B57A', title: 'Is {name} okay?', body: 'Green means nothing needs you. If something does, this card turns amber or red and says what happened.' },
-  { target: 'day', key: 'The day', color: '#F2D46B', title: 'The day at a glance', body: 'One bar per hour. Black bars held a meal or a walk; dashed ones are the rest of today, still to come.' },
+  { target: 'day', key: 'The day', color: '#FFD951', title: 'The day at a glance', body: 'One bar per hour. Black bars held a meal or a walk; dashed ones are the rest of today, still to come.' },
   { target: 'memory', key: 'Memory', color: '#F2B8CF', title: 'How {name}’s memory is doing', body: 'Today’s quiz and the week so far. Tap the card for every question and answer.' },
   { target: 'places', key: 'Places', color: '#B3C6EA', title: 'Where {name} went', body: 'The safe places and any time spent outside them. Tap to draw or move a safe place.' },
   { target: 'moments', key: 'Moments', color: '#B3C6EA', title: 'What the camera saw', body: '{name}’s day, newest first. Pick a moment to see the photo and what the camera made of it.' },

@@ -38,7 +38,7 @@ react-leaflet (OpenStreetMap tiles, desaturated in `index.css`), face-api.js (in
   black for chrome and actions (top bar, dock, primary pills). No gradients behind content.
 - Colour blocks (`butter`, `rose`, `sage`, `sky`, `coral`, each with `-deep` for its one big soft
   shape) mark *kinds* of things on Today (day, memory, places, moments). The status block is the
-  exception: sage = fine, apricot = worth a look, coral = act now.
+  exception: sage = fine, peach = worth a look, coral = act now.
 - Say each alert once: open incidents sit under the Today greeting (`IncidentCard embedded`).
 - Tokens only, from `tailwind.config.js`: `ground`, `surface`, `subtle`/`paper`, `line`, `ink`/`ink-2..4`,
   `accent` (= ink), the blocks above, and the status trio `ok` / `watch` / `act` (each with `-soft`, `-line`).
