@@ -44,7 +44,7 @@
 
   /* Paper card on the cream page: flat, no border, no blur. (Kept the old name so every page follows.) */
   .glass {
-    @apply border border-line bg-white;
+    @apply border border-line bg-surface;
   }
   /* Smoked glass for the top bar and dock: the page scrolls by underneath, softly blurred. */
   .glass-dark {

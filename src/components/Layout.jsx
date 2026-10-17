@@ -113,7 +113,7 @@ function PatientChip() {
       <span className="relative grid place-items-center">
         <span
           className="grid h-9 w-9 place-items-center rounded-full text-[14px] font-bold text-ink"
-          style={{ background: t.ring, boxShadow: `0 0 0 2px #F7F7F4, 0 0 0 4px ${t.ring}` }}
+          style={{ background: t.ring, boxShadow: `0 0 0 2px #F1ECE2, 0 0 0 4px ${t.ring}` }}
         >
           {name.charAt(0).toUpperCase()}
         </span>
