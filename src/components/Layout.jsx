@@ -218,7 +218,7 @@ export default function Layout({ children }) {
   const now = useNow();
   const part = partOfDay(now);
   const { pathname } = useLocation();
-  const tiles = pathname.startsWith('/today');
+  const tiles = pathname.startsWith('/today') || pathname.startsWith('/log');
 
   return (
     <div className="relative min-h-full p-2 sm:p-4 lg:p-6">

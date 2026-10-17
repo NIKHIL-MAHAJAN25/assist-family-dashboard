@@ -3,17 +3,16 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useEntries, useNow, useQuizHistory, useStatus, useZones } from '../lib/hooks.js';
 import { buildIncidents, buildMoments, dayBounds, daySummary, ribbonSegments } from '../lib/story.js';
-import { buildCloudinaryUrl, enhancedPhoto } from '../api/client.js';
 import { formatTime, timeAgo } from '../utils/datetime.js';
 import ZoneMap from '../components/ZoneMap.jsx';
 import CameraWindow from '../components/CameraWindow.jsx';
 import IncidentCard from '../components/IncidentCard.jsx';
 import Tour from '../components/Tour.jsx';
+import { CHIP, GRADIENT, GoButton, MomentCard, Pill, Tile, TileHead, avatar, icon, label } from '../components/Tiles.jsx';
 import { ErrorNote, Icon, Loading, StatusDot, cx } from '../ui';
 
 const STALE_MIN = 45;
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 6); // 6 am – 10 pm
-const GRADIENT = 'bg-[linear-gradient(135deg,#9FD0F7_0%,#C6EBA0_55%,#D9F57E_100%)]';
 
 function greeting(h) {
   if (h < 5) return 'Good night';
@@ -35,50 +34,12 @@ const dayKey = (t) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
-// ---- tiles -----------------------------------------------------------------------------------
-
-function Tile({ children, className, tour }) {
-  return (
-    <section data-tour={tour} className={cx('min-w-0 rounded-[20px] bg-paper p-5 sm:p-6', className)}>
-      {children}
-    </section>
-  );
-}
-
-function TileHead({ title, children }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <h2 className="font-serif text-[24px] leading-tight">{title}</h2>
-      {children}
-    </div>
-  );
-}
-
-function Pill({ to, children, dark }) {
-  const cls = cx(
-    'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] transition',
-    dark ? 'bg-ink text-white hover:bg-black' : 'border border-black/10 bg-white/85 hover:bg-white'
-  );
-  return to ? <Link to={to} className={cls}>{children}</Link> : <span className={cls}>{children}</span>;
-}
-
-function GoButton({ to, label }) {
-  return (
-    <Link to={to} aria-label={label} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ink text-white transition hover:scale-105">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M7 17L17 7M9 7h8v8" /></svg>
-    </Link>
-  );
-}
-
-// Lime = fine, sand = worth a look, coral = act. The chip is the only place status colour appears.
-const CHIP = { ok: 'bg-[#D2F27C]', watch: 'bg-[#F6D38B]', act: 'bg-[#F4A48C]', none: 'bg-[#E4E4DE]' };
-
-function Stat({ label, value, unit, chip, tone = 'ok' }) {
+function Stat({ label, value, unit, chip, tone = 'ok', small }) {
   return (
     <div className="flex min-h-[118px] min-w-0 flex-col rounded-[20px] bg-paper p-5">
       <p className="text-[13px] text-ink-2">{label}</p>
       <div className="mt-auto flex items-end justify-between gap-2">
-        <span className="font-serif text-[44px] leading-none">
+        <span className={cx('min-w-0 truncate font-serif leading-none', small ? 'text-[34px]' : 'text-[44px]')}>
           {value}
           {unit && <small className="text-[24px]">{unit}</small>}
         </span>
@@ -240,55 +201,6 @@ function PlacesTile({ status, zones, moments }) {
 
 // ---- moments: Atria's schedule list + patient card --------------------------------------------
 
-const KIND_LABEL = { meal: 'Meal', rest: 'Resting', leisure: 'Leisure', out: 'Out', unseen: 'Not visible', other: 'Quiet' };
-const AVATAR = { meal: 'bg-[#CDE6FA]', rest: 'bg-[#E6F7B4]', leisure: 'bg-[#A9D4F5]', out: 'bg-[#D2F27C]', unseen: 'bg-[#F4A48C]', other: 'bg-[#E4E4DE]' };
-const ICON = { meal: 'clock', rest: 'home', leisure: 'heart', out: 'walk', unseen: 'warning', other: 'dot' };
-
-const label = (m) => (m.kind === 'place' ? 'Place' : m.kind === 'vitals' ? 'Watch' : KIND_LABEL[m.category] || 'Moment');
-const avatar = (m) => (m.flagged ? 'bg-[#F4A48C]' : m.kind === 'place' ? (m.inside ? 'bg-[#D2F27C]' : 'bg-[#F4A48C]') : AVATAR[m.category] || 'bg-[#E4E4DE]');
-const icon = (m) => (m.kind === 'place' ? 'pin' : m.kind === 'vitals' ? 'heartPulse' : ICON[m.category] || 'dot');
-
-function MomentCard({ m }) {
-  const [stage, setStage] = useState(0);
-  const url = m.image && buildCloudinaryUrl(m.image);
-  const photo = enhancedPhoto(m.image, 720, 320);
-  const mins = Math.round((m.end - m.start) / 60000);
-  return (
-    <div className="min-w-0">
-      <div className="flex items-center gap-3">
-        <span className={cx('grid h-10 w-10 shrink-0 place-items-center rounded-full', avatar(m))}>
-          <Icon name={icon(m)} size={17} />
-        </span>
-        <h3 className="min-w-0 flex-1 font-serif text-[22px] leading-tight">{m.title}</h3>
-        <GoButton to="/log" label="Open in the log" />
-      </div>
-      <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-[12px] text-ink-3">
-        <span>
-          <Icon name="calendar" size={13} className="mr-1 inline -mt-0.5" />
-          <b className="font-medium text-ink">{formatTime(m.start)}{mins >= 2 ? ` – ${formatTime(m.end)}` : ''}</b>
-        </span>
-        <span>Kind <b className="font-medium text-ink">{label(m)}</b></span>
-        {m.confidence != null && (
-          <span>Camera <b className="font-medium text-ink">{m.confidence >= 0.8 ? 'sure' : m.confidence >= 0.6 ? 'fairly sure' : 'unsure'}</b></span>
-        )}
-      </div>
-      <p className="mt-3 text-[13px] leading-relaxed text-ink-2">
-        {m.detail || (m.kind === 'place' ? 'Location reading from the watch or phone.' : 'No further detail.')}
-        {m.objects?.length > 0 && ` Seen: ${m.objects.slice(0, 4).join(', ')}.`}
-      </p>
-      {url && stage < 2 && (
-        <img
-          key={m.image}
-          src={stage === 0 ? photo.src : photo.fallback}
-          alt=""
-          onError={() => setStage((x) => x + 1)}
-          className="mt-4 h-[180px] w-full rounded-2xl object-cover"
-        />
-      )}
-    </div>
-  );
-}
-
 function Moments({ moments }) {
   const list = [...moments].reverse().slice(0, 8);
   const [sel, setSel] = useState(0);
@@ -413,7 +325,7 @@ function DeviceLine({ icon: ic, name, last, now }) {
 const TOUR = [
   { target: 'status', key: 'Start here', color: '#D2F27C', title: 'Is {name} okay?', body: 'The chip under the greeting says it in one line. If something needs you, the details sit right below it.' },
   { target: 'day', key: 'The day', color: '#CDE6FA', title: 'The day at a glance', body: 'How active {name} has been, hour by hour. The black bubble is now.' },
-  { target: 'stats', key: 'Numbers', color: '#D2F27C', title: 'Four numbers', body: 'Last seen, readings that need a look, today’s quiz and time outside. The round chip turns sand or coral when one needs you.' },
+  { target: 'stats', key: 'At a glance', color: '#D2F27C', title: 'The four things to check', body: 'Where {name} is, the last meal, when the day started, and alerts. The round chip turns sand or coral when one needs you.' },
   { target: 'memory', key: 'Memory', color: '#A9D4F5', title: 'How {name}’s memory is doing', body: 'The week’s score and today’s questions. The arrow opens every answer.' },
   { target: 'places', key: 'Places', color: '#D2F27C', title: 'Where {name} went', body: 'Time outside the safe places, and which one {name} is in now.' },
   { target: 'moments', key: 'Moments', color: '#CDE6FA', title: 'What the camera saw', body: 'The day, newest first. Pick a moment to see the photo and what the camera made of it.' },
@@ -478,14 +390,19 @@ export default function Today() {
   const loc = s.location;
   const current = loc?.lat != null ? { lat: loc.lat, lng: loc.lng } : null;
 
-  const todaysQuiz = (quiz.data || []).filter((q) => new Date(q.date).getTime() >= dayStart);
-  const quizRight = todaysQuiz.filter((q) => q.attempts?.some((a) => a.correct)).length;
-  const outsideMin = d.moments
-    .filter((m) => m.kind === 'place' && !m.inside)
-    .reduce((t, m) => t + Math.max(m.end - m.start, 5 * 60000) / 60000, 0);
-  const seen = s.minutes_since_update == null ? { v: '—', u: '' } : dur(s.minutes_since_update);
-  const need = s.needs_attention_count || 0;
-  const out = dur(outsideMin);
+  // The four things a family member checks first: where, last meal, when the day started, alerts.
+  const clock = (t) => {
+    const [hm, ap] = formatTime(t).split(' ');
+    return { value: hm, unit: (ap || '').toLowerCase() };
+  };
+  // First time the camera actually saw them (not an empty room, not "not visible").
+  const acts = d.moments.filter((m) => m.kind === 'activity' && m.category !== 'unseen' && !/empty|no one|no person|no activity/i.test(m.title));
+  const lastMeal = [...d.moments].reverse().find((m) => m.kind === 'activity' && m.category === 'meal');
+  const mealAgoH = lastMeal ? (now - lastMeal.end) / 3600000 : null;
+  const upSince = acts[0];
+  const alertsToday = d.todaysIncidents.length;
+  const openAlerts = d.open.filter((i) => !i.resolved).length;
+  const whereNow = s.location?.zone_name || (outside ? 'Outside' : '—');
 
   return (
     <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -495,16 +412,20 @@ export default function Today() {
         <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
           <DayChart segments={d.segments} now={now} dayStart={dayStart} />
           <div data-tour="stats" className="grid grid-cols-2 gap-3">
-            <Stat label="Last seen" value={seen.v} unit={seen.u} chip={s.is_stale ? 'late' : 'live'} tone={s.is_stale ? 'watch' : 'ok'} />
-            <Stat label="Need a look" value={need} chip={need ? '!' : '✓'} tone={need ? (tone === 'act' ? 'act' : 'watch') : 'ok'} />
+            <Stat label="Where now" value={whereNow} small chip={outside ? 'out' : whereNow === '—' ? '?' : 'safe'} tone={outside ? 'act' : whereNow === '—' ? 'none' : 'ok'} />
             <Stat
-              label="Today’s quiz"
-              value={todaysQuiz.length ? quizRight : '—'}
-              unit={todaysQuiz.length ? `/${todaysQuiz.length}` : ''}
-              chip={todaysQuiz.length ? `${Math.round((quizRight / todaysQuiz.length) * 100)}%` : '—'}
-              tone={todaysQuiz.length ? 'ok' : 'none'}
+              label="Last meal"
+              {...(lastMeal ? clock(lastMeal.start) : { value: '—' })}
+              chip={mealAgoH == null ? 'none yet' : mealAgoH < 1 ? 'now' : `${Math.floor(mealAgoH)}h ago`}
+              tone={mealAgoH == null ? 'watch' : mealAgoH > 5 ? 'watch' : 'ok'}
             />
-            <Stat label="Time outside" value={out.v} unit={out.u} chip={outside ? 'out' : 'safe'} tone={outside ? 'act' : 'ok'} />
+            <Stat label="Up and about since" {...(upSince ? clock(upSince.start) : { value: '—' })} chip={upSince ? '✓' : '—'} tone={upSince ? 'ok' : 'none'} />
+            <Stat
+              label="Alerts today"
+              value={alertsToday}
+              chip={openAlerts ? `${openAlerts} open` : alertsToday ? 'handled' : 'none'}
+              tone={openAlerts ? 'act' : alertsToday ? 'watch' : 'ok'}
+            />
           </div>
         </div>
 
