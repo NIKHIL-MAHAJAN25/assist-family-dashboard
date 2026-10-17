@@ -83,8 +83,8 @@ function ago(min) {
 
 // On the black bar: soft tints that still read as green / amber / red.
 const TONE = {
-  ok: { ring: '#A3B57A', text: 'text-[#C3D19A]' },
-  watch: { ring: '#F2D46B', text: 'text-butter' },
+  ok: { ring: '#BDE58F', text: 'text-[#CFEFA6]' },
+  watch: { ring: '#F9C9A0', text: 'text-[#F9C9A0]' },
   act: { ring: '#EFA48E', text: 'text-coral' },
   neutral: { ring: '#5A544C', text: 'text-white/50' },
 };
@@ -120,7 +120,7 @@ function PatientChip() {
         </span>
       </span>
       <span className="min-w-0 leading-tight">
-        <span className="block text-[13px] font-semibold text-white">{name}</span>
+        <span className="block font-serif text-[16px] leading-tight text-white">{name}</span>
         <span className={cx('block truncate text-[11px] font-medium', t.text)}>
           {where}
           {data && <span className="text-white/45"> · {ago(data.minutes_since_update)}</span>}
@@ -224,7 +224,7 @@ export default function Layout({ children }) {
           className="relative flex h-16 items-center gap-3 rounded-[22px] glass-dark pl-3 pr-2 text-white sm:gap-5 sm:pl-5 sm:pr-3"
         >
           <Link to="/today" className="hidden shrink-0 items-center gap-2.5 sm:flex">
-            <span className="text-[22px] font-semibold tracking-[-0.04em] text-white">assist</span>
+            <span className="text-[17px] font-semibold uppercase tracking-[0.2em] text-white">Assist</span>
           </Link>
           <PatientChip />
           <div className="mx-auto hidden lg:block">

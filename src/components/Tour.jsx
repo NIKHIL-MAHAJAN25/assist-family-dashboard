@@ -144,7 +144,7 @@ export default function Tour({ id, steps, who, name }) {
               <span className="h-9 w-9 rounded-xl bg-rose" />
               <span className="h-9 w-9 rounded-full bg-sky" />
             </div>
-            <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Welcome{who ? `, ${who}` : ''}</h3>
+            <h3 className="mt-4 font-serif text-[30px] leading-tight">Welcome{who ? `, ${who}` : ''}</h3>
             <p className="mt-2 text-[14px] leading-relaxed text-ink-2">
               This page answers one question first: <b>is {name || 'your person'} okay?</b> Everything else is one glance
               away. Want a 40-second tour?
@@ -195,7 +195,7 @@ export default function Tour({ id, steps, who, name }) {
             <span className="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold" style={{ background: step.color }}>
               {i + 1} of {steps.length} · {step.key}
             </span>
-            <h4 className="mb-1.5 mt-2.5 text-[17px] font-semibold tracking-[-0.01em]">{fill(step.title)}</h4>
+            <h4 className="mb-1.5 mt-2.5 font-serif text-[21px] leading-tight">{fill(step.title)}</h4>
             <p className="text-[13px] leading-relaxed text-ink-2">{fill(step.body)}</p>
             <div className="mt-4 flex items-center gap-2">
               <div className="mr-auto flex gap-[5px]">

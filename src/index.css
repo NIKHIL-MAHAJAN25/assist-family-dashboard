@@ -73,11 +73,11 @@
 /* Leaflet chrome, toned to the cream page */
 .leaflet-container {
   font-family: inherit;
-  background: #F1E9DA;
+  background: #EEF0F0;
 }
-/* OSM recoloured to warm paper: drop its colours, then tint everything one cream-brown family */
+/* OSM recoloured to soft grey so the green zones, ink path and blue now-marker carry the colour */
 .map-base {
-  filter: grayscale(1) sepia(0.42) brightness(1.06) contrast(0.86);
+  filter: grayscale(1) brightness(1.1) contrast(0.82);
 }
 .assist-map .leaflet-control-zoom {
   border: 0 !important;
@@ -120,7 +120,7 @@
   margin-right: 6px;
   border: 0;
   border-radius: 50%;
-  background: #A3B57A;
+  background: #BDE58F;
   position: static;
   vertical-align: 1px;
 }
@@ -134,7 +134,7 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: #F2B8CF;
+  background: #A9D4F5;
   opacity: 0.55;
   animation: mappulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
@@ -147,7 +147,7 @@
   background: #1E1C1A;
   color: #fff;
   font: 700 13px 'Public Sans', sans-serif;
-  border: 3px solid #F2B8CF;
+  border: 3px solid #A9D4F5;
   box-shadow: 0 6px 14px -4px rgba(30, 28, 26, 0.6);
 }
 @keyframes mappulse {

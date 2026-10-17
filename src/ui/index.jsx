@@ -117,7 +117,7 @@ export function Panel({ title, action, children, className, bodyClassName, flush
       <section className={className}>
         {(title || action) && (
           <header className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
-            <h2 className="text-lg font-semibold tracking-[-0.01em] text-ink">{title}</h2>
+            <h2 className="font-serif text-[22px] leading-tight text-ink">{title}</h2>
             {action}
           </header>
         )}
@@ -129,7 +129,7 @@ export function Panel({ title, action, children, className, bodyClassName, flush
     <section className={cx('panel', className)}>
       {(title || action) && (
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3.5">
-          <h2 className="text-md font-semibold text-ink">{title}</h2>
+          <h2 className="font-serif text-[20px] leading-tight text-ink">{title}</h2>
           {action}
         </header>
       )}
@@ -142,7 +142,7 @@ export function PageTitle({ title, subtitle, actions }) {
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-[-0.01em] text-ink">{title}</h1>
+        <h1 className="font-serif text-[36px] leading-[1.05] text-ink">{title}</h1>
         {subtitle && <p className="mt-1 text-md text-ink-3">{subtitle}</p>}
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}

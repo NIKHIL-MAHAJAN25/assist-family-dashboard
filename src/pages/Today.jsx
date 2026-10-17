@@ -41,7 +41,7 @@ function Block({ tone, shape, title, to, children, className, tour }) {
     <>
       <span aria-hidden="true" className="pointer-events-none absolute inset-0">{shape}</span>
       <div className="relative flex items-start justify-between gap-3">
-        <h3 className="text-[19px] font-semibold tracking-[-0.01em]">{title}</h3>
+        <h3 className="font-serif text-[24px] leading-tight">{title}</h3>
         {to && (
           <span className="grid h-8 w-8 place-items-center rounded-full bg-white/50 opacity-0 transition group-hover:opacity-100">
             <Icon name="chevronRight" size={16} />
@@ -64,11 +64,11 @@ function Stats({ items }) {
     <dl className="mt-3 flex flex-wrap gap-x-7 gap-y-2">
       {items.map((s) => (
         <div key={s.k}>
-          <dd className="text-[17px] font-semibold leading-tight">
+          <dd className="font-serif text-[26px] leading-none">
             {s.v}
-            {s.u && <small className="ml-0.5 text-[12px] font-normal">{s.u}</small>}
+            {s.u && <small className="ml-0.5 text-[15px]">{s.u}</small>}
           </dd>
-          <dt className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.07em] text-ink/60">{s.k}</dt>
+          <dt className="mt-1.5 text-[10px] font-medium uppercase tracking-[0.07em] text-ink/60">{s.k}</dt>
         </div>
       ))}
     </dl>
@@ -76,7 +76,7 @@ function Stats({ items }) {
 }
 
 const STATUS_TONE = { ok: 'bg-sage', watch: 'bg-[#F9BE8E]', act: 'bg-coral' };
-const STATUS_SHAPE = { ok: '#8A9E62', watch: '#F2A36A', act: '#E57A5E' };
+const STATUS_SHAPE = { ok: '#9ACF63', watch: '#F2A36A', act: '#E8846A' };
 
 function StatusBlock({ status, tone, incidents, now }) {
   const name = status.patient?.name || 'Your person';
@@ -137,11 +137,11 @@ function DayBlock({ moments, segments, now, dayStart }) {
     <Block
       tour="day"
       to="/log"
-      tone="bg-butter"
+      tone="bg-[linear-gradient(135deg,#9FD0F7_0%,#C6EBA0_55%,#D9F57E_100%)]"
       title="The day so far"
       shape={
         <svg style={{ position: 'absolute', right: -20, top: -26, opacity: 0.7 }} width="170" height="170" viewBox="0 0 100 100">
-          <path d="M35 0h30v35h35v30H65v35H35V65H0V35h35z" fill="#F5C518" />
+          <path d="M35 0h30v35h35v30H65v35H35V65H0V35h35z" fill="rgba(255,255,255,0.35)" />
         </svg>
       }
     >
@@ -192,7 +192,7 @@ function MemoryBlock({ quiz, dayStart }) {
       title="Memory"
       shape={
         <svg style={{ position: 'absolute', right: -12, bottom: -44 }} width="150" height="150" viewBox="0 0 100 100">
-          <path d="M50 88S8 62 8 34a20 20 0 0 1 42-8 20 20 0 0 1 42 8c0 28-42 54-42 54z" fill="#E79AB9" />
+          <path d="M50 88S8 62 8 34a20 20 0 0 1 42-8 20 20 0 0 1 42 8c0 28-42 54-42 54z" fill="#7FBDEB" />
         </svg>
       }
     >
@@ -223,11 +223,11 @@ function PlacesBlock({ status, zones, moments }) {
     <Block
       tour="places"
       to="/places"
-      tone="bg-sky"
+      tone="bg-butter"
       title="Places"
       shape={
         <svg style={{ position: 'absolute', right: -28, bottom: -40 }} width="170" height="170" viewBox="0 0 100 100">
-          <path d="M50 0l11 27 28-10-10 28 21 15-28 6 3 29-25-15-25 15 3-29L0 60l21-15L11 17l28 10z" fill="#93ABDB" />
+          <path d="M50 0l11 27 28-10-10 28 21 15-28 6 3 29-25-15-25 15 3-29L0 60l21-15L11 17l28 10z" fill="#BCE04F" />
         </svg>
       }
     >
@@ -246,14 +246,14 @@ function PlacesBlock({ status, zones, moments }) {
 
 // ---- moments: a list on the left, the chosen one opened on the right ----------------------
 
-const MOMENT_TONE = { meal: 'bg-sky', rest: 'bg-rose', leisure: 'bg-butter', out: 'bg-sage', unseen: 'bg-coral', other: 'bg-[#E2D8C5]' };
+const MOMENT_TONE = { meal: 'bg-sky', rest: 'bg-rose', leisure: 'bg-butter', out: 'bg-sage', unseen: 'bg-coral', other: 'bg-[#E9E9E3]' };
 const MOMENT_ICON = { meal: 'clock', rest: 'home', leisure: 'heart', out: 'walk', unseen: 'warning', other: 'dot' };
 
 function momentTone(m) {
   if (m.flagged) return 'bg-coral';
   if (m.kind === 'place') return m.inside ? 'bg-sage' : 'bg-coral';
   if (m.kind === 'vitals') return 'bg-coral';
-  return MOMENT_TONE[m.category] || 'bg-[#E2D8C5]';
+  return MOMENT_TONE[m.category] || 'bg-[#E9E9E3]';
 }
 function momentIcon(m) {
   if (m.kind === 'place') return 'pin';
@@ -269,7 +269,7 @@ function MomentDetail({ m }) {
   const mins = Math.round((m.end - m.start) / 60000);
   return (
     <div className={cx('min-w-0 rounded-[22px] p-5 text-[13px] sm:rounded-tl-none', momentTone(m))}>
-      <p className="text-[15px] font-semibold">{m.title}</p>
+      <p className="font-serif text-[20px] leading-tight">{m.title}</p>
       <p className="mt-0.5 text-[12px] text-ink/70">
         {formatTime(m.start)}
         {mins >= 2 && ` – ${formatTime(m.end)} · ${mins} min`}
@@ -327,7 +327,7 @@ function Moments({ moments }) {
   return (
     <section data-tour="moments">
       <header className="mb-3 flex items-center justify-between px-1">
-        <h2 className="text-[19px] font-semibold tracking-[-0.01em]">Moments</h2>
+        <h2 className="font-serif text-[24px] leading-tight">Moments</h2>
         <Link to="/log" className="rounded-full bg-ink px-3.5 py-1.5 text-[12px] font-medium text-white">
           Full log
         </Link>
@@ -396,7 +396,7 @@ function MonthCalendar({ now, activeDays }) {
         <button type="button" onClick={() => setOffset((o) => o - 1)} aria-label="Previous month" className="grid h-8 w-8 place-items-center rounded-full hover:bg-paper">
           <Icon name="chevronLeft" size={18} />
         </button>
-        <span className="rounded-full bg-rose px-3.5 py-1 text-[13px]">
+        <span className="rounded-full bg-rose px-3.5 py-1 font-serif text-[15px]">
           {first.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
         </span>
         <button type="button" onClick={() => setOffset((o) => Math.min(0, o + 1))} disabled={offset === 0} aria-label="Next month" className="grid h-8 w-8 place-items-center rounded-full hover:bg-paper disabled:opacity-25">
@@ -459,13 +459,13 @@ function DeviceLine({ icon, name, last, now }) {
 // ---- page ---------------------------------------------------------------------------------
 
 const TOUR = [
-  { target: 'status', key: 'Start here', color: '#A3B57A', title: 'Is {name} okay?', body: 'Green means nothing needs you. If something does, this card turns amber or red and says what happened.' },
-  { target: 'day', key: 'The day', color: '#FFD951', title: 'The day at a glance', body: 'One bar per hour. Black bars held a meal or a walk; dashed ones are the rest of today, still to come.' },
-  { target: 'memory', key: 'Memory', color: '#F2B8CF', title: 'How {name}’s memory is doing', body: 'Today’s quiz and the week so far. Tap the card for every question and answer.' },
-  { target: 'places', key: 'Places', color: '#B3C6EA', title: 'Where {name} went', body: 'The safe places and any time spent outside them. Tap to draw or move a safe place.' },
-  { target: 'moments', key: 'Moments', color: '#B3C6EA', title: 'What the camera saw', body: '{name}’s day, newest first. Pick a moment to see the photo and what the camera made of it.' },
-  { target: 'week', key: 'Other days', color: '#F2B8CF', title: 'Look back', body: 'Tap any day to open its full log. Days with a dot have readings.' },
-  { target: 'camera', key: 'Right now', color: '#A3B57A', title: 'The latest photo', body: 'The most recent photo from the home camera. That’s the tour — the ? button brings it back any time.' },
+  { target: 'status', key: 'Start here', color: '#BDE58F', title: 'Is {name} okay?', body: 'Green means nothing needs you. If something does, this card turns amber or red and says what happened.' },
+  { target: 'day', key: 'The day', color: '#D2F27C', title: 'The day at a glance', body: 'One bar per hour. Black bars held a meal or a walk; dashed ones are the rest of today, still to come.' },
+  { target: 'memory', key: 'Memory', color: '#A9D4F5', title: 'How {name}’s memory is doing', body: 'Today’s quiz and the week so far. Tap the card for every question and answer.' },
+  { target: 'places', key: 'Places', color: '#D2F27C', title: 'Where {name} went', body: 'The safe places and any time spent outside them. Tap to draw or move a safe place.' },
+  { target: 'moments', key: 'Moments', color: '#CDE6FA', title: 'What the camera saw', body: '{name}’s day, newest first. Pick a moment to see the photo and what the camera made of it.' },
+  { target: 'week', key: 'Other days', color: '#A9D4F5', title: 'Look back', body: 'Tap any day to open its full log. Days with a dot have readings.' },
+  { target: 'camera', key: 'Right now', color: '#BDE58F', title: 'The latest photo', body: 'The most recent photo from the home camera. That’s the tour — the ? button brings it back any time.' },
 ];
 
 export default function Today() {
@@ -532,7 +532,7 @@ export default function Today() {
   return (
     <div className="grid gap-x-8 gap-y-3.5 xl:grid-cols-[minmax(0,1fr)_360px]">
       <div className="min-w-0">
-        <h1 className="text-[32px] font-semibold leading-[1.1] tracking-[-0.035em] sm:text-[40px]">
+        <h1 className="font-serif text-[36px] leading-[1.05] sm:text-[46px]">
           {greeting(new Date(now).getHours())}
           {firstName ? `, ${firstName}` : ''}
         </h1>
@@ -580,7 +580,7 @@ export default function Today() {
 
       <aside className="mt-6 min-w-0 space-y-6">
         <div>
-          <h2 className="mb-3 flex items-center justify-between px-1 text-[19px] font-semibold tracking-[-0.01em]">
+          <h2 className="mb-3 flex items-center justify-between px-1 font-serif text-[24px] leading-tight">
             Where {name.split(' ')[0]} went
             <Link to="/places" className="text-[12px] font-medium text-ink-3 hover:text-ink">Edit places</Link>
           </h2>
@@ -589,7 +589,7 @@ export default function Today() {
           </div>
         </div>
         <div>
-          <h2 className="mb-3 px-1 text-[19px] font-semibold tracking-[-0.01em]">Devices</h2>
+          <h2 className="mb-3 px-1 font-serif text-[24px] leading-tight">Devices</h2>
           <ul className="min-w-0 space-y-2">
             <DeviceLine icon="camera" name="Home camera" last={d.lastCamera} now={now} />
             <DeviceLine icon="watch" name="Watch & phone" last={d.lastWatch} now={now} />

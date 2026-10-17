@@ -34,7 +34,7 @@ const handleIcon = (color, cursor) =>
     iconAnchor: [8, 8],
   });
 const centerHandle = handleIcon('#1E1C1A', 'move');
-const edgeHandle = handleIcon('#8A9E62', 'ew-resize');
+const edgeHandle = handleIcon('#9ACF63', 'ew-resize');
 
 function offsetEast(lat, lng, meters) {
   const d = (meters / (6378137 * Math.cos((Math.PI * lat) / 180))) * (180 / Math.PI);
@@ -108,11 +108,11 @@ export default function ZoneMap({
             center={[z.centerLat, z.centerLng]}
             radius={z.radiusMeters}
             pathOptions={{
-              color: selected ? '#1E1C1A' : '#8A9E62',
+              color: selected ? '#151515' : '#9ACF63',
               weight: selected ? 2.5 : 2,
               dashArray: selected ? null : '1 7',
               lineCap: 'round',
-              fillColor: '#A3B57A',
+              fillColor: '#BDE58F',
               fillOpacity: selected ? 0.42 : 0.3,
             }}
             eventHandlers={onZoneClick ? { click: () => onZoneClick(z) } : undefined}
@@ -155,7 +155,7 @@ export default function ZoneMap({
           <Circle
             center={[draft.lat, draft.lng]}
             radius={draft.radius}
-            pathOptions={{ color: '#1E1C1A', weight: 2, dashArray: '6 6', fillColor: '#F2B8CF', fillOpacity: 0.35 }}
+            pathOptions={{ color: '#1E1C1A', weight: 2, dashArray: '6 6', fillColor: '#A9D4F5', fillOpacity: 0.35 }}
           />
           <Marker
             position={[draft.lat, draft.lng]}

@@ -32,19 +32,21 @@ react-leaflet (OpenStreetMap tiles, desaturated in `index.css`), face-api.js (in
   `flush`), `PageTitle`, `Field`, `Segmented`, `Loading`, `ErrorNote`, `Empty`, `Logo`
   (`inverse` on dark), `Avatar`, `cx`. `Icon` names live in `src/ui/Icon.jsx`.
 
-## Design rules ("Colour-block")
+## Design rules ("Atria" palette on the colour-block layout)
 
-- Flat cream page (`ground`), paper cards (`.glass` / `.panel` = `bg-paper`, no border, no blur),
-  black for chrome and actions (top bar, dock, primary pills). No gradients behind content.
-- Colour blocks (`butter`, `rose`, `sage`, `sky`, `coral`, each with `-deep` for its one big soft
-  shape) mark *kinds* of things on Today (day, memory, places, moments). The status block is the
-  exception: sage = fine, peach = worth a look, coral = act now.
+- Pale blue page (`ground`), off-white cards (`.glass` / `.panel` = `bg-paper`, no border, no blur),
+  black smoked-glass top bar and dock (`.glass-dark`), black primary pills.
+- Type: `font-serif` (DM Serif Display) for page titles, card titles and big numbers; Public Sans
+  for everything else.
+- Colour blocks mark *kinds* of things on Today: the day card is the blue→lime gradient, Memory is
+  `rose` (sky blue), Places is `butter` (lime). Token names are historical — see tailwind.config.js.
+  The status block is the exception: `sage` green = fine, peach = worth a look, coral = act now.
 - Say each alert once: open incidents sit under the Today greeting (`IncidentCard embedded`).
 - Tokens only, from `tailwind.config.js`: `ground`, `surface`, `subtle`/`paper`, `line`, `ink`/`ink-2..4`,
   `accent` (= ink), the blocks above, and the status trio `ok` / `watch` / `act` (each with `-soft`, `-line`).
 - Badges, dots and alerts still use status colours only (green = fine, amber = worth a look,
   red = act now). Activity categories in the ribbon use `CATEGORIES` colours from `story.js`.
-- One font (Public Sans), tabular numerals on `body`. No serif. Small uppercase labels only under
+- Tabular numerals on `body`. Small uppercase labels only under
   a stat number (`Stats` on Today) and in `.section-title`.
 - Inline confirm for destructive actions (no `window.confirm`). Times go through
   `src/utils/datetime.js`.

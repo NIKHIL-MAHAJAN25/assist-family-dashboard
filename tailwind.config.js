@@ -9,24 +9,25 @@ export default {
     extend: {
       colors: {
         // "Linen": every neutral shares one warm tint, so page, cards and text read as one family.
-        // Cream page, paper cards: flat, so the colour blocks below carry the page.
-        ground: '#F7F1E5',
-        surface: '#FBF7EE',
-        subtle: '#EFE7D8',
-        paper: '#EFE7D8',
-        line: { DEFAULT: '#E4DACA', strong: '#D3C8B5' },
+        // Pale blue page, off-white cards, near-black ink; serif for headings and big numbers.
+        ground: '#DCE8F4',
+        surface: '#FFFFFF',
+        subtle: '#F7F7F4',
+        paper: '#F7F7F4',
+        line: { DEFAULT: '#E4E4DE', strong: '#D2D2CB' },
         ink: {
-          DEFAULT: '#1E1C1A',
-          2: '#4A4540',
-          3: '#7E766B',
-          4: '#A89F92',
+          DEFAULT: '#151515',
+          2: '#4B4B48',
+          3: '#85857F',
+          4: '#AEAEA8',
         },
         // Colour blocks: one per kind of thing, never for status (status keeps ok/watch/act).
-        butter: { DEFAULT: '#FFD951', deep: '#F5C518' },
-        rose: { DEFAULT: '#F2B8CF', deep: '#E79AB9' },
-        sage: { DEFAULT: '#A3B57A', deep: '#8A9E62' },
-        sky: { DEFAULT: '#B3C6EA', deep: '#93ABDB' },
-        coral: { DEFAULT: '#F29A82', deep: '#E57A5E' },
+        // Names are historical: butter = lime, rose = sky blue, sage = fresh green, sky = pale blue.
+        butter: { DEFAULT: '#D2F27C', deep: '#BCE04F' },
+        rose: { DEFAULT: '#A9D4F5', deep: '#7FBDEB' },
+        sage: { DEFAULT: '#BDE58F', deep: '#9ACF63' },
+        sky: { DEFAULT: '#CDE6FA', deep: '#A9D4F5' },
+        coral: { DEFAULT: '#F4A48C', deep: '#E8846A' },
         accent: { DEFAULT: '#1E1C1A', soft: '#F2B8CF' },
         // Status, toned down from traffic-light primaries to earthy ones so red still leads but doesn't shout.
         ok: { DEFAULT: '#4D7C5A', soft: '#EAF1EA', line: '#C8DCCB' },
@@ -35,6 +36,7 @@ export default {
       },
       fontFamily: {
         sans: ['"Public Sans"', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+        serif: ['"DM Serif Display"', 'Georgia', 'serif'],
       },
       fontSize: {
         // [size, line-height]; display sizes get tighter leading
