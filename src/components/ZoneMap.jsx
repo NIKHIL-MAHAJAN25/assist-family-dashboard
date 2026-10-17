@@ -12,19 +12,19 @@ import {
 } from 'react-leaflet';
 import L from 'leaflet';
 
-// Standard OSM tiles, desaturated in index.css so zones and the path carry all the colour.
+// OpenStreetMap tiles, recoloured to warm paper in index.css (.map-base) so the sage zones,
+// the ink path and the rose "now" marker carry all the colour.
 const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
-const nowIcon = L.divIcon({
-  className: '',
-  html: `<span style="position:relative;display:block;width:22px;height:22px">
-    <span style="position:absolute;inset:0;border-radius:50%;background:#3D6B63;opacity:.25;animation:ping 1.6s cubic-bezier(0,0,.2,1) infinite"></span>
-    <span style="position:absolute;inset:4px;border-radius:50%;background:#3D6B63;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></span>
-  </span>`,
-  iconSize: [22, 22],
-  iconAnchor: [11, 11],
-});
+// Where they are now: their initial on ink, inside a soft rose pulse.
+const nowIcon = (initial) =>
+  L.divIcon({
+    className: '',
+    html: `<span class="map-now"><i></i><b>${initial}</b></span>`,
+    iconSize: [44, 44],
+    iconAnchor: [22, 22],
+  });
 
 const handleIcon = (color, cursor) =>
   L.divIcon({
@@ -33,8 +33,8 @@ const handleIcon = (color, cursor) =>
     iconSize: [16, 16],
     iconAnchor: [8, 8],
   });
-const centerHandle = handleIcon('#2A2622', 'move');
-const edgeHandle = handleIcon('#3D6B63', 'ew-resize');
+const centerHandle = handleIcon('#1E1C1A', 'move');
+const edgeHandle = handleIcon('#8A9E62', 'ew-resize');
 
 function offsetEast(lat, lng, meters) {
   const d = (meters / (6378137 * Math.cos((Math.PI * lat) / 180))) * (180 / Math.PI);
@@ -60,6 +60,7 @@ export default function ZoneMap({
   zones = [],
   path = [],
   current,
+  currentLabel,
   draft,
   onDraftChange,
   onMapClick,
@@ -92,10 +93,10 @@ export default function ZoneMap({
       dragging={interactive}
       doubleClickZoom={interactive}
       attributionControl
-      className={className}
+      className={['assist-map', className].filter(Boolean).join(' ')}
       style={style}
     >
-      <TileLayer url={TILE_URL} attribution={TILE_ATTR} />
+      <TileLayer url={TILE_URL} attribution={TILE_ATTR} className="map-base" maxZoom={19} />
       <FitBounds points={fitPoints} deps={fitKey ?? fitPoints.length} />
       {onMapClick && <ClickCatcher onClick={onMapClick} />}
 
@@ -107,10 +108,12 @@ export default function ZoneMap({
             center={[z.centerLat, z.centerLng]}
             radius={z.radiusMeters}
             pathOptions={{
-              color: selected ? '#3D6B63' : '#4D7C5A',
-              weight: selected ? 2.5 : 1.5,
-              fillColor: selected ? '#3D6B63' : '#6E9E7B',
-              fillOpacity: selected ? 0.16 : 0.1,
+              color: selected ? '#1E1C1A' : '#8A9E62',
+              weight: selected ? 2.5 : 2,
+              dashArray: selected ? null : '1 7',
+              lineCap: 'round',
+              fillColor: '#A3B57A',
+              fillOpacity: selected ? 0.42 : 0.3,
             }}
             eventHandlers={onZoneClick ? { click: () => onZoneClick(z) } : undefined}
           >
@@ -124,18 +127,18 @@ export default function ZoneMap({
       {path.length > 1 && (
         <Polyline
           positions={path.map((p) => [p.lat, p.lng])}
-          pathOptions={{ color: '#2A2622', weight: 2.5, opacity: 0.55, dashArray: '2 6', lineCap: 'round' }}
+          pathOptions={{ color: '#1E1C1A', weight: 3, opacity: 0.75, dashArray: '0.1 9', lineCap: 'round' }}
         />
       )}
       {path.map((p, i) => (
         <CircleMarker
           key={i}
           center={[p.lat, p.lng]}
-          radius={p.flagged ? 6 : 4}
+          radius={p.flagged ? 7 : 4.5}
           pathOptions={{
-            color: '#fff',
+            color: '#FBF7EE',
             weight: 2,
-            fillColor: p.flagged ? '#B4503C' : '#2A2622',
+            fillColor: p.flagged ? '#E2856C' : '#1E1C1A',
             fillOpacity: 1,
           }}
         >
@@ -143,14 +146,16 @@ export default function ZoneMap({
         </CircleMarker>
       ))}
 
-      {current && <Marker position={[current.lat, current.lng]} icon={nowIcon} />}
+      {current && (
+        <Marker position={[current.lat, current.lng]} icon={nowIcon((currentLabel || '•').charAt(0).toUpperCase())} zIndexOffset={1000} />
+      )}
 
       {draft && (
         <>
           <Circle
             center={[draft.lat, draft.lng]}
             radius={draft.radius}
-            pathOptions={{ color: '#3D6B63', weight: 2, dashArray: '6 6', fillColor: '#3D6B63', fillOpacity: 0.12 }}
+            pathOptions={{ color: '#1E1C1A', weight: 2, dashArray: '6 6', fillColor: '#F2B8CF', fillOpacity: 0.35 }}
           />
           <Marker
             position={[draft.lat, draft.lng]}

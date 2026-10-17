@@ -585,7 +585,7 @@ export default function Today() {
             <Link to="/places" className="text-[12px] font-medium text-ink-3 hover:text-ink">Edit places</Link>
           </h2>
           <div className="overflow-hidden rounded-[22px]">
-            <ZoneMap zones={zones.data || []} path={d.path} current={current} interactive={false} style={{ height: 220 }} />
+            <ZoneMap zones={zones.data || []} path={d.path} current={current} currentLabel={name} interactive={false} style={{ height: 260 }} />
           </div>
         </div>
         <div>

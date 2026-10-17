@@ -219,18 +219,20 @@ export default function Places() {
 
         <div className="border-t border-white/60 px-5 py-3 text-xs text-ink-3">
           <p className="flex flex-wrap items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-accent" /> Where they are now
+            <span className="h-2.5 w-2.5 rounded-full bg-ink ring-2 ring-rose" /> Where they are now
+            <span className="ml-2 h-2.5 w-2.5 rounded-full bg-sage" /> Safe place
             <span className="ml-2 h-2.5 w-2.5 rounded-full bg-ink" /> Today's path
-            <span className="ml-2 h-2.5 w-2.5 rounded-full bg-act" /> Outside
+            <span className="ml-2 h-2.5 w-2.5 rounded-full bg-coral" /> Outside
           </p>
         </div>
       </aside>
 
-      <div className="h-[55vh] overflow-hidden rounded-2xl border border-white/60 shadow-card lg:h-auto">
+      <div className="h-[55vh] overflow-hidden rounded-[22px] lg:h-auto">
       <ZoneMap
         zones={shownZones}
         path={path}
         current={current}
+        currentLabel={status.data?.patient?.name}
         selectedId={selectedId}
         onZoneClick={(z) => !draft && setSelectedId(z.id)}
         draft={draft}

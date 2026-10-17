@@ -70,32 +70,87 @@
   100% { opacity: 0; transform: scale(1.03); }
 }
 
-/* Leaflet chrome, toned to match */
+/* Leaflet chrome, toned to the cream page */
 .leaflet-container {
   font-family: inherit;
-  background: #E6E0D6;
+  background: #F1E9DA;
 }
-.leaflet-tile-pane {
-  filter: grayscale(1) contrast(0.78) brightness(1.12);
-  opacity: 0.9;
+/* OSM recoloured to warm paper: drop its colours, then tint everything one cream-brown family */
+.map-base {
+  filter: grayscale(1) sepia(0.42) brightness(1.06) contrast(0.86);
 }
-.leaflet-bar a {
-  color: #111418 !important;
+.assist-map .leaflet-control-zoom {
+  border: 0 !important;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: 0 10px 24px -12px rgba(30, 28, 26, 0.55) !important;
+}
+.assist-map .leaflet-control-zoom a {
+  width: 34px !important;
+  height: 34px !important;
+  line-height: 34px !important;
+  background: rgba(30, 28, 26, 0.82) !important;
+  color: #fff !important;
+  border: 0 !important;
+  backdrop-filter: blur(12px);
+}
+.assist-map .leaflet-control-zoom a:hover {
+  background: #1E1C1A !important;
 }
 .leaflet-control-attribution {
-  font-size: 10px !important;
-  background: rgba(255, 255, 255, 0.75) !important;
+  font-size: 9px !important;
+  background: rgba(251, 247, 238, 0.7) !important;
+  border-radius: 8px 0 0 0;
 }
 .leaflet-tooltip.zone-label {
-  background: #111418;
+  background: #1E1C1A;
   color: #fff;
   border: none;
-  border-radius: 6px;
-  padding: 3px 8px;
+  border-radius: 999px;
+  padding: 4px 11px 4px 9px;
   font-size: 12px;
   font-weight: 600;
-  box-shadow: none;
+  box-shadow: 0 8px 18px -8px rgba(30, 28, 26, 0.6);
 }
 .leaflet-tooltip.zone-label::before {
-  display: none;
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border: 0;
+  border-radius: 50%;
+  background: #A3B57A;
+  position: static;
+  vertical-align: 1px;
+}
+.map-now {
+  position: relative;
+  display: block;
+  width: 44px;
+  height: 44px;
+}
+.map-now i {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #F2B8CF;
+  opacity: 0.55;
+  animation: mappulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.map-now b {
+  position: absolute;
+  inset: 8px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #1E1C1A;
+  color: #fff;
+  font: 700 13px 'Public Sans', sans-serif;
+  border: 3px solid #F2B8CF;
+  box-shadow: 0 6px 14px -4px rgba(30, 28, 26, 0.6);
+}
+@keyframes mappulse {
+  0% { transform: scale(0.7); opacity: 0.7; }
+  100% { transform: scale(1.5); opacity: 0; }
 }
