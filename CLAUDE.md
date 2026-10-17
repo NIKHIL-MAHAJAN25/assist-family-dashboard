@@ -32,15 +32,16 @@ react-leaflet (OpenStreetMap tiles, desaturated in `index.css`), face-api.js (in
   `flush`), `PageTitle`, `Field`, `Segmented`, `Loading`, `ErrorNote`, `Empty`, `Logo`
   (`inverse` on dark), `Avatar`, `cx`. `Icon` names live in `src/ui/Icon.jsx`.
 
-## Design rules ("Atria" palette on the colour-block layout)
+## Design rules ("Atria")
 
-- Pale blue page (`ground`), off-white cards (`.glass` / `.panel` = `bg-paper`, no border, no blur),
-  black smoked-glass top bar and dock (`.glass-dark`), black primary pills.
-- Type: `font-serif` (DM Serif Display) for page titles, card titles and big numbers; Public Sans
-  for everything else.
-- Colour blocks mark *kinds* of things on Today: the day card is the blue→lime gradient, Memory is
-  `rose` (sky blue), Places is `butter` (lime). Token names are historical — see tailwind.config.js.
-  The status block is the exception: `sage` green = fine, peach = worth a look, coral = act now.
+- Pale blue page gradient; off-white tiles (`bg-paper`, `rounded-[20px]`, no border) floating on
+  it; off-white top bar with a sky-blue sliding pill. Black only for buttons (pills, round arrows).
+- Type: `font-serif` (DM Serif Display) for titles and big numbers; Public Sans for the rest.
+- One blue→lime gradient (`GRADIENT` in Today.jsx) for the day chart and the selected moment.
+  Everything else is off-white. Status lives only in the round chips: lime = fine, sand = worth a
+  look, coral = act now. No coloured blocks or decorative shapes.
+- Other pages sit on one off-white sheet (Layout); their inner `.glass`/`.panel` cards are white
+  with a hairline border.
 - Say each alert once: open incidents sit under the Today greeting (`IncidentCard embedded`).
 - Tokens only, from `tailwind.config.js`: `ground`, `surface`, `subtle`/`paper`, `line`, `ink`/`ink-2..4`,
   `accent` (= ink), the blocks above, and the status trio `ok` / `watch` / `act` (each with `-soft`, `-line`).

@@ -16,7 +16,8 @@
   }
 
   body {
-    @apply bg-ground text-ink font-sans text-base antialiased;
+    @apply text-ink font-sans text-base antialiased;
+    background: linear-gradient(180deg, #E4EEF8, #C9DDEE) fixed;
     /* Numbers line up in every table and timeline column. */
     font-variant-numeric: tabular-nums;
   }
@@ -43,7 +44,7 @@
 
   /* Paper card on the cream page: flat, no border, no blur. (Kept the old name so every page follows.) */
   .glass {
-    @apply bg-paper;
+    @apply border border-line bg-white;
   }
   /* Smoked glass for the top bar and dock: the page scrolls by underneath, softly blurred. */
   .glass-dark {

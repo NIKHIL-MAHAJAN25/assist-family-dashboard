@@ -38,14 +38,14 @@ function AccountMenu() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-full py-1 pl-1 pr-2 transition hover:bg-white/[0.08]"
+        className="flex items-center gap-1.5 rounded-full py-1 pl-1 pr-2 transition hover:bg-black/[0.04]"
         aria-haspopup="menu"
         aria-expanded={open}
       >
         <span className="grid h-[34px] w-[34px] place-items-center rounded-full bg-butter text-[13px] font-bold text-ink">
           {(user?.name || '?').charAt(0).toUpperCase()}
         </span>
-        <Icon name="chevronDown" size={14} className="text-white/50" />
+        <Icon name="chevronDown" size={14} className="text-ink-3" />
       </button>
       {open && (
         <div className="absolute right-0 top-12 z-[1000] w-60 overflow-hidden rounded-xl border border-line bg-surface text-ink shadow-pop">
@@ -81,12 +81,11 @@ function ago(min) {
   return h < 24 ? `${h} h ago` : `${Math.floor(h / 24)} d ago`;
 }
 
-// On the black bar: soft tints that still read as green / amber / red.
 const TONE = {
-  ok: { ring: '#BDE58F', text: 'text-[#CFEFA6]' },
-  watch: { ring: '#F9C9A0', text: 'text-[#F9C9A0]' },
-  act: { ring: '#EFA48E', text: 'text-coral' },
-  neutral: { ring: '#5A544C', text: 'text-white/50' },
+  ok: { ring: '#D2F27C', text: 'text-ok' },
+  watch: { ring: '#F6D38B', text: 'text-watch' },
+  act: { ring: '#F4A48C', text: 'text-act' },
+  neutral: { ring: '#E4E4DE', text: 'text-ink-3' },
 };
 
 // Who you're watching, plus the one line you'd want before opening anything: where, and how fresh.
@@ -109,28 +108,28 @@ function PatientChip() {
   return (
     <Link
       to="/today"
-      className="flex min-w-0 items-center gap-3 rounded-full py-1 pl-1 pr-2 transition hover:bg-white/[0.06] sm:pr-4"
+      className="flex min-w-0 items-center gap-3 rounded-full py-1 pl-1 pr-2 transition hover:bg-black/[0.04] sm:pr-4"
     >
       <span className="relative grid place-items-center">
         <span
           className="grid h-9 w-9 place-items-center rounded-full text-[14px] font-bold text-ink"
-          style={{ background: t.ring, boxShadow: `0 0 0 2px #1E1C1A, 0 0 0 4px ${t.ring}` }}
+          style={{ background: t.ring, boxShadow: `0 0 0 2px #F7F7F4, 0 0 0 4px ${t.ring}` }}
         >
           {name.charAt(0).toUpperCase()}
         </span>
       </span>
       <span className="min-w-0 leading-tight">
-        <span className="block font-serif text-[16px] leading-tight text-white">{name}</span>
+        <span className="block font-serif text-[17px] leading-tight text-ink">{name}</span>
         <span className={cx('block truncate text-[11px] font-medium', t.text)}>
           {where}
-          {data && <span className="text-white/45"> · {ago(data.minutes_since_update)}</span>}
+          {data && <span className="text-ink-3"> · {ago(data.minutes_since_update)}</span>}
         </span>
       </span>
     </Link>
   );
 }
 
-// One track with a rose pill that glides to the active page.
+// A sky-blue pill that glides to the active page.
 function Nav({ dock = false }) {
   const { pathname } = useLocation();
   const refs = useRef({});
@@ -148,7 +147,7 @@ function Nav({ dock = false }) {
     return () => window.removeEventListener('resize', measure);
   }, [pathname]);
   return (
-    <nav className={cx('relative flex items-center rounded-full p-1', dock ? 'w-full justify-between' : 'bg-white/[0.07]')}>
+    <nav className={cx('relative flex items-center rounded-full p-1', dock ? 'w-full justify-between' : '')}>
       {pill && (
         <span
           aria-hidden="true"
@@ -163,9 +162,9 @@ function Nav({ dock = false }) {
           ref={(el) => (refs.current[item.to] = el)}
           className={({ isActive }) =>
             cx(
-              'relative z-10 flex items-center rounded-full font-semibold transition-colors duration-300',
+              'relative z-10 flex items-center rounded-full font-medium transition-colors duration-300',
               dock ? 'h-12 flex-1 flex-col justify-center gap-0.5 text-[10.5px]' : 'h-9 gap-2 px-4 text-[13px]',
-              isActive ? 'text-ink' : 'text-white/60 hover:text-white'
+              isActive ? 'text-ink' : dock ? 'text-white/60 hover:text-white' : 'text-ink-2 hover:text-ink'
             )
           }
         >
@@ -187,10 +186,10 @@ function partOfDay(t = Date.now()) {
 function Clock({ now, part }) {
   return (
     <div className="hidden text-right leading-tight xl:block">
-      <p className="text-[13px] font-semibold tabular-nums text-white">
+      <p className="font-serif text-[17px] tabular-nums text-ink">
         {new Date(now).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
       </p>
-      <p className="flex items-center justify-end gap-1.5 text-[11px] font-medium text-white/50">
+      <p className="flex items-center justify-end gap-1.5 text-[11px] font-medium text-ink-3">
         {PART_LABEL[part]} · {new Date(now).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}
       </p>
     </div>
@@ -205,42 +204,46 @@ function Bell() {
       to="/today"
       aria-label={n ? `${n} readings need a look` : 'Nothing needs a look'}
       title={n ? `${n} readings need a look` : 'Nothing needs a look'}
-      className="relative grid h-10 w-10 place-items-center rounded-full bg-white/[0.07] text-white/80 transition hover:bg-white/[0.12] hover:text-white"
+      className="relative grid h-10 w-10 place-items-center rounded-full text-ink transition hover:bg-black/[0.05]"
     >
       <Icon name="bell" size={16} />
-      {n > 0 && <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-rose ring-2 ring-ink" />}
+      {n > 0 && <span className="absolute right-1.5 top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-ink px-1 text-[9px] font-semibold text-white">{n > 9 ? '9+' : n}</span>}
     </Link>
   );
 }
 
+// Off-white tiles floating on the pale blue page.
+// Today lays out its own tiles; every other page gets one off-white sheet to sit on.
 export default function Layout({ children }) {
   const now = useNow();
   const part = partOfDay(now);
+  const { pathname } = useLocation();
+  const tiles = pathname.startsWith('/today');
 
   return (
-    <div className="relative flex min-h-full flex-col">
-      <header className="sticky top-0 z-[900] mx-auto w-full max-w-[1760px] px-3 pt-3 sm:px-6 lg:px-10">
-        <div
-          className="relative flex h-16 items-center gap-3 rounded-[22px] glass-dark pl-3 pr-2 text-white sm:gap-5 sm:pl-5 sm:pr-3"
-        >
-          <Link to="/today" className="hidden shrink-0 items-center gap-2.5 sm:flex">
-            <span className="text-[17px] font-semibold uppercase tracking-[0.2em] text-white">Assist</span>
-          </Link>
-          <PatientChip />
-          <div className="mx-auto hidden lg:block">
-            <Nav />
+    <div className="relative min-h-full p-2 sm:p-4 lg:p-6">
+      <div className="mx-auto flex min-h-[calc(100vh-48px)] w-full max-w-[1760px] flex-col">
+        <header className="sticky top-2 z-[900] sm:top-4 lg:top-6">
+          <div className="relative flex h-16 items-center gap-3 rounded-[20px] bg-paper shadow-[0_10px_30px_-18px_rgba(30,50,80,0.35)] pl-3 pr-2 text-ink sm:gap-5 sm:pl-6 sm:pr-3">
+            <Link to="/today" className="hidden shrink-0 items-center gap-2.5 sm:flex">
+              <span className="text-[19px] font-semibold uppercase tracking-[0.2em] text-ink">Assist</span>
+            </Link>
+            <PatientChip />
+            <div className="mx-auto hidden lg:block">
+              <Nav />
+            </div>
+            <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-3 lg:ml-0">
+              <Clock now={now} part={part} />
+              <span className="hidden h-7 w-px bg-line xl:block" />
+              <Bell />
+              <AccountMenu />
+            </div>
           </div>
-          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-3 lg:ml-0">
-            <Clock now={now} part={part} />
-            <span className="hidden h-7 w-px bg-white/10 xl:block" />
-            <Bell />
-            <AccountMenu />
-          </div>
-        </div>
-      </header>
-      <main className="mx-auto w-full max-w-[1760px] flex-1 px-4 pb-28 pt-5 sm:px-6 lg:px-10 lg:pb-8 lg:pt-6">
-        {children}
-      </main>
+        </header>
+        <main className="mt-3 w-full flex-1 pb-24 lg:pb-0">
+          {tiles ? children : <div className="min-h-full rounded-[20px] bg-paper p-4 sm:p-6 lg:p-8">{children}</div>}
+        </main>
+      </div>
       {/* Below lg the nav moves to a floating dock at the thumb, like a phone app. */}
       <div className="fixed inset-x-3 bottom-3 z-[900] lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="mx-auto max-w-md rounded-[22px] glass-dark p-1">

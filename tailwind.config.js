@@ -11,6 +11,7 @@ export default {
         // "Linen": every neutral shares one warm tint, so page, cards and text read as one family.
         // Pale blue page, off-white cards, near-black ink; serif for headings and big numbers.
         ground: '#DCE8F4',
+        frame: '#141414',
         surface: '#FFFFFF',
         subtle: '#F7F7F4',
         paper: '#F7F7F4',
