@@ -23,7 +23,7 @@ const CHECKS = (pid) => `demo-checks:${pid}`;
 
 function Section({ n, title, hint, children, right }) {
   return (
-    <section className="rounded-[22px] bg-paper p-5 sm:p-6">
+    <section className="rounded-[22px] bg-white/60 p-5 ring-1 ring-black/[0.04] sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-3">Step {n}</p>
@@ -88,7 +88,7 @@ export default function Demo() {
 
   return (
     <div className="mx-auto grid max-w-[1180px] gap-3">
-      <header className="flex flex-wrap items-end justify-between gap-4 rounded-[22px] bg-paper p-5 sm:p-6">
+      <header className="flex flex-wrap items-end justify-between gap-4 p-1 pb-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-3">For the auction</p>
           <h1 className="font-serif text-[38px] leading-none">Demo kit</h1>

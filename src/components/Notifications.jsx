@@ -78,9 +78,11 @@ export default function NotificationCenter() {
     }
   }, [items, perm]);
 
+  // Answers and notes fade after 9 s; alerts stay until dismissed.
   useEffect(() => {
-    if (!toasts.length) return undefined;
-    const id = setTimeout(() => setToasts((t) => t.slice(0, -1)), 9000);
+    const fading = [...toasts].reverse().find((t) => t.kind !== 'alert');
+    if (!fading) return undefined;
+    const id = setTimeout(() => setToasts((t) => t.filter((x) => x.key !== fading.key)), 9000);
     return () => clearTimeout(id);
   }, [toasts]);
 
