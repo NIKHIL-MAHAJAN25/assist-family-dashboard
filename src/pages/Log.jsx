@@ -317,6 +317,13 @@ export default function Log() {
                                   <span className="truncate font-serif text-[16px]">{m.title}</span>
                                   {m.entries?.some((e) => e.isSaved) && <Icon name="bookmark" size={13} fill="currentColor" className="ml-auto shrink-0" />}
                                 </span>
+                                {m.kind === 'activity' && m.objects?.length > 0 && (
+                                  <span className="mt-1 block truncate pl-[38px] text-[12px] text-ink-2">
+                                    {m.quiet ? 'Saw ' : 'With '}
+                                    {m.objects.slice(0, 3).join(', ')}
+                                    {m.objects.length > 3 ? ` +${m.objects.length - 3}` : ''}
+                                  </span>
+                                )}
                               </button>
                             </li>
                           );

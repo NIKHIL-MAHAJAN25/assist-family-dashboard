@@ -50,6 +50,22 @@ function frameDetail(e) {
   return sentence(s);
 }
 
+/** Adds new objects to a stretch's list, newest first, without near-duplicates ("keyboard" vs "laptop keyboard"). */
+function mergeObjects(list, more) {
+  const out = [...(list || [])];
+  for (const raw of more || []) {
+    const o = String(raw).trim().toLowerCase();
+    if (!o) continue;
+    const i = out.findIndex((x) => x === o || x.includes(o) || o.includes(x));
+    if (i >= 0) {
+      if (o.length > out[i].length) out[i] = o; // keep the more specific wording
+      continue;
+    }
+    out.push(o);
+  }
+  return out;
+}
+
 export function categorize(activity = '') {
   const a = activity.toLowerCase();
   // "Not visible" is a safety signal; an empty room is just a quiet moment.
@@ -110,6 +126,7 @@ export function buildMoments(entries, zones) {
         prev.flagged ||= e.requiresAttention;
         if (e.imagePublicId) prev.image = e.imagePublicId; // show the latest photo of the stretch
         prev.detail = frameDetail(e) || prev.detail;
+        prev.objects = mergeObjects(prev.objects, e.payload?.objects_of_note);
         continue;
       }
       moments.push({
@@ -118,7 +135,10 @@ export function buildMoments(entries, zones) {
         category: frameCategory(e),
         title: frameTitle(e),
         detail: frameDetail(e),
-        objects: QUIET_KEYS.has(e.payload?.activity_key) ? [] : e.payload?.objects_of_note || [],
+        // What the camera saw, kept even when no one was in view — it's what makes a quiet stretch
+        // readable ("laptop, curtains, coat on chair") instead of a bare "No one in view".
+        objects: mergeObjects([], e.payload?.objects_of_note),
+        quiet: QUIET_KEYS.has(e.payload?.activity_key),
         start: t,
         end: t,
         count: 1,
