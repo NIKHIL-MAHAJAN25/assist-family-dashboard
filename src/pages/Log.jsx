@@ -7,6 +7,7 @@ import { CATEGORIES, buildIncidents, buildMoments, dayBounds, ribbonSegments } f
 import { formatDayLabel, formatTime } from '../utils/datetime.js';
 import IncidentCard from '../components/IncidentCard.jsx';
 import DayPicker from '../components/DayPicker.jsx';
+import { SKIES, SkyBackdrop } from '../components/DaySky.jsx';
 import { GRADIENT, MomentCard, Tile, TileHead, avatar, icon, label } from '../components/Tiles.jsx';
 import { ErrorNote, Icon, Loading, cx } from '../ui';
 
@@ -55,29 +56,43 @@ function PartTile({ part, segments, incidents, dayStart, now, isToday }) {
   const alerts = incidents.filter((i) => i.start >= a && i.start < b).length;
   const future = isToday && now < a;
   const current = isToday && now >= a && now < b;
+  const dark = SKIES[part.key]?.dark;
   return (
-    <div className={cx('flex min-h-[170px] min-w-0 flex-col rounded-[20px] p-5', current ? GRADIENT : 'bg-paper', future && 'opacity-50')}>
-      <div className="flex items-baseline justify-between gap-2">
+    <div
+      className={cx(
+        'relative flex min-h-[170px] min-w-0 flex-col overflow-hidden rounded-[20px] p-5',
+        dark ? 'text-white' : 'text-ink',
+        current && 'ring-2 ring-ink/80 ring-offset-2 ring-offset-transparent',
+        future && 'opacity-55'
+      )}
+      style={{ background: SKIES[part.key]?.bg }}
+    >
+      <SkyBackdrop part={part.key} />
+      <div className="relative flex items-baseline justify-between gap-2">
         <h3 className="font-serif text-[22px] leading-tight">{part.key}</h3>
-        <span className="text-[11px] text-ink-3">{current ? 'now' : part.hint}</span>
+        {current ? (
+          <span className={cx('rounded-full px-2.5 py-0.5 text-[11px] font-semibold', dark ? 'bg-white text-ink' : 'bg-ink text-white')}>now</span>
+        ) : (
+          <span className={cx('text-[11px]', dark ? 'text-white/55' : 'text-ink-3')}>{part.hint}</span>
+        )}
       </div>
       {future ? (
-        <p className="mt-auto text-[13px] text-ink-3">Still to come.</p>
+        <p className={cx('relative mt-auto text-[13px]', dark ? 'text-white/60' : 'text-ink-3')}>Still to come.</p>
       ) : rows.length ? (
-        <ul className="mt-4 space-y-2 text-[13px]">
+        <ul className="relative mt-4 space-y-2 text-[13px]">
           {rows.map(([c, m]) => (
             <li key={c} className="flex items-center gap-2.5">
               <span className="h-3 w-3 shrink-0 rounded-[4px]" style={{ background: SWATCH[c] }} />
-              <span className="min-w-0 truncate text-ink-2">{CATEGORIES[c]?.label || c}</span>
+              <span className={cx('min-w-0 truncate', dark ? 'text-white/75' : 'text-ink-2')}>{CATEGORIES[c]?.label || c}</span>
               <b className="ml-auto font-serif text-[16px] font-normal">{fmt(m)}</b>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="mt-auto text-[13px] text-ink-3">Nothing seen by the camera.</p>
+        <p className={cx('relative mt-auto text-[13px]', dark ? 'text-white/60' : 'text-ink-3')}>Nothing seen by the camera.</p>
       )}
       {alerts > 0 && (
-        <p className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-[#F4A48C] px-2.5 py-1 text-[11px] font-semibold">
+        <p className="relative mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-[#F4A48C] px-2.5 py-1 text-[11px] font-semibold">
           <Icon name="warning" size={12} /> {alerts} alert{alerts > 1 ? 's' : ''}
         </p>
       )}

@@ -155,3 +155,8 @@
   0% { transform: scale(0.7); opacity: 0.7; }
   100% { transform: scale(1.5); opacity: 0; }
 }
+
+/* Night sky on the part-of-day tiles (components/DaySky.jsx) */
+@keyframes sky-twinkle { 0%, 100% { opacity: 0.25 } 50% { opacity: 1 } }
+.sky-star { animation-name: sky-twinkle; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+@media (prefers-reduced-motion: reduce) { .sky-star { animation: none; opacity: 0.7; } }
