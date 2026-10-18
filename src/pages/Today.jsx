@@ -7,6 +7,7 @@ import { formatTime, timeAgo } from '../utils/datetime.js';
 import ZoneMap from '../components/ZoneMap.jsx';
 import CameraWindow from '../components/CameraWindow.jsx';
 import IncidentCard from '../components/IncidentCard.jsx';
+import SummaryTile from '../components/SummaryTile.jsx';
 import Tour from '../components/Tour.jsx';
 import { CHIP, GRADIENT, GoButton, MomentCard, Pill, Tile, TileHead, avatar, icon, label } from '../components/Tiles.jsx';
 import { ErrorNote, Icon, Loading, StatusDot, cx } from '../ui';
@@ -408,6 +409,7 @@ export default function Today() {
     <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
       <div className="grid min-w-0 gap-3">
         <Hello firstName={firstName} now={now} tone={tone} where={where} summary={summary} open={d.open} dayStart={dayStart} />
+        <SummaryTile patientId={user?.patient_id} firstName={(user?.patient_name || '').split(' ')[0] || 'them'} />
 
         <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
           <DayChart segments={d.segments} now={now} dayStart={dayStart} />
