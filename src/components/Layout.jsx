@@ -62,6 +62,13 @@ function AccountMenu() {
           >
             <Icon name="settings" size={16} className="text-ink-3" /> Settings & devices
           </NavLink>
+          <NavLink
+            to="/report"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 px-4 py-2.5 text-base hover:bg-subtle"
+          >
+            <Icon name="report" size={16} className="text-ink-3" /> Doctor’s report
+          </NavLink>
           <button
             type="button"
             onClick={logout}
@@ -223,9 +230,9 @@ export default function Layout({ children }) {
   const tiles = pathname.startsWith('/today') || pathname.startsWith('/log') || pathname.startsWith('/assistant');
 
   return (
-    <div className="relative min-h-full p-2 sm:p-4 lg:p-6">
+    <div className="relative min-h-full p-2 sm:p-4 lg:p-6 print:p-0">
       <div className="mx-auto flex min-h-[calc(100vh-48px)] w-full max-w-[1760px] flex-col">
-        <header className="sticky top-2 z-[900] sm:top-4 lg:top-6">
+        <header className="sticky top-2 z-[900] sm:top-4 lg:top-6 print:hidden">
           <div className="relative flex h-16 items-center gap-3 rounded-[20px] bg-paper shadow-[0_10px_30px_-18px_rgba(30,50,80,0.35)] pl-3 pr-2 text-ink sm:gap-5 sm:pl-6 sm:pr-3">
             <Link to="/today" className="hidden shrink-0 items-center gap-2.5 sm:flex">
               <span className="text-[19px] font-semibold uppercase tracking-[0.2em] text-ink">Assist</span>
@@ -243,11 +250,11 @@ export default function Layout({ children }) {
           </div>
         </header>
         <main className="mt-3 w-full flex-1 pb-24 lg:pb-0">
-          {tiles ? children : <div className="min-h-full rounded-[20px] bg-paper p-4 sm:p-6 lg:p-8">{children}</div>}
+          {tiles ? children : <div className="min-h-full rounded-[20px] bg-paper p-4 sm:p-6 lg:p-8 print:bg-white print:p-0">{children}</div>}
         </main>
       </div>
       {/* Below lg the nav moves to a floating dock at the thumb, like a phone app. */}
-      <div className="fixed inset-x-3 bottom-3 z-[900] lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <div className="fixed inset-x-3 bottom-3 z-[900] lg:hidden print:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="mx-auto max-w-md rounded-[22px] glass-dark p-1">
           <Nav dock />
         </div>

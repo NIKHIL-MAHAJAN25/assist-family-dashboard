@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { useQuizHistory } from '../lib/hooks.js';
+import { usePatientId, useQuizHistory, useStatus } from '../lib/hooks.js';
+import FamilyAlbum from '../components/FamilyAlbum.jsx';
 import { formatDayLabel } from '../utils/datetime.js';
 import { Empty, ErrorNote, Icon, Loading, PageTitle, Panel, cx } from '../ui';
 
@@ -51,6 +52,9 @@ function Ring({ value, size = 84, stroke = 9 }) {
 
 export default function Memory() {
   const quiz = useQuizHistory();
+  const patientId = usePatientId();
+  const status = useStatus();
+  const firstName = (status.data?.patient?.name || '').split(' ')[0] || 'them';
 
   const days = useMemo(() => {
     const map = new Map();
@@ -85,6 +89,8 @@ export default function Memory() {
         title="Memory"
         subtitle="Each day's quiz is written from what the camera actually saw — so a right answer is a real recollection, not trivia."
       />
+
+      <FamilyAlbum patientId={patientId} firstName={firstName} />
 
       {quiz.isLoading ? (
         <Loading />

@@ -310,4 +310,7 @@ export const QUICK = [
   ['rule', 'Watch for…', 'bell'],
   ['story', 'Bedtime story', 'heart'],
   ['broadcast', 'Tell family', 'people'],
+  ['album', 'Photo album', 'image'],
+  ['replay', 'Replay walk', 'walk'],
+  ['report', 'Doctor’s report', 'report'],
 ];

@@ -391,3 +391,29 @@ export function minutesInZones(entries, zones, maxGapMin = 45) {
   }
   return totals;
 }
+
+/**
+ * Walk replay (#11): the location pings for one window, oldest first, as
+ * { lat, lng, t, inside, flagged }. Windows: 'today', 'yesterday', or 'last_outing' — the latest
+ * stretch outside the safe places, with the last ping before it and the first one back inside.
+ */
+export function walkPoints(entries, window = 'last_outing') {
+  const pings = (entries || [])
+    .filter((e) => e.entryType === 'geofence' && typeof e.payload?.lat === 'number')
+    .map((e) => ({ lat: e.payload.lat, lng: e.payload.lng, t: new Date(e.timestamp), inside: e.payload.inside_safe_zone !== false, flagged: e.requiresAttention }))
+    .sort((a, b) => a.t - b.t);
+  if (window === 'today' || window === 'yesterday') {
+    const [start, end] = dayBounds(window === 'today' ? new Date() : new Date(Date.now() - 86400000));
+    return pings.filter((p) => p.t >= start && p.t < end);
+  }
+  let last = -1;
+  for (let i = pings.length - 1; i >= 0; i--) if (!pings[i].inside) { last = i; break; }
+  if (last < 0) return [];
+  let first = last;
+  while (first > 0 && !pings[first - 1].inside) first--;
+  // Keep the outing to one continuous walk: a gap of more than 30 minutes ends it.
+  while (first < last && pings[first + 1].t - pings[first].t > 30 * 60000) first++;
+  const from = Math.max(0, first - 1);
+  const to = last + 1 < pings.length && pings[last + 1].t - pings[last].t < 30 * 60000 ? last + 1 : last;
+  return pings.slice(from, to + 1);
+}

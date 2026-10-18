@@ -9,15 +9,22 @@ import { formatTime } from '../utils/datetime.js';
 import { Icon, cx } from '../ui';
 import { BroadcastCard, PHONE_ACTIONS, PhoneActionCard, QUICK } from '../components/PhoneActions.jsx';
 import { RuleCard, StoryCard } from '../components/AgentCards.jsx';
+import { AlbumCard, FindCard, ReplayCard, ReportCard } from '../components/LookBackCards.jsx';
 
 // The family Assistant: talk to an agent that knows the person's day, and let it propose actions.
 // Anything that reaches the person (speaking on their phone) is shown as a card the family member
 // confirms — the agent never sends on its own. Backend: POST /api/patients/:id/assistant, /commands.
 
 const BY = { claude: 'Claude', codex: 'Codex', gemini: 'Gemini' };
-const SOURCE_WORDS = { location: 'location', camera: 'camera', journal: 'journal', alerts: 'alerts', messages: 'messages' };
+const SOURCE_WORDS = { location: 'location', camera: 'camera', journal: 'journal', alerts: 'alerts', messages: 'messages', objects: 'objects seen' };
 const STEPS = ['Reading today’s journal', 'Checking where she is', 'Looking at the latest photo', 'Thinking it through'];
 const STORE = (pid) => `assistant:${pid}`;
+// Phone actions that aren't confirm cards of their own (sent from other cards or the scheduler).
+const RAIL_EXTRA = {
+  album: { icon: 'image', title: (n, c) => `Photo album for ${n} (${c.slides?.length || 0} photos)` },
+  story: { icon: 'heart', title: (n) => `Bedtime story for ${n}` },
+  voice: { icon: 'mic', title: () => 'Voice note' },
+};
 const agoText = (m) => (m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} day${m >= 2880 ? 's' : ''} ago`);
 
 function load(pid) {
@@ -116,6 +123,10 @@ function ActionCard({ a, ctx }) {
   if (a.type === 'map') return <MapCard status={ctx.status} zones={ctx.zones} firstName={ctx.firstName} />;
   if (a.type === 'photo') return <PhotoCard latest={ctx.latestPhoto} />;
   if (a.type === 'summary') return <SummaryAction patientId={ctx.patientId} range={a.range} />;
+  if (a.type === 'find') return <FindCard patientId={ctx.patientId} object={a.object || 'glasses'} firstName={ctx.firstName} />;
+  if (a.type === 'replay') return <ReplayCard firstName={ctx.firstName} window={a.window || 'last_outing'} />;
+  if (a.type === 'album') return <AlbumCard patientId={ctx.patientId} firstName={ctx.firstName} />;
+  if (a.type === 'report') return <ReportCard patientId={ctx.patientId} days={a.days || 14} firstName={ctx.firstName} />;
   return null;
 }
 
@@ -217,9 +228,9 @@ function LiveRail({ ctx, commands, rules, onDeleteRule, onAsk }) {
           <ul className="no-scrollbar fade-edges mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto">
             {commands.slice(0, 12).map((c) => (
               <li key={c.id} className="flex gap-3 rounded-[14px] bg-white/70 p-3 text-[13px]">
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#EAF4FF]"><Icon name={PHONE_ACTIONS[c.type]?.icon || 'dot'} size={14} /></span>
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#EAF4FF]"><Icon name={PHONE_ACTIONS[c.type]?.icon || RAIL_EXTRA[c.type]?.icon || 'dot'} size={14} /></span>
                 <div className="min-w-0 flex-1">
-                  <p className="line-clamp-2 text-ink">{c.text ? `“${c.text}”` : c.question ? `“${c.question}”${c.reply ? ` → ${c.reply}` : ''}` : PHONE_ACTIONS[c.type]?.title(firstName) || c.type}</p>
+                  <p className="line-clamp-2 text-ink">{c.text ? `“${c.text}”` : c.question ? `“${c.question}”${c.reply ? ` → ${c.reply}` : ''}` : PHONE_ACTIONS[c.type]?.title(firstName) || RAIL_EXTRA[c.type]?.title(firstName, c) || c.type}</p>
                   <p className="mt-1 flex items-center gap-1.5 text-[11px] text-ink-3">
                     {formatTime(new Date(c.created_at))}
                     <span className={cx('rounded-full px-2 py-px font-semibold', c.status === 'done' ? 'bg-[#D9F26B] text-ink' : ['failed', 'expired'].includes(c.status) ? 'bg-[#F8D9CF] text-[#9A3B24]' : 'bg-black/[0.05] text-ink-2')}>{STATUS[c.status] || c.status}</span>
@@ -315,7 +326,7 @@ export default function Assistant() {
     ['spark', `How is ${firstName} right now?`, 'A quick read of her day'],
     ['speaker', `Tell ${firstName} I’ll call at 8`, 'I’ll write it, you send it'],
     ['pin', `Where is ${firstName}?`, 'Live location and safe places'],
-    ['camera', 'Show me the latest photo', 'From the home camera'],
+    ['search', `Where did ${firstName} leave the glasses?`, 'From what the camera saw'],
     ['calendar', 'Summarise her day', 'In a few warm sentences'],
     ['bell', `Tell me when ${firstName} gets home`, 'I’ll watch and let you know'],
   ];

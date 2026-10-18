@@ -186,3 +186,9 @@
 @keyframes toast-in { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
 .toast-in { animation: toast-in .35s cubic-bezier(.2,.8,.2,1) both; }
 @media (prefers-reduced-motion: reduce) { .toast-in { animation: none; } }
+
+/* Doctor's report: print on plain white, no page gradient. */
+@media print {
+  body { background: #fff !important; }
+  @page { margin: 14mm; }
+}

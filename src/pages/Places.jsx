@@ -10,6 +10,7 @@ import { dayBounds, minutesInZones } from '../lib/story.js';
 import { formatTime } from '../utils/datetime.js';
 import { formatDistance, haversineMeters } from '../utils/geo.js';
 import ZoneMap from '../components/ZoneMap.jsx';
+import RouteReplay from '../components/RouteReplay.jsx';
 import { Badge, Button, ErrorNote, Field, Icon, IconButton, Loading, cx } from '../ui';
 
 function Editor({ draft, setDraft, onCancel, onSave, saving, error, isNew }) {
@@ -69,6 +70,7 @@ export default function Places() {
   const [selectedId, setSelectedId] = useState(null);
   const [draft, setDraft] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [replay, setReplay] = useState(() => new URLSearchParams(window.location.search).has('replay'));
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['zones'] });
@@ -120,7 +122,16 @@ export default function Places() {
     <div className="flex flex-col-reverse gap-4 lg:grid lg:h-[calc(100vh-128px)] lg:grid-cols-[380px_1fr]">
       <aside className="panel flex flex-col overflow-hidden lg:overflow-y-auto">
         <div className="border-b border-white/60 p-5">
-          <h1 className="text-xl font-bold">Safe places</h1>
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-xl font-bold">Safe places</h1>
+            <button
+              type="button"
+              onClick={() => setReplay((v) => !v)}
+              className={cx('inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-semibold transition', replay ? 'bg-ink text-white' : 'bg-white text-ink ring-1 ring-black/10 hover:ring-black/25')}
+            >
+              <Icon name={replay ? 'map' : 'play'} size={14} /> {replay ? 'Back to the map' : 'Replay a walk'}
+            </button>
+          </div>
           <p className="mt-1 text-sm text-ink-3">
             Leaving every one of these sends an alert. Draw generously — a tight circle around home
             will alert on a walk to the shop.
@@ -228,6 +239,9 @@ export default function Places() {
       </aside>
 
       <div className="h-[55vh] overflow-hidden rounded-[22px] lg:h-auto">
+      {replay ? (
+        <RouteReplay firstName={(status.data?.patient?.name || '').split(' ')[0] || undefined} height="100%" autoPlay />
+      ) : (
       <ZoneMap
         zones={shownZones}
         path={path}
@@ -241,6 +255,7 @@ export default function Places() {
         style={{ height: '100%', width: '100%' }}
         fitKey={`${list.length}-${path.length}-${current ? 1 : 0}`}
       />
+      )}
       </div>
     </div>
   );

@@ -184,7 +184,22 @@ export default function Demo() {
         </div>
       </Section>
 
-      <Section n={5} title="Test cases" hint="Tick each one off in rehearsal. Every case says what to do and what the judges should see." right={<span className="rounded-full bg-white px-3 py-1 text-[12px] font-semibold">{done} / {TEST_CASES.length} rehearsed</span>}>
+      <Section n={5} title="Looking back" hint={`Two weeks of plausible past days (meals, rest, walks, one fall, a quiz that slips in the second week) so the doctor’s report, “this week” summaries, the walk replay and “where did ${first} leave it” have something to show. Kept by Reset; remove it here.`}>
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" onClick={() => { setMsg({ ok: true, text: 'Adding two weeks of history…' }); call('/history', { days: 14 }, (r) => `Added ${r.days} days: ${r.frames} camera moments, ${r.pings} location points, ${r.quiz_days} days of quiz, ${r.falls} fall.`); }} className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-white hover:bg-black"><Icon name="calendar" size={15} /> {d?.history_entries ? 'Rebuild two weeks of history' : 'Add two weeks of history'}</button>
+          {d?.history_entries > 0 && (
+            <button type="button" onClick={async () => { try { const { data } = await apiClient.delete(`/api/demo/${pid}/history`); setMsg({ ok: true, text: `Removed ${data.removed} simulated readings.` }); qc.invalidateQueries(); } catch { setMsg({ ok: false, text: 'Could not remove it.' }); } }} className="rounded-full bg-white px-4 py-2 text-[13px] font-semibold ring-1 ring-black/10">Remove history</button>
+          )}
+          <span className="text-[12px] text-ink-3">{d?.history_entries ? `${d.history_entries} simulated readings in place` : 'No history yet'}</span>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2 text-[13px]">
+          <Link to="/report?days=14" className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 font-semibold ring-1 ring-black/10"><Icon name="report" size={14} /> Doctor’s report</Link>
+          <Link to="/places?replay=1" className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 font-semibold ring-1 ring-black/10"><Icon name="play" size={13} /> Replay a walk</Link>
+          <Link to="/memory#album" className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 font-semibold ring-1 ring-black/10"><Icon name="image" size={14} /> Photo album</Link>
+        </div>
+      </Section>
+
+      <Section n={6} title="Test cases" hint="Tick each one off in rehearsal. Every case says what to do and what the judges should see." right={<span className="rounded-full bg-white px-3 py-1 text-[12px] font-semibold">{done} / {TEST_CASES.length} rehearsed</span>}>
         <ol className="grid gap-2">
           {TEST_CASES.map((t, i) => (
             <li key={t.id} className={cx('rounded-[16px] p-4 ring-1 ring-black/[0.04]', checks[t.id] ? 'bg-[#F3FBDF]' : 'bg-white/80')}>

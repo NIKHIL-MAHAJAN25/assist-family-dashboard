@@ -7,6 +7,7 @@ import Places from './pages/Places.jsx';
 import People from './pages/People.jsx';
 import Memory from './pages/Memory.jsx';
 import Settings from './pages/Settings.jsx';
+import Report from './pages/Report.jsx';
 import Assistant from './pages/Assistant.jsx';
 import Demo from './pages/Demo.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/people" element={<People />} />
         <Route path="/memory" element={<Memory />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/report" element={<Report />} />
 
         {/* Old routes, kept so existing bookmarks still land somewhere sensible. */}
         <Route path="/timeline" element={<Navigate to="/log" replace />} />
