@@ -174,7 +174,7 @@ function LiveRail({ ctx, commands, onAsk }) {
   const outside = loc?.inside_safe_zone === false;
   const STATUS = { pending: 'Waiting for her phone', delivered: 'On her phone', done: 'Done', failed: 'Didn’t work', expired: 'Not picked up' };
   return (
-    <aside className="hidden min-w-0 flex-col gap-3 xl:flex xl:h-[calc(100vh-150px)] xl:overflow-y-auto">
+    <aside className="hidden min-h-0 min-w-0 flex-col gap-3 xl:flex xl:h-[calc(100dvh-124px)]">
       <section className="rounded-[20px] bg-paper p-5">
         <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-3">Right now</p>
         <div className="mt-3 flex items-center gap-3">
@@ -189,43 +189,28 @@ function LiveRail({ ctx, commands, onAsk }) {
         </div>
       </section>
 
-      <section className="rounded-[20px] bg-paper p-5">
+      <section className="flex min-h-0 flex-1 flex-col rounded-[20px] bg-paper p-5">
         <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-3">On {firstName}’s phone</p>
         {commands.length ? (
-          <ul className="mt-3 space-y-3">
-            {commands.slice(0, 4).map((c) => (
-              <li key={c.id} className="text-[13px]">
-                <p className="line-clamp-2 text-ink">{c.text ? `“${c.text}”` : c.question ? `Asked: “${c.question}”${c.reply ? ` → “${c.reply}”` : ''}` : PHONE_ACTIONS[c.type]?.title(firstName) || c.type}</p>
-                <p className="mt-0.5 text-[11px] text-ink-3">
-                  {c.from} · {formatTime(new Date(c.created_at))} · <span className={cx(c.status === 'done' && 'font-semibold text-ink', ['failed', 'expired'].includes(c.status) && 'text-act')}>{STATUS[c.status] || c.status}</span>
-                </p>
+          <ul className="no-scrollbar fade-edges mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto">
+            {commands.slice(0, 12).map((c) => (
+              <li key={c.id} className="flex gap-3 rounded-[14px] bg-white/70 p-3 text-[13px]">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#EAF4FF]"><Icon name={PHONE_ACTIONS[c.type]?.icon || 'dot'} size={14} /></span>
+                <div className="min-w-0 flex-1">
+                  <p className="line-clamp-2 text-ink">{c.text ? `“${c.text}”` : c.question ? `“${c.question}”${c.reply ? ` → ${c.reply}` : ''}` : PHONE_ACTIONS[c.type]?.title(firstName) || c.type}</p>
+                  <p className="mt-1 flex items-center gap-1.5 text-[11px] text-ink-3">
+                    {formatTime(new Date(c.created_at))}
+                    <span className={cx('rounded-full px-2 py-px font-semibold', c.status === 'done' ? 'bg-[#D9F26B] text-ink' : ['failed', 'expired'].includes(c.status) ? 'bg-[#F8D9CF] text-[#9A3B24]' : 'bg-black/[0.05] text-ink-2')}>{STATUS[c.status] || c.status}</span>
+                  </p>
+                </div>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="mt-2 text-[13px] text-ink-3">Nothing yet. Ask me to say something to {firstName}.</p>
+          <p className="mt-2 text-[13px] text-ink-3">Nothing yet. Use the buttons under the chat, or ask me to say something to {firstName}.</p>
         )}
       </section>
 
-      <section className="rounded-[20px] bg-paper p-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-3">What I can do</p>
-        <ul className="mt-3 space-y-2 text-[13px]">
-          {[
-            ['spark', 'Answer from her day', `How is ${firstName} right now?`],
-            ['speaker', 'Speak on her phone', `Tell ${firstName} I'll call at 8`],
-            ['pin', 'Show where she is', `Where is ${firstName}?`],
-            ['camera', 'Show the latest photo', 'Show me the latest photo'],
-            ['calendar', 'Summarise a day or week', 'Summarise her week'],
-          ].map(([icon, label, q]) => (
-            <li key={label}>
-              <button type="button" onClick={() => onAsk(q)} className="flex w-full items-center gap-2.5 rounded-[12px] px-2 py-1.5 text-left transition hover:bg-black/[0.04]">
-                <Icon name={icon} size={15} className="text-ink-2" /> {label}
-              </button>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-3 text-[11px] text-ink-4">More actions are on the way.</p>
-      </section>
     </aside>
   );
 }
@@ -303,7 +288,7 @@ export default function Assistant() {
 
   return (
     <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_340px]">
-      <section className="flex h-[calc(100vh-128px)] min-h-[520px] min-w-0 flex-col overflow-hidden rounded-[24px] bg-paper sm:h-[calc(100vh-150px)]">
+      <section className="flex h-[calc(100dvh-188px)] sm:h-[calc(100dvh-204px)] lg:h-[calc(100dvh-124px)] min-h-[480px] min-w-0 flex-col overflow-hidden rounded-[24px] bg-paper">
         {/* header */}
         <div className="flex items-center gap-3 border-b border-black/[0.05] px-5 py-4 sm:px-7">
           <span className="ai-orb h-9 w-9" />
@@ -319,18 +304,20 @@ export default function Assistant() {
         </div>
 
         {/* conversation */}
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-7">
+        <div className="no-scrollbar fade-edges min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-7">
           {msgs.length === 0 && !busy ? (
-            <div className="mx-auto flex max-w-[760px] flex-col items-center pt-6 text-center sm:pt-12">
-              <span className="ai-orb h-24 w-24" />
-              <h2 className="mt-7 font-serif text-[34px] leading-tight sm:text-[42px]">What can I do for {firstName}?</h2>
-              <p className="mt-2 max-w-[52ch] text-[15px] text-ink-2">Ask about her day, or ask me to say something to her. I’ll always show you what I’m about to send first.</p>
-              <div className="mt-8 grid w-full grid-cols-1 gap-2.5 text-left sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mx-auto flex min-h-full max-w-[760px] flex-col items-center justify-center py-2 text-center">
+              <span className="ai-orb h-16 w-16 sm:h-20 sm:w-20" />
+              <h2 className="mt-5 font-serif text-[30px] leading-tight sm:text-[38px]">What can I do for {firstName}?</h2>
+              <p className="mt-2 max-w-[52ch] text-[14px] text-ink-2">Ask about her day, or ask me to say something to her. I’ll always show you what I’m about to send first.</p>
+              <div className="mt-6 grid w-full grid-cols-1 gap-2 text-left sm:grid-cols-2 lg:grid-cols-3">
                 {suggestions.map(([icon, q, hint]) => (
-                  <button key={q} type="button" onClick={() => ask(q)} className="group rounded-[18px] bg-white/80 p-4 ring-1 ring-black/[0.04] transition hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_10px_30px_-16px_rgba(20,30,50,0.35)]">
-                    <span className="grid h-9 w-9 place-items-center rounded-full bg-[#EAF4FF] text-ink transition group-hover:bg-[#D9F26B]"><Icon name={icon} size={16} /></span>
-                    <span className="mt-3 block text-[14px] font-semibold">{q}</span>
-                    <span className="mt-0.5 block text-[12px] text-ink-3">{hint}</span>
+                  <button key={q} type="button" onClick={() => ask(q)} className="group flex items-center gap-3 rounded-[16px] bg-white/80 p-3 ring-1 ring-black/[0.04] transition hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_10px_30px_-16px_rgba(20,30,50,0.35)]">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#EAF4FF] text-ink transition group-hover:bg-[#D9F26B]"><Icon name={icon} size={16} /></span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-[13.5px] font-semibold">{q}</span>
+                      <span className="block truncate text-[12px] text-ink-3">{hint}</span>
+                    </span>
                   </button>
                 ))}
               </div>
@@ -349,14 +336,14 @@ export default function Assistant() {
         {/* composer */}
         <div className="border-t border-black/[0.05] px-4 py-4 sm:px-7">
           <div className="mx-auto max-w-[820px]">
-            <div className="-mx-1 mb-2 flex gap-1.5 overflow-x-auto px-1 pb-1" aria-label="Quick actions">
+            <div className="mb-3 flex flex-wrap justify-center gap-1" aria-label="Quick actions">
               {QUICK.map(([type, label]) => (
-                <button key={type} type="button" onClick={() => quick(type)} className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white/80 px-3 py-1.5 text-[12px] font-semibold ring-1 ring-black/[0.05] transition hover:bg-white">
+                <button key={type} type="button" onClick={() => quick(type)} className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2.5 py-1.5 text-[12px] font-semibold text-ink-2 ring-1 ring-black/[0.05] transition hover:-translate-y-px hover:bg-white hover:text-ink">
                   <Icon name={PHONE_ACTIONS[type].icon} size={13} /> {label}
                 </button>
               ))}
             </div>
-            <div className="mb-2 flex gap-1.5">
+            <div className="mb-2 flex justify-center gap-1.5">
               {[
                 ['ask', 'Ask'],
                 ['say', `Say to ${firstName}`],

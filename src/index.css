@@ -176,3 +176,9 @@
 .ai-listen { box-shadow: 0 0 0 0 rgba(241,154,130,.7); animation: ai-listen 1.4s ease-out infinite; }
 @keyframes ai-listen { to { box-shadow: 0 0 0 14px rgba(241,154,130,0); } }
 @media (prefers-reduced-motion: reduce) { .ai-orb, .ai-orb::after, .ai-shimmer, .ai-listen { animation: none; } .ai-shimmer { color: #4a4a45; } }
+
+/* Scroll without a visible bar (Assistant chat and rail). */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+/* Soft fade where content scrolls under the edges. */
+.fade-edges { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%); }
