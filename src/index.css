@@ -160,3 +160,19 @@
 @keyframes sky-twinkle { 0%, 100% { opacity: 0.25 } 50% { opacity: 1 } }
 .sky-star { animation-name: sky-twinkle; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
 @media (prefers-reduced-motion: reduce) { .sky-star { animation: none; opacity: 0.7; } }
+
+/* Assistant orb: the agent's "face" (pages/Assistant.jsx). Atria blue → lime, slowly turning. */
+.ai-orb { position: relative; border-radius: 9999px; background:
+  radial-gradient(circle at 30% 28%, #ffffff 0%, rgba(255,255,255,0) 34%),
+  conic-gradient(from 0deg, #9FD0F7, #C6EBA0, #D9F57E, #A9D4F5, #9FD0F7);
+  box-shadow: 0 0 0 1px rgba(20,20,20,.05), 0 18px 50px -14px rgba(120,170,210,.65); animation: ai-turn 14s linear infinite; }
+.ai-orb::after { content: ""; position: absolute; inset: 18%; border-radius: inherit; background: radial-gradient(circle, rgba(255,255,255,.75), rgba(255,255,255,0) 70%); filter: blur(2px); animation: ai-breathe 4.5s ease-in-out infinite; }
+.ai-orb.thinking { animation-duration: 3s; }
+.ai-orb.thinking::after { animation-duration: 1.4s; }
+@keyframes ai-turn { to { transform: rotate(360deg); } }
+@keyframes ai-breathe { 0%, 100% { opacity: .55; transform: scale(.9); } 50% { opacity: 1; transform: scale(1.08); } }
+.ai-shimmer { background: linear-gradient(90deg, #7a7a72 0%, #151515 40%, #7a7a72 80%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: ai-shimmer 1.8s linear infinite; }
+@keyframes ai-shimmer { to { background-position: -200% 0; } }
+.ai-listen { box-shadow: 0 0 0 0 rgba(241,154,130,.7); animation: ai-listen 1.4s ease-out infinite; }
+@keyframes ai-listen { to { box-shadow: 0 0 0 14px rgba(241,154,130,0); } }
+@media (prefers-reduced-motion: reduce) { .ai-orb, .ai-orb::after, .ai-shimmer, .ai-listen { animation: none; } .ai-shimmer { color: #4a4a45; } }

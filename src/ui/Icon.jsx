@@ -6,6 +6,19 @@ import React from 'react';
 // slice of a library would.
 
 const PATHS = {
+  mic: (
+    <>
+      <rect x="9" y="3.5" width="6" height="11" rx="3" />
+      <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5" />
+    </>
+  ),
+  send: <path d="M12 19V5.5M6.5 11 12 5.5l5.5 5.5" />,
+  speaker: (
+    <>
+      <path d="M4.5 9.5h3l4.5-3.8v12.6L7.5 14.5h-3z" />
+      <path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" />
+    </>
+  ),
   chevronLeft: <path d="m15 6-6 6 6 6" />,
   home: (
     <>

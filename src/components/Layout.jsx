@@ -8,6 +8,7 @@ import { Icon, cx } from '../ui';
 
 const NAV = [
   { to: '/today', label: 'Today', icon: 'home' },
+  { to: '/assistant', label: 'Assistant', icon: 'spark' },
   { to: '/log', label: 'Log', icon: 'timeline' },
   { to: '/places', label: 'Places', icon: 'map' },
   { to: '/people', label: 'People', icon: 'people' },
@@ -218,7 +219,7 @@ export default function Layout({ children }) {
   const now = useNow();
   const part = partOfDay(now);
   const { pathname } = useLocation();
-  const tiles = pathname.startsWith('/today') || pathname.startsWith('/log');
+  const tiles = pathname.startsWith('/today') || pathname.startsWith('/log') || pathname.startsWith('/assistant');
 
   return (
     <div className="relative min-h-full p-2 sm:p-4 lg:p-6">
