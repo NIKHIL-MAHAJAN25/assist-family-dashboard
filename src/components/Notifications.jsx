@@ -16,6 +16,8 @@ const KIND = {
   reply: { icon: 'spark', tone: 'bg-[#EAF4FF] text-ink' },
   failed: { icon: 'info', tone: 'bg-[#F8EBD0] text-[#8A5A12]' },
   note: { icon: 'people', tone: 'bg-[#EEF8C4] text-ink' },
+  rule: { icon: 'bell', tone: 'bg-[#FFF3D6] text-ink' },
+  story: { icon: 'heart', tone: 'bg-[#E9E6FA] text-ink' },
 };
 
 function readSeen(pid) {

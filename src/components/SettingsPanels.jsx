@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createInvite, getDecisions, listCaregivers, listInvites, prettyCode, revokeInvite } from '../api/accounts.js';
+import { apiClient } from '../api/client.js';
 import { Badge, Button, ErrorNote, Panel } from '../ui';
 
 function untilText(iso) {
@@ -176,6 +177,27 @@ export function DecisionLayer({ patientId }) {
         </>
       )}
       {q.isError && <ErrorNote error={q.error} />}
+    </Panel>
+  );
+}
+
+export function BedtimeStory({ patientId, patientName }) {
+  const first = firstName(patientName, 'them');
+  const q = useQuery({ queryKey: ['story-settings', patientId], queryFn: async () => (await apiClient.get(`/api/patients/${patientId}/story-settings`)).data, enabled: !!patientId });
+  const qc = useQueryClient();
+  const save = useMutation({
+    mutationFn: async (at) => (await apiClient.put(`/api/patients/${patientId}/story-settings`, { at })).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['story-settings', patientId] }),
+  });
+  const at = q.data?.at;
+  return (
+    <Panel title="Bedtime story">
+      <p className="text-sm text-ink-2">Every evening a helper writes a few warm sentences about {first}’s own day and her phone reads them to her.</p>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <input type="time" value={at || ''} disabled={!at} onChange={(e) => e.target.value && save.mutate(e.target.value)} className="input w-36" aria-label="Bedtime" />
+        <Button onClick={() => save.mutate(at ? null : '21:00')} loading={save.isPending}>{at ? 'Turn off' : 'Turn on (9 pm)'}</Button>
+        <span className="text-sm text-ink-3">{at ? `Sent daily at ${at}` : 'Off'}</span>
+      </div>
     </Panel>
   );
 }

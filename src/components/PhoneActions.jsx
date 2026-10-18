@@ -307,5 +307,7 @@ export const QUICK = [
   ['ring', 'Ring phone', 'bell'],
   ['reminder', 'Reminder', 'clock'],
   ['quiz', 'Send quiz', 'brain'],
+  ['rule', 'Watch for…', 'bell'],
+  ['story', 'Bedtime story', 'heart'],
   ['broadcast', 'Tell family', 'people'],
 ];

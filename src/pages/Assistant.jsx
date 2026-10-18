@@ -8,6 +8,7 @@ import ZoneMap from '../components/ZoneMap.jsx';
 import { formatTime } from '../utils/datetime.js';
 import { Icon, cx } from '../ui';
 import { BroadcastCard, PHONE_ACTIONS, PhoneActionCard, QUICK } from '../components/PhoneActions.jsx';
+import { RuleCard, StoryCard } from '../components/AgentCards.jsx';
 
 // The family Assistant: talk to an agent that knows the person's day, and let it propose actions.
 // Anything that reaches the person (speaking on their phone) is shown as a card the family member
@@ -108,6 +109,8 @@ function SummaryAction({ patientId, range }) {
 }
 
 function ActionCard({ a, ctx }) {
+  if (a.type === 'rule') return <RuleCard patientId={ctx.patientId} firstName={ctx.firstName} initial={a} />;
+  if (a.type === 'story') return <StoryCard patientId={ctx.patientId} firstName={ctx.firstName} />;
   if (a.type === 'broadcast') return <BroadcastCard patientId={ctx.patientId} initialText={a.text} />;
   if (PHONE_ACTIONS[a.type]) return <PhoneActionCard type={a.type} patientId={ctx.patientId} firstName={ctx.firstName} initial={a} />;
   if (a.type === 'map') return <MapCard status={ctx.status} zones={ctx.zones} firstName={ctx.firstName} />;
@@ -169,7 +172,7 @@ function Message({ m, ctx }) {
 
 /* ---------------------------------------------------------------- the live rail */
 
-function LiveRail({ ctx, commands, onAsk }) {
+function LiveRail({ ctx, commands, rules, onDeleteRule, onAsk }) {
   const { status, firstName } = ctx;
   const loc = status?.location;
   const outside = loc?.inside_safe_zone === false;
@@ -189,6 +192,24 @@ function LiveRail({ ctx, commands, onAsk }) {
           <ZoneMap zones={ctx.zones} current={loc?.lat != null ? { lat: loc.lat, lng: loc.lng } : null} currentLabel={firstName} interactive={false} style={{ height: 150 }} />
         </div>
       </section>
+
+      {rules.length > 0 && (
+        <section className="rounded-[20px] bg-paper p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-3">Watching for</p>
+          <ul className="mt-3 space-y-2">
+            {rules.slice(0, 4).map((r) => (
+              <li key={r.id} className="flex items-start gap-3 rounded-[14px] bg-white/70 p-3 text-[13px]">
+                <span className={cx('grid h-8 w-8 shrink-0 place-items-center rounded-full', r.active ? 'bg-[#FFF3D6]' : 'bg-[#D9F26B]')}><Icon name={r.active ? 'bell' : 'check'} size={14} /></span>
+                <div className="min-w-0 flex-1">
+                  <p className="leading-snug">{r.label}</p>
+                  <p className="mt-0.5 text-[11px] text-ink-3">{r.active ? (r.repeat === 'daily' ? 'Every day' : 'Watching') : `Happened${r.last_fired_at ? ` · ${formatTime(new Date(r.last_fired_at))}` : ''}`} · {r.created_by}</p>
+                </div>
+                <button type="button" onClick={() => onDeleteRule(r.id)} aria-label="Stop watching" className="text-ink-3 hover:text-act"><Icon name="x" size={13} /></button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="flex min-h-0 flex-1 flex-col rounded-[20px] bg-paper p-5">
         <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-3">On {firstName}’s phone</p>
@@ -233,6 +254,18 @@ export default function Assistant() {
     enabled: Boolean(patientId),
     refetchInterval: 4000,
   });
+
+  const rules = useQuery({
+    queryKey: ['rules', patientId],
+    queryFn: async () => (await apiClient.get(`/api/patients/${patientId}/rules`)).data,
+    enabled: Boolean(patientId),
+    refetchInterval: 10000,
+  });
+  const qcl = useQueryClient();
+  async function deleteRule(id) {
+    await apiClient.delete(`/api/patients/${patientId}/rules/${id}`).catch(() => {});
+    qcl.invalidateQueries({ queryKey: ['rules'] });
+  }
 
   const [msgs, setMsgs] = useState(() => (patientId ? load(patientId) : []));
   const [draft, setDraft] = useState('');
@@ -284,7 +317,7 @@ export default function Assistant() {
     ['pin', `Where is ${firstName}?`, 'Live location and safe places'],
     ['camera', 'Show me the latest photo', 'From the home camera'],
     ['calendar', 'Summarise her day', 'In a few warm sentences'],
-    ['clock', 'Has she eaten today?', 'Answered from the journal'],
+    ['bell', `Tell me when ${firstName} gets home`, 'I’ll watch and let you know'],
   ];
 
   return (
@@ -391,7 +424,7 @@ export default function Assistant() {
         </div>
       </section>
 
-      <LiveRail ctx={ctx} commands={commands.data || []} onAsk={(q) => { setMode('ask'); ask(q); }} />
+      <LiveRail ctx={ctx} commands={commands.data || []} rules={(rules.data || []).filter((r) => r.active || (r.last_fired_at && Date.now() - new Date(r.last_fired_at) < 6 * 3600000))} onDeleteRule={deleteRule} onAsk={(q) => { setMode('ask'); ask(q); }} />
     </div>
   );
 }

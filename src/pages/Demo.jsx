@@ -176,7 +176,15 @@ export default function Demo() {
         )}
       </Section>
 
-      <Section n={4} title="Test cases" hint="Tick each one off in rehearsal. Every case says what to do and what the judges should see." right={<span className="rounded-full bg-white px-3 py-1 text-[12px] font-semibold">{done} / {TEST_CASES.length} rehearsed</span>}>
+      <Section n={4} title="The agent on its own" hint={`Watch rules are checked every 30 s, fall checks escalate after 2 minutes without an answer, and the bedtime story goes out at ${first}’s bedtime. These buttons make it happen now.`}>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => call('/fall', {}, (r) => (r.fall_check === 'already running' ? 'A fall check is already running.' : `Possible fall recorded — ${first}’s phone is asking “are you okay?”. Answer in step 3, or wait 2 minutes and press “Run checks now” to see it escalate.`))} className="inline-flex items-center gap-2 rounded-full bg-[#E5533D] px-4 py-2 text-[13px] font-semibold text-white"><Icon name="warning" size={15} /> Simulate a fall</button>
+          <button type="button" onClick={() => call('/tick', {}, (r) => (r.rule_hits?.length ? `Rules that fired: ${r.rule_hits.map((h) => h.text).join(' · ')}` : 'Checks ran — nothing new fired.'))} className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-white"><Icon name="refresh" size={15} /> Run checks now</button>
+          <button type="button" onClick={async () => { setMsg({ ok: true, text: 'Writing the story…' }); try { const { data } = await apiClient.post(`/api/patients/${pid}/story`, {}, { timeout: 100000 }); setMsg({ ok: true, text: `Story sent: “${data.text}”` }); } catch (e) { setMsg({ ok: false, text: e?.response?.data?.error || 'Could not write it.' }); } }} className="inline-flex items-center gap-2 rounded-full bg-[#1B2C55] px-4 py-2 text-[13px] font-semibold text-white"><Icon name="heart" size={15} /> Bedtime story now</button>
+        </div>
+      </Section>
+
+      <Section n={5} title="Test cases" hint="Tick each one off in rehearsal. Every case says what to do and what the judges should see." right={<span className="rounded-full bg-white px-3 py-1 text-[12px] font-semibold">{done} / {TEST_CASES.length} rehearsed</span>}>
         <ol className="grid gap-2">
           {TEST_CASES.map((t, i) => (
             <li key={t.id} className={cx('rounded-[16px] p-4 ring-1 ring-black/[0.04]', checks[t.id] ? 'bg-[#F3FBDF]' : 'bg-white/80')}>
