@@ -7,6 +7,7 @@ import { dayBounds, sentence } from '../lib/story.js';
 import ZoneMap from '../components/ZoneMap.jsx';
 import { formatTime } from '../utils/datetime.js';
 import { Icon, cx } from '../ui';
+import { PHONE_ACTIONS, PhoneActionCard, QUICK } from '../components/PhoneActions.jsx';
 
 // The family Assistant: talk to an agent that knows the person's day, and let it propose actions.
 // Anything that reaches the person (speaking on their phone) is shown as a card the family member
@@ -61,97 +62,6 @@ function useDictation(onText) {
 
 /* ---------------------------------------------------------------- action cards */
 
-function SpeakCard({ patientId, firstName, initialText, onSent }) {
-  const [text, setText] = useState(initialText);
-  const [editing, setEditing] = useState(false);
-  const [state, setState] = useState({ phase: 'draft' }); // draft | sending | sent | dismissed | error
-  const qc = useQueryClient();
-
-  const status = useQuery({
-    queryKey: ['command', state.id],
-    queryFn: async () => (await apiClient.get(`/api/patients/${patientId}/commands`)).data.find((c) => c.id === state.id),
-    enabled: state.phase === 'sent' && Boolean(state.id),
-    refetchInterval: (q) => (['done', 'failed', 'expired'].includes(q.state.data?.status) ? false : 2000),
-  });
-
-  async function send() {
-    setState({ phase: 'sending' });
-    try {
-      const { data } = await apiClient.post(`/api/patients/${patientId}/commands`, { type: 'speak', text });
-      setState({ phase: 'sent', id: data.id });
-      qc.invalidateQueries({ queryKey: ['commands'] });
-      onSent?.();
-    } catch (e) {
-      setState({ phase: 'error', error: e?.response?.data?.error || 'Could not send.' });
-    }
-  }
-
-  if (state.phase === 'dismissed') {
-    return <p className="text-[12px] text-ink-3">Not sent.</p>;
-  }
-
-  const s = status.data?.status || 'pending';
-  const steps = [
-    ['Sent', true],
-    ['On her phone', ['delivered', 'done'].includes(s)],
-    ['Spoken aloud', s === 'done'],
-  ];
-
-  return (
-    <div className="overflow-hidden rounded-[18px] bg-[linear-gradient(135deg,#E9F3FF_0%,#F1ECFB_100%)] p-4 ring-1 ring-black/[0.04]">
-      <div className="flex items-center gap-2 text-[12px] font-semibold text-ink-2">
-        <span className="grid h-7 w-7 place-items-center rounded-full bg-white"><Icon name="speaker" size={15} /></span>
-        Say on {firstName}’s phone
-      </div>
-      {editing && state.phase === 'draft' ? (
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value.slice(0, 280))}
-          rows={3}
-          autoFocus
-          className="mt-3 w-full resize-none rounded-[14px] border border-black/10 bg-white p-3 text-[15px] leading-relaxed outline-none focus:border-ink"
-        />
-      ) : (
-        <p className="mt-3 font-serif text-[20px] leading-snug">“{text}”</p>
-      )}
-      {state.phase === 'draft' || state.phase === 'sending' || state.phase === 'error' ? (
-        <>
-          <p className="mt-2 text-[12px] text-ink-3">It will be read aloud and stay on {firstName}’s home screen. Nothing is sent until you press send.</p>
-          {state.error && <p className="mt-2 text-[12px] text-act">{state.error}</p>}
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button type="button" onClick={send} disabled={!text.trim() || state.phase === 'sending'} className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-black disabled:opacity-50">
-              <Icon name="speaker" size={14} /> {state.phase === 'sending' ? 'Sending…' : 'Send to her phone'}
-            </button>
-            <button type="button" onClick={() => setEditing((x) => !x)} className="rounded-full bg-white/80 px-4 py-2 text-[13px] font-semibold hover:bg-white">
-              {editing ? 'Done editing' : 'Edit'}
-            </button>
-            <button type="button" onClick={() => setState({ phase: 'dismissed' })} className="rounded-full px-3 py-2 text-[13px] text-ink-3 hover:text-ink">
-              Not now
-            </button>
-          </div>
-        </>
-      ) : (
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          {s === 'expired' || s === 'failed' ? (
-            <span className="rounded-full bg-[#F8D9CF] px-3 py-1 text-[12px] font-semibold text-[#9A3B24]">
-              {s === 'expired' ? 'Her phone didn’t pick it up in 10 minutes' : 'Her phone couldn’t say it'}
-            </span>
-          ) : (
-            steps.map(([label, ok], i) => (
-              <span key={label} className="flex items-center gap-2">
-                <span className={cx('inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-semibold', ok ? 'bg-[#D9F26B] text-ink' : 'bg-white/70 text-ink-3')}>
-                  {ok && <Icon name="check" size={12} />} {label}
-                </span>
-                {i < steps.length - 1 && <span className="h-px w-3 bg-black/15" />}
-              </span>
-            ))
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function MapCard({ status, zones, firstName }) {
   const loc = status?.location;
   const current = loc?.lat != null ? { lat: loc.lat, lng: loc.lng } : null;
@@ -198,7 +108,7 @@ function SummaryAction({ patientId, range }) {
 }
 
 function ActionCard({ a, ctx }) {
-  if (a.type === 'speak') return <SpeakCard patientId={ctx.patientId} firstName={ctx.firstName} initialText={a.text} />;
+  if (PHONE_ACTIONS[a.type]) return <PhoneActionCard type={a.type} patientId={ctx.patientId} firstName={ctx.firstName} initial={a} />;
   if (a.type === 'map') return <MapCard status={ctx.status} zones={ctx.zones} firstName={ctx.firstName} />;
   if (a.type === 'photo') return <PhotoCard latest={ctx.latestPhoto} />;
   if (a.type === 'summary') return <SummaryAction patientId={ctx.patientId} range={a.range} />;
@@ -262,7 +172,7 @@ function LiveRail({ ctx, commands, onAsk }) {
   const { status, firstName } = ctx;
   const loc = status?.location;
   const outside = loc?.inside_safe_zone === false;
-  const STATUS = { pending: 'Waiting for her phone', delivered: 'On her phone', done: 'Spoken aloud', failed: 'Couldn’t say it', expired: 'Not picked up' };
+  const STATUS = { pending: 'Waiting for her phone', delivered: 'On her phone', done: 'Done', failed: 'Didn’t work', expired: 'Not picked up' };
   return (
     <aside className="hidden min-w-0 flex-col gap-3 xl:flex xl:h-[calc(100vh-150px)] xl:overflow-y-auto">
       <section className="rounded-[20px] bg-paper p-5">
@@ -280,12 +190,12 @@ function LiveRail({ ctx, commands, onAsk }) {
       </section>
 
       <section className="rounded-[20px] bg-paper p-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-3">Sent to {firstName}’s phone</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-3">On {firstName}’s phone</p>
         {commands.length ? (
           <ul className="mt-3 space-y-3">
             {commands.slice(0, 4).map((c) => (
               <li key={c.id} className="text-[13px]">
-                <p className="line-clamp-2 text-ink">“{c.text}”</p>
+                <p className="line-clamp-2 text-ink">{c.text ? `“${c.text}”` : c.question ? `Asked: “${c.question}”${c.reply ? ` → “${c.reply}”` : ''}` : PHONE_ACTIONS[c.type]?.title(firstName) || c.type}</p>
                 <p className="mt-0.5 text-[11px] text-ink-3">
                   {c.from} · {formatTime(new Date(c.created_at))} · <span className={cx(c.status === 'done' && 'font-semibold text-ink', ['failed', 'expired'].includes(c.status) && 'text-act')}>{STATUS[c.status] || c.status}</span>
                 </p>
@@ -378,6 +288,10 @@ export default function Assistant() {
     }
   }
 
+  function quick(type) {
+    setMsgs((m) => [...m, { role: 'assistant', text: '', actions: [{ type }] }]);
+  }
+
   const suggestions = [
     ['spark', `How is ${firstName} right now?`, 'A quick read of her day'],
     ['speaker', `Tell ${firstName} I’ll call at 8`, 'I’ll write it, you send it'],
@@ -435,6 +349,13 @@ export default function Assistant() {
         {/* composer */}
         <div className="border-t border-black/[0.05] px-4 py-4 sm:px-7">
           <div className="mx-auto max-w-[820px]">
+            <div className="-mx-1 mb-2 flex gap-1.5 overflow-x-auto px-1 pb-1" aria-label="Quick actions">
+              {QUICK.map(([type, label]) => (
+                <button key={type} type="button" onClick={() => quick(type)} className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white/80 px-3 py-1.5 text-[12px] font-semibold ring-1 ring-black/[0.05] transition hover:bg-white">
+                  <Icon name={PHONE_ACTIONS[type].icon} size={13} /> {label}
+                </button>
+              ))}
+            </div>
             <div className="mb-2 flex gap-1.5">
               {[
                 ['ask', 'Ask'],
