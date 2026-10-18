@@ -37,11 +37,11 @@ export default function CameraWindow({ entries, now, className }) {
 
   const mins = (now - new Date(latest.timestamp).getTime()) / 60000;
   const live = mins < 10;
-  const photo = enhancedPhoto(latest.imagePublicId, 800, 640);
+  const photo = enhancedPhoto(latest.imagePublicId);
   const sized = stage === 0 ? photo.src : photo.fallback;
 
   return (
-    <figure className={cx('group relative aspect-[16/10] overflow-hidden rounded-[22px] bg-ink', className)}>
+    <figure className={cx('group relative aspect-[4/3] overflow-hidden rounded-[22px] bg-ink', className)}>
       <img
         src={sized}
         alt={latest.payload?.activity || 'Latest camera photo'}

@@ -13,6 +13,43 @@ export const CATEGORIES = {
   other: { label: 'Quiet / no one in view', color: '#E3DCD1', icon: 'dot' },
 };
 
+// Activity keys come from the backend's fixed vocabulary (services/prompts.js). Entries from before
+// the vocabulary existed have no key and fall back to the text rules below.
+const KEY_CATEGORY = {
+  eating: 'meal', drinking: 'meal', cooking: 'meal', taking_medication: 'meal',
+  resting: 'rest', sleeping: 'rest',
+  watching_tv: 'leisure', reading: 'leisure', on_phone: 'leisure', with_visitor: 'leisure',
+  walking_around: 'out', getting_ready_to_leave: 'out', out_of_house: 'out',
+  fallen: 'unseen', distressed: 'unseen',
+  empty_room: 'other', not_visible: 'other', cleaning: 'other', other: 'other',
+};
+// Nobody in the room and a blurry view say the same thing to a family member: no one to see.
+const QUIET_KEYS = new Set(['empty_room', 'not_visible']);
+const MERGE_GAP_MS = 15 * 60000;
+
+/** What a frame is "about", for merging: its vocabulary key, or its text for old entries. */
+function frameKey(e) {
+  const k = e.payload?.activity_key;
+  if (k) return QUIET_KEYS.has(k) ? 'quiet' : k;
+  return sentence(e.payload?.activity || '').toLowerCase();
+}
+
+function frameCategory(e) {
+  return KEY_CATEGORY[e.payload?.activity_key] || categorize(e.payload?.activity);
+}
+
+function frameTitle(e) {
+  if (QUIET_KEYS.has(e.payload?.activity_key)) return 'No one in view';
+  return sentence(e.payload?.activity || 'Unknown activity');
+}
+
+/** Posture/mood worth saying ("seated, calm"), never "not visible". */
+function frameDetail(e) {
+  const s = e.payload?.person_state;
+  if (!s || /not visible|unknown|n\/a/i.test(s) || QUIET_KEYS.has(e.payload?.activity_key)) return '';
+  return sentence(s);
+}
+
 export function categorize(activity = '') {
   const a = activity.toLowerCase();
   // "Not visible" is a safety signal; an empty room is just a quiet moment.
@@ -64,23 +101,24 @@ export function buildMoments(entries, zones) {
   for (const e of sorted) {
     const t = ts(e);
     if (e.entryType === 'frame') {
-      const activity = e.payload?.activity || 'Unknown activity';
+      const key = frameKey(e);
       const prev = moments[moments.length - 1];
-      if (prev && prev.kind === 'activity' && prev.title.toLowerCase() === sentence(activity).toLowerCase()) {
+      if (prev && prev.kind === 'activity' && prev.key === key && !e.requiresAttention && t - prev.end <= MERGE_GAP_MS) {
         prev.end = t;
         prev.count += 1;
         prev.entries.push(e);
         prev.flagged ||= e.requiresAttention;
-        prev.image ||= e.imagePublicId;
-        if (e.payload?.person_state) prev.detail = sentence(e.payload.person_state);
+        if (e.imagePublicId) prev.image = e.imagePublicId; // show the latest photo of the stretch
+        prev.detail = frameDetail(e) || prev.detail;
         continue;
       }
       moments.push({
         kind: 'activity',
-        category: categorize(activity),
-        title: sentence(activity),
-        detail: sentence(e.payload?.person_state),
-        objects: e.payload?.objects_of_note || [],
+        key,
+        category: frameCategory(e),
+        title: frameTitle(e),
+        detail: frameDetail(e),
+        objects: QUIET_KEYS.has(e.payload?.activity_key) ? [] : e.payload?.objects_of_note || [],
         start: t,
         end: t,
         count: 1,

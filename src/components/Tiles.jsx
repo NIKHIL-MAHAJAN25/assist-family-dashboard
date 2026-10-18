@@ -56,7 +56,7 @@ export const icon = (m) => (m.kind === 'place' ? 'pin' : m.kind === 'vitals' ? '
 export function MomentCard({ m, onToggleSave }) {
   const [stage, setStage] = useState(0);
   const url = m.image && buildCloudinaryUrl(m.image);
-  const photo = enhancedPhoto(m.image, 720, 320);
+  const photo = enhancedPhoto(m.image);
   const mins = Math.round((m.end - m.start) / 60000);
   return (
     <div className="min-w-0">
@@ -76,22 +76,21 @@ export function MomentCard({ m, onToggleSave }) {
           <Icon name="calendar" size={13} className="mr-1 inline -mt-0.5" />
           <b className="font-medium text-ink">{formatTime(m.start)}{mins >= 2 ? ` – ${formatTime(m.end)}` : ''}</b>
         </span>
-        <span>Kind <b className="font-medium text-ink">{label(m)}</b></span>
-        {m.confidence != null && (
-          <span>Camera <b className="font-medium text-ink">{m.confidence >= 0.8 ? 'sure' : m.confidence >= 0.6 ? 'fairly sure' : 'unsure'}</b></span>
-        )}
+        {m.count > 1 && <span>{m.count} {m.kind === 'place' ? 'location readings' : 'photos'}</span>}
       </div>
-      <p className="mt-3 text-[13px] leading-relaxed text-ink-2">
-        {m.detail || (m.kind === 'place' ? 'Location reading from the watch or phone.' : 'No further detail.')}
-        {m.objects?.length > 0 && ` Seen: ${m.objects.slice(0, 4).join(', ')}.`}
-      </p>
+      {(m.detail || m.objects?.length > 0 || m.kind === 'place') && (
+        <p className="mt-3 text-[13px] leading-relaxed text-ink-2">
+          {m.detail ? `${m.detail}.` : m.kind === 'place' ? 'From the phone\'s location.' : ''}
+          {m.objects?.length > 0 && ` Also in view: ${m.objects.slice(0, 4).map((o) => o.toLowerCase()).join(', ')}.`}
+        </p>
+      )}
       {url && stage < 2 && (
         <img
           key={m.image}
           src={stage === 0 ? photo.src : photo.fallback}
           alt=""
           onError={() => setStage((x) => x + 1)}
-          className="mt-4 h-[180px] w-full rounded-2xl object-cover"
+          className="mt-4 h-auto max-w-full rounded-2xl"
         />
       )}
     </div>
