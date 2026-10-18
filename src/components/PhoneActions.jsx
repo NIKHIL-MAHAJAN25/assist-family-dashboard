@@ -34,12 +34,28 @@ const SURFACE = {
 };
 
 /** Browser voice recorder for the voice-note card. */
-function Recorder({ onReady }) {
+function Recorder({ onReady, onTranscript }) {
   const [state, setState] = useState('idle'); // idle | recording | done | error
   const [secs, setSecs] = useState(0);
   const [url, setUrl] = useState(null);
   const rec = useRef(null);
   const timer = useRef(null);
+  const stt = useRef(null);
+
+  // Live speech-to-text alongside the recording (Chrome/Edge), so the words can be shown on her
+  // screen under the play button and the journal knows what was said. Optional: no STT, no text.
+  function startTranscript() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR || !onTranscript) return;
+    const r = new SR();
+    r.lang = navigator.language || 'en-IN';
+    r.continuous = true;
+    r.interimResults = true;
+    r.onresult = (e) => onTranscript(Array.from(e.results).map((x) => x[0].transcript).join(' ').replace(/\s+/g, ' ').trim());
+    r.onerror = () => {};
+    stt.current = r;
+    try { r.start(); } catch { /* already running */ }
+  }
 
   async function start() {
     try {
@@ -61,6 +77,7 @@ function Recorder({ onReady }) {
       };
       rec.current = r;
       r.start();
+      startTranscript();
       setSecs(0);
       timer.current = setInterval(() => setSecs((s) => (s >= 89 ? (stop(), s) : s + 1)), 1000);
       setState('recording');
@@ -70,6 +87,7 @@ function Recorder({ onReady }) {
   }
   function stop() {
     clearInterval(timer.current);
+    try { stt.current?.stop(); } catch { /* not running */ }
     if (rec.current?.state === 'recording') rec.current.stop();
   }
   useEffect(() => () => clearInterval(timer.current), []);
@@ -95,6 +113,10 @@ export function PhoneActionCard({ type, patientId, firstName, initial = {}, onSe
   const meta = PHONE_ACTIONS[type];
   const [fields, setFields] = useState({ text: initial.text || '', question: initial.question || initial.text || '', at: initial.at || '', quick: initial.quick || ['Yes', 'No', 'Not yet'] });
   const [audio, setAudio] = useState(null);
+  // "speak" can be sent as a recording of the family member's own voice instead of the phone's voice.
+  const [inMyVoice, setInMyVoice] = useState(type === 'voice');
+  const [transcript, setTranscript] = useState('');
+  const sendType = type === 'speak' && inMyVoice ? 'voice' : type;
   const [editing, setEditing] = useState(!(initial.text || initial.question));
   const [state, setState] = useState({ phase: 'draft' }); // draft | sending | sent | dismissed | error
   const qc = useQueryClient();
@@ -107,18 +129,18 @@ export function PhoneActionCard({ type, patientId, firstName, initial = {}, onSe
   });
 
   const ready =
-    type === 'speak' ? fields.text.trim() : type === 'ask' ? fields.question.trim() : type === 'reminder' ? fields.text.trim() && /^\d{1,2}:\d{2}$/.test(fields.at) : type === 'voice' ? audio : true;
+    sendType === 'voice' ? audio : type === 'speak' ? fields.text.trim() : type === 'ask' ? fields.question.trim() : type === 'reminder' ? fields.text.trim() && /^\d{1,2}:\d{2}$/.test(fields.at) : true;
 
   async function send() {
     setState({ phase: 'sending' });
     try {
-      let body = { type };
-      if (type === 'speak') body.text = fields.text;
+      let body = { type: sendType };
+      if (sendType === 'speak') body.text = fields.text;
       if (type === 'ask') Object.assign(body, { question: fields.question, quick: fields.quick });
       if (type === 'reminder') Object.assign(body, { text: fields.text, at: fields.at });
-      if (type === 'voice') {
+      if (sendType === 'voice') {
         const up = await apiClient.post(`/api/patients/${patientId}/voice-notes`, audio, { timeout: 60000 });
-        Object.assign(body, { url: up.data.url, seconds: up.data.seconds });
+        Object.assign(body, { url: up.data.url, seconds: up.data.seconds, text: (transcript || fields.text || '').slice(0, 140) });
       }
       const { data } = await apiClient.post(`/api/patients/${patientId}/commands`, body);
       setState({ phase: 'sent', id: data.id });
@@ -131,7 +153,7 @@ export function PhoneActionCard({ type, patientId, firstName, initial = {}, onSe
 
   if (state.phase === 'dismissed') return <p className="text-[12px] text-ink-3">Not sent.</p>;
   const c = live.data;
-  const step = STEP_OF(type, c);
+  const step = STEP_OF(sendType, c);
   const failed = c && ['failed', 'expired'].includes(c.status);
 
   return (
@@ -142,7 +164,7 @@ export function PhoneActionCard({ type, patientId, firstName, initial = {}, onSe
       </div>
 
       {/* what will be sent */}
-      {type === 'speak' && (editing && state.phase === 'draft'
+      {type === 'speak' && !inMyVoice && (editing && state.phase === 'draft'
         ? <textarea value={fields.text} onChange={(e) => setFields({ ...fields, text: e.target.value.slice(0, 280) })} rows={3} autoFocus className="mt-3 w-full resize-none rounded-[14px] border border-black/10 bg-white p-3 text-[15px] outline-none focus:border-ink" />
         : <p className="mt-3 font-serif text-[20px] leading-snug">“{fields.text}”</p>)}
       {type === 'ask' && (
@@ -162,17 +184,33 @@ export function PhoneActionCard({ type, patientId, firstName, initial = {}, onSe
           <input type="time" value={fields.at} disabled={state.phase !== 'draft' && state.phase !== 'error'} onChange={(e) => setFields({ ...fields, at: e.target.value })} className="rounded-[14px] border border-black/10 bg-white p-3 text-[15px] outline-none focus:border-ink" />
         </div>
       )}
-      {type === 'voice' && state.phase === 'draft' && <Recorder onReady={setAudio} />}
+      {sendType === 'voice' && type === 'speak' && fields.text && state.phase === 'draft' && (
+        <p className="mt-3 text-[13px] text-ink-2">Say something like: <span className="font-serif text-[16px] text-ink">“{fields.text}”</span></p>
+      )}
+      {sendType === 'voice' && state.phase === 'draft' && <Recorder onReady={setAudio} onTranscript={setTranscript} />}
+      {sendType === 'voice' && transcript && (
+        <div className="mt-3 rounded-[14px] bg-white/80 p-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">Words shown on her screen</p>
+          {state.phase === 'draft'
+            ? <textarea value={transcript} onChange={(e) => setTranscript(e.target.value.slice(0, 140))} rows={2} className="mt-1 w-full resize-none bg-transparent text-[15px] outline-none" />
+            : <p className="mt-1 text-[15px]">{transcript}</p>}
+        </div>
+      )}
 
       {state.phase !== 'sent' ? (
         <>
-          <p className="mt-2 text-[12px] text-ink-3">{meta.note(firstName)} Nothing is sent until you press the button.</p>
+          <p className="mt-2 text-[12px] text-ink-3">{PHONE_ACTIONS[sendType].note(firstName)} Nothing is sent until you press the button.</p>
           {state.error && <p className="mt-2 text-[12px] text-act">{state.error}</p>}
           <div className="mt-3 flex flex-wrap gap-2">
             <button type="button" onClick={send} disabled={!ready || state.phase === 'sending'} className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-black disabled:opacity-40">
-              <Icon name={meta.icon} size={14} /> {state.phase === 'sending' ? 'Sending…' : meta.send}
+              <Icon name={PHONE_ACTIONS[sendType].icon} size={14} /> {state.phase === 'sending' ? 'Sending…' : PHONE_ACTIONS[sendType].send}
             </button>
-            {(type === 'speak' || type === 'ask') && (
+            {type === 'speak' && (
+              <button type="button" onClick={() => { setInMyVoice((v) => !v); setAudio(null); setTranscript(''); }} className="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-2 text-[13px] font-semibold hover:bg-white">
+                <Icon name={inMyVoice ? 'speaker' : 'mic'} size={14} /> {inMyVoice ? 'Use the phone’s voice' : 'Record it in my voice'}
+              </button>
+            )}
+            {((type === 'speak' && !inMyVoice) || type === 'ask') && (
               <button type="button" onClick={() => setEditing((x) => !x)} className="rounded-full bg-white/80 px-4 py-2 text-[13px] font-semibold hover:bg-white">{editing ? 'Done editing' : 'Edit'}</button>
             )}
             <button type="button" onClick={() => setState({ phase: 'dismissed' })} className="rounded-full px-3 py-2 text-[13px] text-ink-3 hover:text-ink">Not now</button>
@@ -186,12 +224,12 @@ export function PhoneActionCard({ type, patientId, firstName, initial = {}, onSe
                 {c.status === 'expired' ? 'Her phone didn’t pick it up in 10 minutes' : `Didn’t work${c.error ? `: ${c.error}` : ''}`}
               </span>
             ) : (
-              meta.steps.map((label, i) => (
+              PHONE_ACTIONS[sendType].steps.map((label, i) => (
                 <span key={label} className="flex items-center gap-2">
                   <span className={cx('inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-semibold', i < step ? 'bg-[#D9F26B] text-ink' : 'bg-white/70 text-ink-3')}>
                     {i < step && <Icon name="check" size={12} />} {label}
                   </span>
-                  {i < meta.steps.length - 1 && <span className="h-px w-3 bg-black/15" />}
+                  {i < PHONE_ACTIONS[sendType].steps.length - 1 && <span className="h-px w-3 bg-black/15" />}
                 </span>
               ))
             )}
