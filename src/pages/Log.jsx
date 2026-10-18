@@ -9,6 +9,7 @@ import IncidentCard from '../components/IncidentCard.jsx';
 import DayPicker from '../components/DayPicker.jsx';
 import { SKIES, SkyBackdrop } from '../components/DaySky.jsx';
 import { GRADIENT, MomentCard, Tile, TileHead, avatar, icon, label } from '../components/Tiles.jsx';
+import { buildCloudinaryUrl } from '../api/client.js';
 import { ErrorNote, Icon, Loading, cx } from '../ui';
 
 const toKey = (d) => {
@@ -41,7 +42,7 @@ function fmt(min) {
   return m ? `${h}h ${m}m` : `${h}h`;
 }
 
-function PartTile({ part, segments, incidents, dayStart, now, isToday }) {
+function PartTile({ part, segments, incidents, dayStart, now, isToday, onOpen }) {
   const a = dayStart + part.from * 3600000;
   const b = dayStart + part.to * 3600000;
   const byCat = {};
@@ -57,13 +58,15 @@ function PartTile({ part, segments, incidents, dayStart, now, isToday }) {
   const future = isToday && now < a;
   const current = isToday && now >= a && now < b;
   const dark = SKIES[part.key]?.dark;
+  const Tag = future ? 'div' : 'button';
   return (
-    <div
+    <Tag
+      {...(!future && { type: 'button', onClick: onOpen, 'aria-label': `Open ${part.key.toLowerCase()}` })}
       className={cx(
-        'relative flex min-h-[170px] min-w-0 flex-col overflow-hidden rounded-[20px] p-5',
+        'group relative flex min-h-[170px] min-w-0 flex-col overflow-hidden rounded-[20px] p-5 text-left',
         dark ? 'text-white' : 'text-ink',
         current && 'ring-2 ring-ink/80 ring-offset-2 ring-offset-transparent',
-        future && 'opacity-55'
+        future ? 'opacity-55' : 'transition hover:-translate-y-0.5 hover:shadow-[0_10px_30px_-12px_rgba(20,30,50,0.35)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink'
       )}
       style={{ background: SKIES[part.key]?.bg }}
     >
@@ -96,7 +99,82 @@ function PartTile({ part, segments, incidents, dayStart, now, isToday }) {
           <Icon name="warning" size={12} /> {alerts} alert{alerts > 1 ? 's' : ''}
         </p>
       )}
-    </div>
+      {!future && (
+        <span className={cx('relative mt-auto pt-3 text-[12px] font-semibold opacity-0 transition group-hover:opacity-100', dark ? 'text-white/80' : 'text-ink-2')}>
+          See {part.key.toLowerCase()} →
+        </span>
+      )}
+    </Tag>
+  );
+}
+
+/** Minutes per category inside one part of the day. */
+function partBreakdown(part, segments, dayStart) {
+  const a = dayStart + part.from * 3600000;
+  const b = dayStart + part.to * 3600000;
+  const byCat = {};
+  for (const s of segments) {
+    const o = Math.max(0, Math.min(b, s.end) - Math.max(a, s.start)) / 60000;
+    if (o > 0) byCat[s.category] = (byCat[s.category] || 0) + o;
+  }
+  return Object.entries(byCat).filter(([c]) => c !== 'other').sort((x, y) => y[1] - x[1]);
+}
+
+/** The big sky header of a part-of-day page: what happened, how long, alerts, and its photos. */
+function PartHero({ part, dayStart, segments, items, incidents, onBack, onPick }) {
+  const sky = SKIES[part.key] || {};
+  const dark = sky.dark;
+  const rows = partBreakdown(part, segments, dayStart);
+  const [broken, setBroken] = useState(() => new Set());
+  const photos = items.filter((m) => m.image && !broken.has(m.image)).slice(0, 10);
+  const alerts = incidents.length;
+  return (
+    <section className={cx('relative overflow-hidden rounded-[24px] p-6 sm:p-8', dark ? 'text-white' : 'text-ink')} style={{ background: sky.bg }}>
+      <SkyBackdrop part={part.key} />
+      <div className="relative flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={onBack}
+          className={cx('inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-semibold transition', dark ? 'bg-white/15 hover:bg-white/25' : 'bg-white/70 hover:bg-white')}
+        >
+          ← Whole day
+        </button>
+        <span className={cx('text-[13px]', dark ? 'text-white/70' : 'text-ink-2')}>
+          {new Date(dayStart).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })} · {part.hint}
+        </span>
+      </div>
+      <h1 className="relative mt-4 font-serif text-[44px] leading-none sm:text-[56px]">{part.key}</h1>
+      <p className={cx('relative mt-2 text-[14px]', dark ? 'text-white/75' : 'text-ink-2')}>
+        {items.length ? `${items.length} moment${items.length > 1 ? 's' : ''}` : 'Nothing was recorded'}
+        {alerts > 0 && ` · ${alerts} alert${alerts > 1 ? 's' : ''}`}
+      </p>
+      {rows.length > 0 && (
+        <div className="relative mt-5 flex flex-wrap gap-2">
+          {rows.map(([c, m]) => (
+            <span key={c} className={cx('inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[13px]', dark ? 'bg-white/10' : 'bg-white/75')}>
+              <span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: SWATCH[c] }} />
+              {CATEGORIES[c]?.label || c}
+              <b className="font-serif text-[15px] font-normal">{fmt(m)}</b>
+            </span>
+          ))}
+        </div>
+      )}
+      {photos.length > 0 && (
+        <div className="relative -mx-1 mt-6 flex gap-2 overflow-x-auto px-1 pb-1">
+          {photos.map((m) => (
+            <button
+              key={`${m.kind}-${m.start}`}
+              type="button"
+              onClick={() => onPick(`${m.kind}-${m.start}`)}
+              className="shrink-0 overflow-hidden rounded-[14px] ring-1 ring-black/5 transition hover:scale-[1.03]"
+              title={`${formatTime(m.start)} · ${m.title}`}
+            >
+              <img src={buildCloudinaryUrl(m.image)} alt={m.title} className="h-[84px] w-[112px] object-cover" loading="lazy" onError={() => setBroken((b) => new Set(b).add(m.image))} />
+            </button>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -113,6 +191,8 @@ export default function Log() {
   const todayKey = toKey(now);
   const dayKey = params.get('day') || todayKey;
   const filter = params.get('show') || 'all';
+  const partKey = PARTS.some((p) => p.key === params.get('part')) ? params.get('part') : null;
+  const part = PARTS.find((p) => p.key === partKey);
   const [dayStart, dayEnd] = dayBounds(fromKey(dayKey));
   const isToday = dayKey === todayKey;
   const [sel, setSel] = useState(null);
@@ -139,9 +219,11 @@ export default function Log() {
   }, [entries.data, zones.data, dayStart, dayEnd, now, isToday]);
 
   const count = (f) =>
-    moments.filter((m) => (f === 'all' ? true : f === 'activity' ? m.kind === 'activity' : f === 'places' ? m.kind === 'place' : m.flagged)).length;
-  const shown = [...moments]
-    .reverse()
+    moments.filter((m) => !partKey || partOf(m.start) === partKey).filter((m) => (f === 'all' ? true : f === 'activity' ? m.kind === 'activity' : f === 'places' ? m.kind === 'place' : m.flagged)).length;
+  const inPart = (m) => !partKey || partOf(m.start) === partKey;
+  // A part page reads like a story (oldest first); the whole day shows the newest first.
+  const shown = (partKey ? [...moments] : [...moments].reverse())
+    .filter(inPart)
     .filter((m) => (filter === 'all' ? true : filter === 'activity' ? m.kind === 'activity' : filter === 'places' ? m.kind === 'place' : m.flagged));
   const chosen = shown.find((m) => `${m.kind}-${m.start}` === sel) || shown[0];
 
@@ -156,6 +238,14 @@ export default function Log() {
     const d = fromKey(dayKey);
     d.setDate(d.getDate() + delta);
     setDay(toKey(d));
+  };
+  const setPart = (k) => {
+    const next = new URLSearchParams(params);
+    if (k) next.set('part', k);
+    else next.delete('part');
+    setParams(next);
+    setSel(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   const setFilter = (v) => {
     const next = new URLSearchParams(params);
@@ -172,65 +262,7 @@ export default function Log() {
     groups[groups.length - 1].items.push(m);
   }
 
-  return (
-    <div className="grid gap-3">
-      <Tile>
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="font-serif text-[36px] leading-[1.05] sm:text-[44px]">{formatDayLabel(dayStart)}</h1>
-            <p className="mt-2 text-[14px] text-ink-2">
-              {entries.isLoading
-                ? ' '
-                : raw
-                  ? `${moments.length} moments, from ${raw} camera and watch readings.`
-                  : 'Nothing was recorded on this day.'}
-            </p>
-          </div>
-          <DayPicker value={dayKey} max={todayKey} onStep={go} onChange={setDay} onToday={() => setDay(todayKey)} />
-        </div>
-        <div className="mt-5 grid grid-cols-7 gap-1.5">
-          {week.map((t) => {
-            const k = toKey(t);
-            const on = k === dayKey;
-            return (
-              <button
-                key={k}
-                type="button"
-                onClick={() => setDay(k)}
-                className={cx('rounded-2xl py-2 text-center transition', on ? 'bg-[#A9D4F5]' : 'hover:bg-black/[0.04]')}
-              >
-                <span className="block text-[10px] uppercase text-ink-3">{new Date(t).toLocaleDateString(undefined, { weekday: 'short' })}</span>
-                <span className="block font-serif text-[20px]">{new Date(t).getDate()}</span>
-              </button>
-            );
-          })}
-        </div>
-      </Tile>
-
-      {entries.isError && <ErrorNote error={entries.error} />}
-      {entries.isLoading ? (
-        <Loading />
-      ) : (
-        <>
-          {raw > 0 && (
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {PARTS.map((p) => (
-                <PartTile key={p.key} part={p} segments={segments} incidents={incidents} dayStart={dayStart} now={now} isToday={isToday} />
-              ))}
-            </div>
-          )}
-
-          {incidents.length > 0 && (
-            <Tile>
-              <TileHead title="Alerts" />
-              <div className="mt-4 space-y-2">
-                {incidents.map((i) => (
-                  <IncidentCard key={i.id} incident={i} />
-                ))}
-              </div>
-            </Tile>
-          )}
-
+  const momentsTile = (
           <Tile>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="font-serif text-[24px] leading-tight">Moments</h2>
@@ -252,13 +284,13 @@ export default function Log() {
             </div>
 
             {!shown.length ? (
-              <p className="mt-6 text-[14px] text-ink-3">{raw ? 'No moments match this filter.' : 'Try an earlier day.'}</p>
+              <p className="mt-6 text-[14px] text-ink-3">{partKey ? `Nothing in the ${partKey.toLowerCase()} matches this filter.` : raw ? 'No moments match this filter.' : 'Try an earlier day.'}</p>
             ) : (
               <div className="mt-5 grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
                 <div className="min-w-0 space-y-4">
                   {groups.map((g, gi) => (
                     <div key={`${g.part}-${gi}`}>
-                      <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">{g.part}</p>
+                      {!partKey && <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">{g.part}</p>}
                       <ul className="space-y-1">
                         {g.items.map((m) => {
                           const id = `${m.kind}-${m.start}`;
@@ -305,6 +337,106 @@ export default function Log() {
               </div>
             )}
           </Tile>
+  );
+
+  if (partKey && part) {
+    return (
+      <div className="grid gap-3">
+        <PartHero
+          part={part}
+          dayStart={dayStart}
+          segments={segments}
+          items={moments.filter(inPart)}
+          incidents={incidents.filter((i) => partOf(i.start) === partKey)}
+          onBack={() => setPart(null)}
+          onPick={setSel}
+        />
+        <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Part of the day">
+          {PARTS.map((p) => {
+            const future = isToday && now < dayStart + p.from * 3600000;
+            return (
+              <button
+                key={p.key}
+                type="button"
+                role="tab"
+                aria-selected={p.key === partKey}
+                disabled={future}
+                onClick={() => setPart(p.key)}
+                className={cx(
+                  'rounded-full px-4 py-2 text-[13px] transition disabled:opacity-40',
+                  p.key === partKey ? 'bg-ink text-white' : 'border border-black/10 bg-white/85 hover:bg-white'
+                )}
+              >
+                {p.key}
+              </button>
+            );
+          })}
+        </div>
+        {momentsTile}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-3">
+      <Tile>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="font-serif text-[36px] leading-[1.05] sm:text-[44px]">{formatDayLabel(dayStart)}</h1>
+            <p className="mt-2 text-[14px] text-ink-2">
+              {entries.isLoading
+                ? ' '
+                : raw
+                  ? `${moments.length} moments, from ${raw} camera and watch readings.`
+                  : 'Nothing was recorded on this day.'}
+            </p>
+          </div>
+          <DayPicker value={dayKey} max={todayKey} onStep={go} onChange={setDay} onToday={() => setDay(todayKey)} />
+        </div>
+        <div className="mt-5 grid grid-cols-7 gap-1.5">
+          {week.map((t) => {
+            const k = toKey(t);
+            const on = k === dayKey;
+            return (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setDay(k)}
+                className={cx('rounded-2xl py-2 text-center transition', on ? 'bg-[#A9D4F5]' : 'hover:bg-black/[0.04]')}
+              >
+                <span className="block text-[10px] uppercase text-ink-3">{new Date(t).toLocaleDateString(undefined, { weekday: 'short' })}</span>
+                <span className="block font-serif text-[20px]">{new Date(t).getDate()}</span>
+              </button>
+            );
+          })}
+        </div>
+      </Tile>
+
+      {entries.isError && <ErrorNote error={entries.error} />}
+      {entries.isLoading ? (
+        <Loading />
+      ) : (
+        <>
+          {raw > 0 && (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {PARTS.map((p) => (
+                <PartTile key={p.key} part={p} segments={segments} incidents={incidents} dayStart={dayStart} now={now} isToday={isToday} onOpen={() => setPart(p.key)} />
+              ))}
+            </div>
+          )}
+
+          {incidents.length > 0 && (
+            <Tile>
+              <TileHead title="Alerts" />
+              <div className="mt-4 space-y-2">
+                {incidents.map((i) => (
+                  <IncidentCard key={i.id} incident={i} />
+                ))}
+              </div>
+            </Tile>
+          )}
+
+          {momentsTile}
           <p className="pb-2 text-center text-[12px] text-ink-3">Photos are deleted after 7 days. Pick a moment and press “Keep photo” to hold on to it.</p>
         </>
       )}
