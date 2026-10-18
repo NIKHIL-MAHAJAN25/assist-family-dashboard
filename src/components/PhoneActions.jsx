@@ -187,7 +187,7 @@ export function PhoneActionCard({ type, patientId, firstName, initial = {}, onSe
       {sendType === 'voice' && type === 'speak' && fields.text && state.phase === 'draft' && (
         <p className="mt-3 text-[13px] text-ink-2">Say something like: <span className="font-serif text-[16px] text-ink">“{fields.text}”</span></p>
       )}
-      {sendType === 'voice' && state.phase === 'draft' && <Recorder onReady={setAudio} onTranscript={setTranscript} />}
+      {sendType === 'voice' && (state.phase === 'draft' || state.phase === 'error') && <Recorder onReady={setAudio} onTranscript={setTranscript} />}
       {sendType === 'voice' && transcript && (
         <div className="mt-3 rounded-[14px] bg-white/80 p-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">Words shown on her screen</p>
