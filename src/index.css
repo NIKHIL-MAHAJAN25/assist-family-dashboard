@@ -182,3 +182,7 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 /* Soft fade where content scrolls under the edges. */
 .fade-edges { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%); }
+
+@keyframes toast-in { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+.toast-in { animation: toast-in .35s cubic-bezier(.2,.8,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .toast-in { animation: none; } }

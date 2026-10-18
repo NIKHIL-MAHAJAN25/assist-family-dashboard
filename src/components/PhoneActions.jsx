@@ -255,14 +255,57 @@ export function PhoneActionCard({ type, patientId, firstName, initial = {}, onSe
   );
 }
 
+/** "Tell the family": a note to everyone in the family circle (shows in their notifications). */
+export function BroadcastCard({ patientId, initialText = '' }) {
+  const [text, setText] = useState(initialText);
+  const [state, setState] = useState({ phase: 'draft' });
+  async function send() {
+    setState({ phase: 'sending' });
+    try {
+      const { data } = await apiClient.post(`/api/patients/${patientId}/broadcasts`, { text });
+      setState({ phase: 'sent', members: data.family_members });
+    } catch (e) {
+      setState({ phase: 'error', error: e?.response?.data?.error || 'Could not send.' });
+    }
+  }
+  if (state.phase === 'dismissed') return <p className="text-[12px] text-ink-3">Not sent.</p>;
+  return (
+    <div className="overflow-hidden rounded-[18px] bg-[linear-gradient(135deg,#EEF8C4_0%,#EAF4FF_100%)] p-4 ring-1 ring-black/[0.04]">
+      <div className="flex items-center gap-2 text-[12px] font-semibold text-ink-2">
+        <span className="grid h-7 w-7 place-items-center rounded-full bg-white"><Icon name="people" size={15} /></span>
+        Tell the family
+      </div>
+      {state.phase === 'sent' ? (
+        <>
+          <p className="mt-3 font-serif text-[20px] leading-snug">“{text}”</p>
+          <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#D9F26B] px-2.5 py-1 text-[12px] font-semibold"><Icon name="check" size={12} /> Sent to the family circle{state.members > 1 ? ` (${state.members} people)` : ''}</span>
+        </>
+      ) : (
+        <>
+          <textarea value={text} onChange={(e) => setText(e.target.value.slice(0, 500))} rows={2} autoFocus={!initialText} placeholder="e.g. Just spoke to Ma — she's fine, had her dinner." className="mt-3 w-full resize-none rounded-[14px] border border-black/10 bg-white p-3 text-[15px] outline-none focus:border-ink" />
+          <p className="mt-2 text-[12px] text-ink-3">Everyone in the family circle gets it as a notification on the website and in the app.</p>
+          {state.error && <p className="mt-2 text-[12px] text-act">{state.error}</p>}
+          <div className="mt-3 flex gap-2">
+            <button type="button" onClick={send} disabled={!text.trim() || state.phase === 'sending'} className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-white hover:bg-black disabled:opacity-40">
+              <Icon name="people" size={14} /> {state.phase === 'sending' ? 'Sending…' : 'Send to everyone'}
+            </button>
+            <button type="button" onClick={() => setState({ phase: 'dismissed' })} className="rounded-full px-3 py-2 text-[13px] text-ink-3 hover:text-ink">Not now</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 /** One-tap shortcuts above the composer: each drops a confirm card into the chat, no AI involved. */
 export const QUICK = [
-  ['ask', 'Ask her'],
-  ['voice', 'Voice note'],
-  ['capture', 'Take photo'],
-  ['guide_home', 'Guide home'],
-  ['calm', 'Calm down'],
-  ['ring', 'Ring phone'],
-  ['reminder', 'Reminder'],
-  ['quiz', 'Send quiz'],
+  ['ask', 'Ask her', 'spark'],
+  ['voice', 'Voice note', 'mic'],
+  ['capture', 'Take photo', 'camera'],
+  ['guide_home', 'Guide home', 'pin'],
+  ['calm', 'Calm down', 'heart'],
+  ['ring', 'Ring phone', 'bell'],
+  ['reminder', 'Reminder', 'clock'],
+  ['quiz', 'Send quiz', 'brain'],
+  ['broadcast', 'Tell family', 'people'],
 ];

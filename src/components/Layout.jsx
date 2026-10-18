@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import NotificationCenter from './Notifications.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { fetchPatientStatus } from '../api/status.js';
 import { useNow } from '../lib/hooks.js';
@@ -236,7 +237,7 @@ export default function Layout({ children }) {
             <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-3 lg:ml-0">
               <Clock now={now} part={part} />
               <span className="hidden h-7 w-px bg-line xl:block" />
-              <Bell />
+              <NotificationCenter />
               <AccountMenu />
             </div>
           </div>

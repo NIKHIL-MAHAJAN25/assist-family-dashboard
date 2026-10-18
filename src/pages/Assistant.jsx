@@ -7,7 +7,7 @@ import { dayBounds, sentence } from '../lib/story.js';
 import ZoneMap from '../components/ZoneMap.jsx';
 import { formatTime } from '../utils/datetime.js';
 import { Icon, cx } from '../ui';
-import { PHONE_ACTIONS, PhoneActionCard, QUICK } from '../components/PhoneActions.jsx';
+import { BroadcastCard, PHONE_ACTIONS, PhoneActionCard, QUICK } from '../components/PhoneActions.jsx';
 
 // The family Assistant: talk to an agent that knows the person's day, and let it propose actions.
 // Anything that reaches the person (speaking on their phone) is shown as a card the family member
@@ -108,6 +108,7 @@ function SummaryAction({ patientId, range }) {
 }
 
 function ActionCard({ a, ctx }) {
+  if (a.type === 'broadcast') return <BroadcastCard patientId={ctx.patientId} initialText={a.text} />;
   if (PHONE_ACTIONS[a.type]) return <PhoneActionCard type={a.type} patientId={ctx.patientId} firstName={ctx.firstName} initial={a} />;
   if (a.type === 'map') return <MapCard status={ctx.status} zones={ctx.zones} firstName={ctx.firstName} />;
   if (a.type === 'photo') return <PhotoCard latest={ctx.latestPhoto} />;
@@ -337,9 +338,9 @@ export default function Assistant() {
         <div className="border-t border-black/[0.05] px-4 py-4 sm:px-7">
           <div className="mx-auto max-w-[820px]">
             <div className="mb-3 flex flex-wrap justify-center gap-1" aria-label="Quick actions">
-              {QUICK.map(([type, label]) => (
+              {QUICK.map(([type, label, icon]) => (
                 <button key={type} type="button" onClick={() => quick(type)} className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2.5 py-1.5 text-[12px] font-semibold text-ink-2 ring-1 ring-black/[0.05] transition hover:-translate-y-px hover:bg-white hover:text-ink">
-                  <Icon name={PHONE_ACTIONS[type].icon} size={13} /> {label}
+                  <Icon name={icon} size={13} /> {label}
                 </button>
               ))}
             </div>

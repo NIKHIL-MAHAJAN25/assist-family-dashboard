@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { DecisionLayer, FamilyCircle, PairPhone, Welcome } from '../components/SettingsPanels.jsx';
 import { registerDevice } from '../api/devices.js';
@@ -102,6 +102,11 @@ export default function Settings() {
             For a camera or watch that connects to the server directly instead of through the phone.
           </p>
           <RegisterDevice patientId={user?.patient_id} />
+        </Panel>
+
+        <Panel title="Demo kit">
+          <p className="text-sm text-ink-2">Staged camera scenes, a simulated walk away from home, answering as the patient, a one-click reset and the rehearsal checklist.</p>
+          <Link to="/demo" className="mt-4 inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white">Open the demo kit →</Link>
         </Panel>
 
         <DecisionLayer patientId={user?.patient_id} />

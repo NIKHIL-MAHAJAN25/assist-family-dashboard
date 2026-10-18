@@ -8,6 +8,7 @@ import People from './pages/People.jsx';
 import Memory from './pages/Memory.jsx';
 import Settings from './pages/Settings.jsx';
 import Assistant from './pages/Assistant.jsx';
+import Demo from './pages/Demo.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route path="/today" element={<Today />} />
         <Route path="/assistant" element={<Assistant />} />
+        <Route path="/demo" element={<Demo />} />
         <Route path="/log" element={<Log />} />
         <Route path="/places" element={<Places />} />
         <Route path="/people" element={<People />} />
