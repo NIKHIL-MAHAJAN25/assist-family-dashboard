@@ -10,6 +10,16 @@ import { Icon, cx } from '../ui';
 import { BroadcastCard, PHONE_ACTIONS, PhoneActionCard, QUICK } from '../components/PhoneActions.jsx';
 import { RuleCard, StoryCard } from '../components/AgentCards.jsx';
 import { AlbumCard, FindCard, ReplayCard, ReportCard } from '../components/LookBackCards.jsx';
+import { EvidencePanel, ReplyText, useSpeech } from '../components/Evidence.jsx';
+
+const READ_ALOUD = 'assistant:read-aloud';
+function loadReadAloud() {
+  try {
+    return localStorage.getItem(READ_ALOUD) === '1';
+  } catch {
+    return false;
+  }
+}
 
 // The family Assistant: talk to an agent that knows the person's day, and let it propose actions.
 // Anything that reaches the person (speaking on their phone) is shown as a card the family member
@@ -147,7 +157,8 @@ function Thinking({ since }) {
   );
 }
 
-function Message({ m, ctx }) {
+function Message({ m, ctx, idx }) {
+  const [openId, setOpenId] = useState(null);
   if (m.role === 'user') {
     return (
       <div className="flex justify-end">
@@ -155,14 +166,39 @@ function Message({ m, ctx }) {
       </div>
     );
   }
+  const open = (m.evidence || []).find((it) => it.id === openId);
+  const speech = ctx.speech;
+  const key = `m${idx}`;
   return (
     <div className="flex gap-3">
-      <span className="ai-orb mt-0.5 h-8 w-8 shrink-0" />
+      <span className={cx('ai-orb mt-0.5 h-8 w-8 shrink-0', speech?.playing === key && 'thinking')} />
       <div className="min-w-0 flex-1 space-y-3">
         {m.error ? (
           <p className="text-[15px] text-act">{m.text}</p>
         ) : (
-          m.text && <p className="max-w-[68ch] text-[15px] leading-relaxed text-ink">{m.text}</p>
+          m.text && (
+            <div className="flex items-start gap-2">
+              <ReplyText text={m.text} evidence={m.evidence} openId={openId} onOpen={setOpenId} />
+              {speech && (
+                <button
+                  type="button"
+                  onClick={() => speech.play(key, m.text)}
+                  title={speech.playing === key ? 'Stop reading' : 'Read this aloud'}
+                  className={cx('mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full transition', speech.playing === key ? 'bg-ink text-white' : 'text-ink-3 hover:bg-black/[0.06] hover:text-ink')}
+                >
+                  {speech.loading === key ? <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" /> : <Icon name={speech.playing === key ? 'pause' : 'speaker'} size={14} />}
+                </button>
+              )}
+            </div>
+          )
+        )}
+        {open && (
+          <div className="max-w-[620px]">
+            <EvidencePanel item={open} onClose={() => setOpenId(null)} />
+          </div>
+        )}
+        {!open && m.evidence?.length > 0 && (
+          <p className="text-[11.5px] text-ink-3">Tap a time to see the photo or reading behind it{m.evidence.some((it) => it.decision) ? ', and how an alert was decided' : ''}.</p>
         )}
         {m.actions?.map((a, i) => (
           <div key={i} className="max-w-[560px]">
@@ -294,7 +330,19 @@ export default function Assistant() {
     () => [...(entries.data || [])].filter((e) => e.entryType === 'frame' && e.imagePublicId).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0],
     [entries.data]
   );
-  const ctx = { patientId, firstName, status: status.data, zones: zones.data || [], latestPhoto };
+  const speech = useSpeech(patientId);
+  const [readAloud, setReadAloud] = useState(loadReadAloud);
+  function toggleReadAloud() {
+    const next = !readAloud;
+    setReadAloud(next);
+    if (!next) speech.stop();
+    try {
+      localStorage.setItem(READ_ALOUD, next ? '1' : '0');
+    } catch {
+      /* private window: the switch still works for this visit */
+    }
+  }
+  const ctx = { patientId, firstName, status: status.data, zones: zones.data || [], latestPhoto, speech };
 
   async function ask(text) {
     const q = text.trim();
@@ -310,7 +358,10 @@ export default function Assistant() {
     setBusy(Date.now());
     try {
       const { data } = await apiClient.post(`/api/patients/${patientId}/assistant`, { message: q, history }, { timeout: 70000 });
-      setMsgs((m) => [...m, { role: 'assistant', text: data.reply, actions: data.actions, provider: data.provider, sources: data.sources, ms: data.ms }]);
+      // The reply lands after the question just added, so its index is the old length + 1.
+      const index = msgs.length + 1;
+      setMsgs((m) => [...m, { role: 'assistant', text: data.reply, actions: data.actions, evidence: data.evidence || [], provider: data.provider, sources: data.sources, ms: data.ms }]);
+      if (readAloud && data.reply) speech.play(`m${index}`, data.reply);
     } catch (e) {
       setMsgs((m) => [...m, { role: 'assistant', error: true, text: e?.response?.data?.error || 'I couldn’t reach the server. Try again in a moment.' }]);
     } finally {
@@ -341,8 +392,17 @@ export default function Assistant() {
             <h1 className="font-serif text-[22px] leading-tight">Assistant</h1>
             <p className="truncate text-[12px] text-ink-3">Knows {firstName}’s day · answers from the camera, location and journal · asks before it acts</p>
           </div>
+          <button
+            type="button"
+            onClick={toggleReadAloud}
+            aria-pressed={readAloud}
+            title={readAloud ? 'Answers are read aloud — click to stop' : 'Read every answer aloud in a natural voice'}
+            className={cx('inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-semibold transition', readAloud ? 'bg-ink text-white' : 'border border-black/10 bg-white/80 hover:bg-white')}
+          >
+            <Icon name="speaker" size={13} /> <span className="hidden sm:inline">{readAloud ? 'Reading aloud' : 'Read aloud'}</span>
+          </button>
           {msgs.length > 0 && (
-            <button type="button" onClick={() => setMsgs([])} className="rounded-full border border-black/10 bg-white/80 px-3.5 py-1.5 text-[12px] font-semibold hover:bg-white">
+            <button type="button" onClick={() => { speech.stop(); setMsgs([]); }} className="rounded-full border border-black/10 bg-white/80 px-3.5 py-1.5 text-[12px] font-semibold hover:bg-white">
               New chat
             </button>
           )}
@@ -370,7 +430,7 @@ export default function Assistant() {
           ) : (
             <div className="mx-auto max-w-[820px] space-y-6">
               {msgs.map((m, i) => (
-                <Message key={i} m={m} ctx={ctx} />
+                <Message key={i} idx={i} m={m} ctx={ctx} />
               ))}
               {busy && <Thinking since={busy} />}
               <div ref={endRef} />

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { buildCloudinaryUrl } from '../api/client.js';
 import { formatTime } from '../utils/datetime.js';
 import { Icon, cx } from '../ui';
+import { DecisionTrail, decisionFromEntry } from './Evidence.jsx';
 
 // Shared pieces of the "Atria" look: off-white tiles, serif titles, black pill and arrow
 // buttons, status chips, and the one blue→lime gradient. Used by Today and Log.
@@ -115,6 +116,11 @@ export function MomentCard({ m, onToggleSave }) {
         {m.count > 1 && <span>{m.count} {m.kind === 'place' ? 'location readings' : 'photos'}</span>}
       </div>
       {line && <p className="mt-3 text-[13px] leading-relaxed text-ink-2">{line}</p>}
+      {m.flagged && m.entries?.some((e) => e.requiresAttention) && (
+        <div className="mt-4">
+          <DecisionTrail decision={decisionFromEntry(m.entries.find((e) => e.requiresAttention))} />
+        </div>
+      )}
 
       {url && !broken && (
         <figure className="mt-4">
