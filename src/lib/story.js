@@ -50,6 +50,8 @@ function frameDetail(e) {
   return sentence(s);
 }
 
+const peopleIn = (e) => (e.payload?.people || []).map((p) => p.name).filter(Boolean);
+
 /** Adds new objects to a stretch's list, newest first, without near-duplicates ("keyboard" vs "laptop keyboard"). */
 function mergeObjects(list, more) {
   const out = [...(list || [])];
@@ -127,6 +129,7 @@ export function buildMoments(entries, zones) {
         if (e.imagePublicId) prev.image = e.imagePublicId; // show the latest photo of the stretch
         prev.detail = frameDetail(e) || prev.detail;
         prev.objects = mergeObjects(prev.objects, e.payload?.objects_of_note);
+        for (const n of peopleIn(e)) if (!prev.people.includes(n)) prev.people.push(n);
         continue;
       }
       moments.push({
@@ -139,6 +142,8 @@ export function buildMoments(entries, zones) {
         // readable ("laptop, curtains, coat on chair") instead of a bare "No one in view".
         objects: mergeObjects([], e.payload?.objects_of_note),
         quiet: QUIET_KEYS.has(e.payload?.activity_key),
+        // Family the home camera recognised (backend faceService), e.g. ["Sarah"].
+        people: peopleIn(e),
         start: t,
         end: t,
         count: 1,

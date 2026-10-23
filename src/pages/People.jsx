@@ -3,7 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createEnrolledFace, deleteEnrolledFace, fetchEnrolledFaces } from '../api/enrolledFaces.js';
 import { usePatientId } from '../lib/hooks.js';
 import { computeFaceDescriptor } from '../utils/faceApi.js';
-import { formatDateTime } from '../utils/datetime.js';
+import { formatDateTime, formatTime } from '../utils/datetime.js';
+import { apiClient } from '../api/client.js';
+import { useAuth } from '../context/AuthContext.jsx';
 import { Avatar, Button, Empty, ErrorNote, Field, Icon, IconButton, Loading, PageTitle, Panel } from '../ui';
 
 const MAX_PEOPLE = 6;
@@ -88,8 +90,26 @@ function AddPerson({ onDone, patientId }) {
   );
 }
 
+/** "Seen today at 2:35 pm, eating lunch · 3 times this week", or a quiet "not seen" line. */
+function LastSeen({ s }) {
+  if (!s) return null;
+  if (!s.last_seen_at) return <p className="mt-1.5 text-xs text-ink-4">Not seen by the camera this week</p>;
+  const when = new Date(s.last_seen_at);
+  const today = new Date().toDateString() === when.toDateString();
+  return (
+    <p className="mt-1.5 flex items-center gap-1.5 text-xs text-ink-2">
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-ok" />
+      <span className="truncate">
+        Seen {today ? `today at ${formatTime(when)}` : formatDateTime(when)}
+        {s.times_seen_7d > 1 ? ` · ${s.times_seen_7d} times this week` : ''}
+      </span>
+    </p>
+  );
+}
+
 export default function People() {
   const patientId = usePatientId();
+  const { user } = useAuth();
   const qc = useQueryClient();
   const [adding, setAdding] = useState(false);
   const [confirm, setConfirm] = useState(null);
@@ -106,6 +126,25 @@ export default function People() {
       setConfirm(null);
     },
   });
+
+  // When the home camera last recognised each person, and the "say who's there" switch.
+  const seen = useQuery({
+    queryKey: ['people-seen', patientId],
+    queryFn: async () => (await apiClient.get(`/api/patients/${patientId}/people-seen`)).data,
+    enabled: Boolean(patientId),
+    refetchInterval: 30000,
+  });
+  const settings = useQuery({
+    queryKey: ['face-settings', patientId],
+    queryFn: async () => (await apiClient.get(`/api/patients/${patientId}/face-settings`)).data,
+    enabled: Boolean(patientId),
+  });
+  const setAnnounce = useMutation({
+    mutationFn: async (announce) => (await apiClient.put(`/api/patients/${patientId}/face-settings`, { announce })).data,
+    onSuccess: (data) => qc.setQueryData(['face-settings', patientId], data),
+  });
+  const seenById = new Map((seen.data || []).map((s) => [s.face_id, s]));
+  const firstName = (user?.patient_name || '').split(' ')[0] || 'them';
 
   const list = faces.data || [];
   const full = list.length >= MAX_PEOPLE;
@@ -157,6 +196,7 @@ export default function People() {
                   )}
                   <span className="text-xs text-ink-4">Added {formatDateTime(f.createdAt)}</span>
                 </div>
+                <LastSeen s={seenById.get(f.id)} />
               </div>
               {confirm === f.id ? (
                 <span className="flex gap-1">
@@ -184,10 +224,33 @@ export default function People() {
         </ul>
       )}
 
-      <p className="mt-8 max-w-2xl text-sm text-ink-3">
-        <strong className="font-semibold text-ink-2">Coming next:</strong> matching these faces against
-        the home camera, so the timeline says who visited and the phone can quietly say who's at the door.
-      </p>
+      <Panel title="When the camera recognises someone" className="mt-8">
+        <ul className="mb-5 space-y-2 text-sm text-ink-2">
+          <li className="flex gap-2"><Icon name="check" size={16} className="mt-0.5 shrink-0 text-ok" />The moment in the log says who was there, and the Assistant knows who visited.</li>
+          <li className="flex gap-2"><Icon name="check" size={16} className="mt-0.5 shrink-0 text-ok" />The family gets a quiet note: “Sarah was seen at home with {firstName}”, once every two hours at most.</li>
+        </ul>
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-md bg-subtle px-4 py-3">
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold">Say who’s there on {firstName}’s phone</p>
+            <p className="text-sm text-ink-3">
+              For example “{firstName}, Sarah, your daughter, is here to see you.” Off by default: a wrong name said aloud is worse than none,
+              so turn it on once the camera has recognised everyone correctly a few times.
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={Boolean(settings.data?.announce)}
+            disabled={!settings.data || setAnnounce.isPending}
+            onClick={() => setAnnounce.mutate(!settings.data?.announce)}
+            className={`relative h-7 w-12 shrink-0 rounded-full transition ${settings.data?.announce ? 'bg-ink' : 'bg-black/15'} disabled:opacity-50`}
+          >
+            <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${settings.data?.announce ? 'left-6' : 'left-1'}`} />
+            <span className="sr-only">Say who’s there on {firstName}’s phone</span>
+          </button>
+        </div>
+        {settings.data && !settings.data.recognition && <p className="mt-3 text-sm text-act">Face recognition is turned off on the server.</p>}
+      </Panel>
     </>
   );
 }

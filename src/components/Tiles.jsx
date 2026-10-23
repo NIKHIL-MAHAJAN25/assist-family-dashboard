@@ -89,7 +89,7 @@ export function MomentCard({ m, onToggleSave }) {
   let line = '';
   if (m.kind === 'place') line = "From the phone's location.";
   else if (m.quiet) line = seen ? `No one in front of the camera. It saw ${seen}.` : 'No one in front of the camera.';
-  else line = [m.detail && `${m.detail}.`, seen && `Also in view: ${seen}.`].filter(Boolean).join(' ');
+  else line = [m.people?.length && `With ${m.people.join(' and ')}.`, m.detail && `${m.detail}.`, seen && `Also in view: ${seen}.`].filter(Boolean).join(' ');
 
   return (
     <div className="min-w-0">
