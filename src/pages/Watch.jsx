@@ -124,7 +124,9 @@ function Hero({ v, first, now }) {
 // ---- chart ---------------------------------------------------------------------------------------
 
 function HeartChart({ v, range, setRange, now }) {
-  const W = 760, H = 250, L = 34, R = 12, T = 16, B = 26;
+  // A narrower drawing on phones, so labels stay readable instead of shrinking with the chart.
+  const narrow = typeof window !== 'undefined' && window.innerWidth < 640;
+  const W = narrow ? 380 : 760, H = narrow ? 240 : 250, L = 30, R = 10, T = 16, B = 26;
   const span = range === '7d' ? 7 * 864e5 : range === '24h' ? 864e5 : null;
   const midnight = new Date(now); midnight.setHours(0, 0, 0, 0);
   const t0 = span ? now - span : Math.min(midnight.getTime(), now - 3600e3);
@@ -160,7 +162,7 @@ function HeartChart({ v, range, setRange, now }) {
   if (range === '7d') {
     for (let d = new Date(midnight); d.getTime() > t0; d.setDate(d.getDate() - 1)) ticks.push({ t: d.getTime(), label: d.toLocaleDateString(undefined, { weekday: 'short' }) });
   } else {
-    const step = (t1 - t0) / 3600e3 > 12 ? 4 : (t1 - t0) / 3600e3 > 5 ? 2 : 1;
+    const step = ((t1 - t0) / 3600e3 > 12 ? 4 : (t1 - t0) / 3600e3 > 5 ? 2 : 1) * (narrow ? 2 : 1);
     const h = new Date(t0); h.setMinutes(0, 0, 0); h.setHours(h.getHours() + 1);
     for (; h.getTime() < t1; h.setHours(h.getHours() + 1)) if (h.getHours() % step === 0) ticks.push({ t: h.getTime(), label: h.toLocaleTimeString(undefined, { hour: 'numeric' }) });
   }
@@ -209,8 +211,11 @@ function HeartChart({ v, range, setRange, now }) {
         {last && (
           <g transform={`translate(${x(last.t)},${y(last.bpm)})`}>
             <circle r="5" fill="#1D1D1B" />
-            <rect x="-24" y="-30" width="48" height="20" rx="10" fill="#1D1D1B" />
-            <text y="-16" fontSize="11" fill="#fff" textAnchor="middle">{last.bpm}</text>
+            {/* The bubble shifts left near the edge so it is never cut off. */}
+            <g transform={`translate(${Math.min(0, W - 2 - 24 - x(last.t))},0)`}>
+              <rect x="-24" y="-30" width="48" height="20" rx="10" fill="#1D1D1B" />
+              <text y="-16" fontSize="11" fill="#fff" textAnchor="middle">{last.bpm}</text>
+            </g>
           </g>
         )}
       </svg>

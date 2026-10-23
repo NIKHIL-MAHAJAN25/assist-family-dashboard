@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext.jsx';
+import { apiClient } from '../api/client.js';
 import { useEntries, useNow, useQuizHistory, useStatus, useZones } from '../lib/hooks.js';
 import { buildIncidents, buildMoments, dayBounds, daySummary, ribbonSegments } from '../lib/story.js';
 import { formatTime, timeAgo } from '../utils/datetime.js';
@@ -212,7 +214,7 @@ function Moments({ moments }) {
         <Pill to="/log" dark>View full log</Pill>
       </TileHead>
       {!list.length ? (
-        <p className="mt-6 text-[14px] text-ink-3">Nothing recorded yet today. Moments from the camera and watch show up here as they happen.</p>
+        <p className="mt-6 text-[14px] text-ink-3">Nothing recorded yet today. Moments from the camera and phone show up here as they happen.</p>
       ) : (
         <div className="mt-5 grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           <ul className="min-w-0 space-y-1">
@@ -302,11 +304,13 @@ function MonthCalendar({ now, activeDays }) {
   );
 }
 
-function DeviceLine({ icon: ic, name, last, now }) {
+function DeviceLine({ icon: ic, name, last, now, to }) {
   const mins = last ? Math.floor((now - last) / 60000) : null;
   const tone = mins == null ? 'none' : mins <= STALE_MIN ? 'ok' : 'watch';
+  const Row = to ? Link : 'div';
   return (
-    <li className="flex items-center gap-3 py-2.5">
+    <li>
+    <Row {...(to && { to })} className={cx('flex items-center gap-3 py-2.5', to && 'rounded-xl transition hover:bg-black/[0.03]')}>
       <span className="grid h-9 w-9 place-items-center rounded-full bg-[#CDE6FA]">
         <Icon name={ic} size={16} />
       </span>
@@ -317,6 +321,7 @@ function DeviceLine({ icon: ic, name, last, now }) {
       <span className={cx('rounded-full px-2.5 py-1 text-[10px] font-semibold', CHIP[tone])}>
         {tone === 'ok' ? 'on' : tone === 'watch' ? 'quiet' : 'off'}
       </span>
+    </Row>
     </li>
   );
 }
@@ -344,6 +349,12 @@ export default function Today() {
   const entries = useEntries({ from: weekAgo });
   const zones = useZones();
   const quiz = useQuizHistory();
+  const watch = useQuery({
+    queryKey: ['vitals', user?.patient_id, 'today'],
+    queryFn: async () => (await apiClient.get(`/api/patients/${user.patient_id}/vitals`, { params: { range: 'today' } })).data,
+    enabled: Boolean(user?.patient_id),
+    refetchInterval: 30000,
+  });
 
   const d = useMemo(() => {
     const all = entries.data || [];
@@ -462,6 +473,13 @@ export default function Today() {
           <ul className="mt-2 divide-y divide-line">
             <DeviceLine icon="camera" name="Home camera" last={d.lastCamera} now={now} />
             <DeviceLine icon="device" name="Phone" last={d.lastWatch} now={now} />
+            <DeviceLine
+              icon="watch"
+              to="/watch"
+              name={watch.data?.latest?.bpm ? `Watch · ${watch.data.latest.bpm} bpm` : 'Watch'}
+              last={watch.data?.device?.last_seen ? new Date(watch.data.device.last_seen).getTime() : null}
+              now={now}
+            />
           </ul>
         </Tile>
       </aside>
