@@ -1,15 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { updateLogEntrySaved } from '../api/logEntries.js';
-import { useEntries, useNow, useZones } from '../lib/hooks.js';
+import { useEntries, useNow, usePatientId, useZones } from '../lib/hooks.js';
 import { CATEGORIES, buildIncidents, buildMoments, dayBounds, ribbonSegments } from '../lib/story.js';
 import { formatDayLabel, formatTime } from '../utils/datetime.js';
 import IncidentCard from '../components/IncidentCard.jsx';
 import DayPicker from '../components/DayPicker.jsx';
 import { SKIES, SkyBackdrop } from '../components/DaySky.jsx';
 import { GRADIENT, MomentCard, Tile, TileHead, avatar, icon, label } from '../components/Tiles.jsx';
-import { buildCloudinaryUrl } from '../api/client.js';
+import { apiClient, buildCloudinaryUrl } from '../api/client.js';
 import { ErrorNote, Icon, Loading, cx } from '../ui';
 
 const toKey = (d) => {
@@ -184,6 +184,51 @@ const FILTERS = [
   { value: 'places', label: 'Places' },
   { value: 'flagged', label: 'Flagged' },
 ];
+
+/** Demo mode only: fill the log with two weeks of plausible days, or empty it before a live camera demo. */
+function DemoLogBar() {
+  const patientId = usePatientId();
+  const qc = useQueryClient();
+  const [note, setNote] = useState(null);
+  const [confirm, setConfirm] = useState(false);
+  const demo = useQuery({
+    queryKey: ['demo', patientId],
+    queryFn: async () => (await apiClient.get(`/api/demo/${patientId}`)).data,
+    enabled: Boolean(patientId),
+    staleTime: 60000,
+  });
+  const run = useMutation({
+    mutationFn: async (path) => (await apiClient.post(`/api/demo/${patientId}/${path}`)).data,
+    onSuccess: (r, path) => {
+      setConfirm(false);
+      setNote(path === 'fill' ? `Added ${r.days} past days (${r.frames} photos, ${r.pings} location readings) and a week of watch readings.` : `Cleared ${r.removed} readings. New photos from the camera will show up on their own.`);
+      qc.invalidateQueries();
+    },
+    onError: (e) => setNote(e?.response?.data?.error || 'That did not work.'),
+  });
+  if (!demo.data?.demo_mode) return null;
+  return (
+    <section className="flex flex-wrap items-center gap-2 rounded-[20px] border border-dashed border-black/15 bg-white/40 px-5 py-3">
+      <span className="mr-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3">Demo log</span>
+      <button type="button" disabled={run.isPending} onClick={() => run.mutate('fill')} className="inline-flex items-center gap-1.5 rounded-full bg-ink px-3.5 py-1.5 text-[12px] font-medium text-white disabled:opacity-50">
+        <Icon name="plus" size={13} /> Fill with demo days
+      </button>
+      {confirm ? (
+        <>
+          <span className="text-[12px] text-ink-2">Delete every reading in the log?</span>
+          <button type="button" disabled={run.isPending} onClick={() => run.mutate('clear-log')} className="rounded-full bg-[#F4A48C] px-3.5 py-1.5 text-[12px] font-medium disabled:opacity-50">Yes, clear</button>
+          <button type="button" onClick={() => setConfirm(false)} className="rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-[12px]">Keep</button>
+        </>
+      ) : (
+        <button type="button" disabled={run.isPending} onClick={() => setConfirm(true)} className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-[12px] font-medium disabled:opacity-50">
+          <Icon name="trash" size={13} /> Clear the log
+        </button>
+      )}
+      {run.isPending && <span className="text-[12px] text-ink-3">Working…</span>}
+      {note && !run.isPending && <span className="text-[12px] text-ink-3">{note}</span>}
+    </section>
+  );
+}
 
 export default function Log() {
   const [params, setParams] = useSearchParams();
@@ -392,6 +437,7 @@ export default function Log() {
 
   return (
     <div className="grid gap-3">
+      <DemoLogBar />
       <Tile>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -400,7 +446,7 @@ export default function Log() {
               {entries.isLoading
                 ? ' '
                 : raw
-                  ? `${moments.length} moments, from ${raw} camera and watch readings.`
+                  ? `${moments.length} moments, from ${raw} camera and location readings.`
                   : 'Nothing was recorded on this day.'}
             </p>
           </div>

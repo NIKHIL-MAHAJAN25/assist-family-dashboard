@@ -12,6 +12,7 @@ const NAV = [
   { to: '/assistant', label: 'Assistant', icon: 'spark' },
   { to: '/log', label: 'Log', icon: 'timeline' },
   { to: '/places', label: 'Places', icon: 'map' },
+  { to: '/watch', label: 'Watch', icon: 'heartPulse' },
   { to: '/people', label: 'People', icon: 'people' },
   { to: '/memory', label: 'Memory', icon: 'brain' },
 ];
@@ -227,7 +228,7 @@ export default function Layout({ children }) {
   const now = useNow();
   const part = partOfDay(now);
   const { pathname } = useLocation();
-  const tiles = pathname.startsWith('/today') || pathname.startsWith('/log') || pathname.startsWith('/assistant');
+  const tiles = pathname.startsWith('/today') || pathname.startsWith('/log') || pathname.startsWith('/assistant') || pathname.startsWith('/watch');
 
   return (
     <div className="relative min-h-full p-2 sm:p-4 lg:p-6 print:p-0">

@@ -4,6 +4,7 @@ import Login from './pages/Login.jsx';
 import Today from './pages/Today.jsx';
 import Log from './pages/Log.jsx';
 import Places from './pages/Places.jsx';
+import Watch from './pages/Watch.jsx';
 import People from './pages/People.jsx';
 import Memory from './pages/Memory.jsx';
 import Settings from './pages/Settings.jsx';
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/demo" element={<Demo />} />
         <Route path="/log" element={<Log />} />
         <Route path="/places" element={<Places />} />
+        <Route path="/watch" element={<Watch />} />
         <Route path="/people" element={<People />} />
         <Route path="/memory" element={<Memory />} />
         <Route path="/settings" element={<Settings />} />

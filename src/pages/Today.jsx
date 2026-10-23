@@ -461,7 +461,7 @@ export default function Today() {
           <TileHead title="Devices" />
           <ul className="mt-2 divide-y divide-line">
             <DeviceLine icon="camera" name="Home camera" last={d.lastCamera} now={now} />
-            <DeviceLine icon="watch" name="Watch & phone" last={d.lastWatch} now={now} />
+            <DeviceLine icon="device" name="Phone" last={d.lastWatch} now={now} />
           </ul>
         </Tile>
       </aside>
