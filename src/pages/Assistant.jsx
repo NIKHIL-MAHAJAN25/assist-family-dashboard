@@ -26,7 +26,7 @@ function loadReadAloud() {
 // confirms — the agent never sends on its own. Backend: POST /api/patients/:id/assistant, /commands.
 
 const BY = { claude: 'Claude', codex: 'Codex', gemini: 'Gemini' };
-const SOURCE_WORDS = { location: 'location', camera: 'camera', journal: 'journal', alerts: 'alerts', messages: 'messages', objects: 'objects seen' };
+const SOURCE_WORDS = { location: 'location', camera: 'camera', journal: 'journal', alerts: 'alerts', messages: 'messages', objects: 'objects seen', watch: 'watch', texts: 'texts' };
 const STEPS = ['Reading today’s journal', 'Checking where she is', 'Looking at the latest photo', 'Thinking it through'];
 const STORE = (pid) => `assistant:${pid}`;
 // Phone actions that aren't confirm cards of their own (sent from other cards or the scheduler).

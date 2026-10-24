@@ -184,7 +184,40 @@ export default function Demo() {
         </div>
       </Section>
 
-      <Section n={5} title="Looking back" hint={`Two weeks of plausible past days (meals, rest, walks, one fall, a quiz that slips in the second week) so the doctor’s report, “this week” summaries, the walk replay and “where did ${first} leave it” have something to show. Kept by Reset; remove it here.`}>
+      <Section n={5} title="Text messages" hint={`${first}’s phone texts the emergency contacts by itself when ${first} leaves the safe places, the watch sends an emergency or Hold for help, a fall check goes unanswered, or someone taps the emergency tag. Each kind at most once every 15 minutes. These buttons send one now.`}>
+        {d && !d.sms_contacts ? (
+          <p className="mb-3 rounded-[14px] bg-[#FFF4E5] px-4 py-3 text-[13px]">No emergency contacts yet. Add one under <Link to="/settings" className="font-semibold underline">Settings → Emergency tag</Link>; the texts go to them.</p>
+        ) : d ? (
+          <p className="mb-3 text-[13px] text-ink-3">Texts go to {d.sms_contacts} emergency contact{d.sms_contacts === 1 ? '' : 's'}, sent from {first}’s phone.</p>
+        ) : null}
+        <div className="flex flex-wrap gap-2">
+          {[
+            ['left_safe_area', 'Left the safe area', 'walk', 'bg-ink'],
+            ['heart_spike', 'Heart-rate spike', 'heartPulse', 'bg-[#E5533D]'],
+            ['sos', 'Hold for help', 'warning', 'bg-[#E5533D]'],
+            ['test', 'Test text', 'send', 'bg-white text-ink ring-1 ring-black/10'],
+          ].map(([reason, label, icon, tone]) => (
+            <button key={reason} type="button" disabled={d && !d.sms_contacts} onClick={() => call('/sms', { reason }, (r) => `Text queued for ${r.to} contact${r.to === 1 ? '' : 's'}: “${r.text}”`)} className={cx('inline-flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-30', tone)}>
+              <Icon name={icon} size={15} /> {label}
+            </button>
+          ))}
+        </div>
+        {d?.sms_recent?.length > 0 && (
+          <ul className="mt-4 grid gap-1.5">
+            {d.sms_recent.map((t) => (
+              <li key={t.id} className="flex flex-wrap items-baseline gap-x-3 rounded-[12px] bg-white/70 px-3 py-2 text-[13px]">
+                <span className="tabular-nums text-ink-3">{formatTime(t.at)}</span>
+                <span className="min-w-0 flex-1 truncate">{t.text}</span>
+                <span className={cx('rounded-full px-2 py-0.5 text-[11px] font-semibold', t.status === 'done' ? 'bg-[#E4F5D4] text-[#2F6B12]' : t.status === 'failed' || t.status === 'expired' ? 'bg-[#FDE3DE] text-[#A3311F]' : 'bg-black/[0.06] text-ink-3')}>
+                  {t.status === 'done' ? 'Sent' : t.status === 'failed' ? `Failed${t.error ? `: ${t.error}` : ''}` : t.status === 'expired' ? 'Phone never picked it up' : 'Waiting for the phone'}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
+
+      <Section n={6} title="Looking back" hint={`Two weeks of plausible past days (meals, rest, walks, one fall, a quiz that slips in the second week) so the doctor’s report, “this week” summaries, the walk replay and “where did ${first} leave it” have something to show. Kept by Reset; remove it here.`}>
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" onClick={() => { setMsg({ ok: true, text: 'Adding two weeks of history…' }); call('/history', { days: 14 }, (r) => `Added ${r.days} days: ${r.frames} camera moments, ${r.pings} location points, ${r.quiz_days} days of quiz, ${r.falls} fall.`); }} className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-white hover:bg-black"><Icon name="calendar" size={15} /> {d?.history_entries ? 'Rebuild two weeks of history' : 'Add two weeks of history'}</button>
           {d?.history_entries > 0 && (
@@ -199,7 +232,7 @@ export default function Demo() {
         </div>
       </Section>
 
-      <Section n={6} title="Test cases" hint="Tick each one off in rehearsal. Every case says what to do and what the judges should see." right={<span className="rounded-full bg-white px-3 py-1 text-[12px] font-semibold">{done} / {TEST_CASES.length} rehearsed</span>}>
+      <Section n={7} title="Test cases" hint="Tick each one off in rehearsal. Every case says what to do and what the judges should see." right={<span className="rounded-full bg-white px-3 py-1 text-[12px] font-semibold">{done} / {TEST_CASES.length} rehearsed</span>}>
         <ol className="grid gap-2">
           {TEST_CASES.map((t, i) => (
             <li key={t.id} className={cx('rounded-[16px] p-4 ring-1 ring-black/[0.04]', checks[t.id] ? 'bg-[#F3FBDF]' : 'bg-white/80')}>
